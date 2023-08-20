@@ -2,7 +2,7 @@ import { Box } from "@chakra-ui/react";
 import React from "react";
 import { FilesProvider } from "../../context/files";
 import AuthRequired from "../AuthRequired";
-import GridView from "./GridView";
+import FileViewer from "./FileViewer";
 import Header from "./Header";
 import PathViewer from "./PathViewer";
 
@@ -13,7 +13,7 @@ const FileBrowser: React.FC = () => {
         <Box minHeight="100vh">
           <Header />
           <PathViewer />
-          <GridView />
+          <FileViewer />
         </Box>
       </FilesProvider>
     </AuthRequired>

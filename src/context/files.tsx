@@ -7,7 +7,10 @@ import React, {
 } from "react";
 import { getFolderContents } from "../database/files";
 import type { Folder, FolderEntry } from "../database/model";
+import { usePersistentState } from "../utils";
 import { useCurrentUser } from "./user";
+
+type ViewMode = "grid" | "list";
 
 type FilesContextType = {
   addItem: (item: FolderEntry) => void;
@@ -15,6 +18,8 @@ type FilesContextType = {
   items: FolderEntry[];
   path: Folder[];
   setPath: (path: Folder[]) => void;
+  setViewMode: (viewMode: ViewMode) => void;
+  viewMode: ViewMode;
 };
 
 const FilesContext = createContext<FilesContextType>({
@@ -23,6 +28,8 @@ const FilesContext = createContext<FilesContextType>({
   items: [],
   path: [],
   setPath: () => undefined,
+  setViewMode: () => undefined,
+  viewMode: "grid",
 });
 
 export const useFiles = () => {
@@ -38,6 +45,10 @@ export const FilesProvider: React.FC<FilesProviderProps> = ({ children }) => {
   const [items, setItems] = useState<FolderEntry[]>([]);
   const [path, setPath] = useState<Folder[]>([]);
   const [isLoading, setLoading] = useState(false);
+  const [viewMode, setViewMode] = usePersistentState<ViewMode>(
+    "view-mode",
+    "grid"
+  );
 
   useEffect(() => {
     if (user && encryptionKey) {
@@ -60,7 +71,17 @@ export const FilesProvider: React.FC<FilesProviderProps> = ({ children }) => {
   );
 
   return (
-    <FilesContext.Provider value={{ addItem, isLoading, items, path, setPath }}>
+    <FilesContext.Provider
+      value={{
+        addItem,
+        isLoading,
+        items,
+        path,
+        setPath,
+        setViewMode,
+        viewMode,
+      }}
+    >
       {children}
     </FilesContext.Provider>
   );
