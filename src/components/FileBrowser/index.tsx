@@ -4,6 +4,7 @@ import { FilesProvider } from "../../context/files";
 import AuthRequired from "../AuthRequired";
 import GridView from "./GridView";
 import Header from "./Header";
+import PathViewer from "./PathViewer";
 
 const FileBrowser: React.FC = () => {
   return (
@@ -11,6 +12,7 @@ const FileBrowser: React.FC = () => {
       <FilesProvider>
         <Box minHeight="100vh">
           <Header />
+          <PathViewer />
           <GridView />
         </Box>
       </FilesProvider>

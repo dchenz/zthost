@@ -20,7 +20,7 @@ type NewFolderModalProps = {
 
 const NewFolderModal: React.FC<NewFolderModalProps> = ({ onClose, open }) => {
   const { user, encryptionKey } = useCurrentUser();
-  const { addItem } = useFiles();
+  const { addItem, path } = useFiles();
   const [name, setName] = useState("");
 
   useEffect(() => {
@@ -38,7 +38,12 @@ const NewFolderModal: React.FC<NewFolderModalProps> = ({ onClose, open }) => {
     if (!name) {
       return;
     }
-    const newFolder = await createFolder(name, user.uid, null, encryptionKey);
+    const newFolder = await createFolder(
+      name,
+      user.uid,
+      path[path.length - 1]?.id ?? null,
+      encryptionKey
+    );
     addItem(newFolder);
     onClose();
   };
