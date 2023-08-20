@@ -6,9 +6,9 @@ import React, {
   useState,
 } from "react";
 import { getFolderContents } from "../database/files";
-import type { Folder, FolderEntry } from "../database/model";
 import { usePersistentState } from "../utils";
 import { useCurrentUser } from "./user";
+import type { Folder, FolderEntry } from "../database/model";
 
 type ViewMode = "grid" | "list";
 

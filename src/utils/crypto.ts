@@ -1,5 +1,5 @@
-import { Buffer } from "buffer";
 import ScryptJS from "scrypt-js";
+import { Buffer } from "buffer";
 
 const options = {
   scrypt_cpu: 2 ** 14,

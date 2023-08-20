@@ -1,4 +1,3 @@
-import type { PopoverProps } from "@chakra-ui/react";
 import {
   Center,
   IconButton,
@@ -9,6 +8,7 @@ import {
 import React from "react";
 import { Grid, ListUl } from "react-bootstrap-icons";
 import { useFiles } from "../../context/files";
+import type { PopoverProps } from "@chakra-ui/react";
 
 const ViewModeSelector = () => {
   const { setViewMode, viewMode } = useFiles();

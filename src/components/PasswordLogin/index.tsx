@@ -3,9 +3,9 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCurrentUser } from "../../context/user";
 import { getAuthPropertiesById } from "../../database/auth";
-import type { AuthProperties } from "../../database/model";
 import CreatePassword from "./CreatePassword";
 import LoginPassword from "./LoginPassword";
+import type { AuthProperties } from "../../database/model";
 
 const PasswordLogin: React.FC = () => {
   const { user } = useCurrentUser();

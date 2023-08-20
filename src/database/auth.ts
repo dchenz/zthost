@@ -1,5 +1,5 @@
-import { Buffer } from "buffer";
 import { doc, getDoc, setDoc } from "firebase/firestore";
+import { Buffer } from "buffer";
 import { fstore } from "../firebase";
 import { deriveKey, generateWrappedKey, randomBytes } from "../utils/crypto";
 import type { AuthProperties } from "./model";
