@@ -19,17 +19,17 @@ const PathViewer: React.FC = () => {
     const newPath: Folder[] = [];
     if (folder) {
       for (const f of parents) {
+        newPath.push(f);
         if (f.id === folder.id) {
           break;
         }
-        newPath.push(f);
       }
     }
     setPath(newPath);
   };
 
-  const renderPathItem = (folderName: string) => {
-    return (
+  const renderPathItem = (folder: Folder | null, link: boolean) => {
+    const folderName = (
       <Box
         maxWidth="150px"
         fontSize="16px"
@@ -37,40 +37,41 @@ const PathViewer: React.FC = () => {
         overflow="hidden"
         textOverflow="ellipsis"
       >
-        {folderName}
+        {folder?.name ?? "My Files"}
       </Box>
+    );
+
+    if (!link) {
+      return folderName;
+    }
+
+    return (
+      <React.Fragment>
+        <Button
+          variant="link"
+          minWidth={0}
+          onClick={() => changeToPreviousFolder(folder)}
+        >
+          {folderName}
+        </Button>
+        {link ? (
+          <div>
+            <ChevronRight />
+          </div>
+        ) : null}
+      </React.Fragment>
     );
   };
 
   return (
     <HStack minHeight="40px" px={3}>
-      <Button
-        variant="link"
-        minWidth={0}
-        onClick={() => changeToPreviousFolder(null)}
-      >
-        {renderPathItem("My Files")}
-      </Button>
-      {path.length ? (
-        <div>
-          <ChevronRight />
-        </div>
-      ) : null}
-      {parents.map((folder, k) => (
-        <React.Fragment key={k}>
-          <Button
-            variant="link"
-            minWidth={0}
-            onClick={() => changeToPreviousFolder(folder)}
-          >
-            {renderPathItem(folder.name)}
-          </Button>
-          <div>
-            <ChevronRight />
-          </div>
+      {renderPathItem(null, path.length > 0)}
+      {parents.map((folder, index) => (
+        <React.Fragment key={index}>
+          {renderPathItem(folder, true)}
         </React.Fragment>
       ))}
-      {pwd ? renderPathItem(pwd.name) : null}
+      {pwd ? renderPathItem(pwd, false) : null}
     </HStack>
   );
 };
