@@ -8,4 +8,7 @@ export type Folder = {
   id: string;
   name: string;
   ownerId: string;
+  type: "folder";
 };
+
+export type FolderEntry = Folder;
