@@ -1,12 +1,8 @@
 import { Buffer } from "buffer";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { fstore } from "../firebase";
-import { deriveKey, generateWrappedKey, randomBytes } from "./crypto";
-
-export type AuthProperties = {
-  mainKey: ArrayBuffer;
-  salt: ArrayBuffer;
-};
+import { deriveKey, generateWrappedKey, randomBytes } from "../utils/crypto";
+import type { AuthProperties } from "./model";
 
 export const getAuthPropertiesById = async (
   userId: string

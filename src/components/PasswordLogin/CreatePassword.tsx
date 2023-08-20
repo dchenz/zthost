@@ -10,7 +10,7 @@ import {
 } from "@chakra-ui/react";
 import React, { useState } from "react";
 import { useCurrentUser } from "../../context/user";
-import { createAuthProperties } from "../../utils/database";
+import { createAuthProperties } from "../../database/auth";
 
 type CreatePasswordProps = {
   onAuthComplete: () => void;

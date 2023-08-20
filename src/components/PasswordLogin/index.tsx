@@ -2,8 +2,8 @@ import { Spinner } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCurrentUser } from "../../context/user";
-import type { AuthProperties } from "../../utils/database";
-import { getAuthPropertiesById } from "../../utils/database";
+import { getAuthPropertiesById } from "../../database/auth";
+import type { AuthProperties } from "../../database/model";
 import CreatePassword from "./CreatePassword";
 import LoginPassword from "./LoginPassword";
 
