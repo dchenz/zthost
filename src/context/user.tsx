@@ -2,9 +2,15 @@ import { type User } from "firebase/auth";
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { auth } from "../firebase";
 
-const UserContext = createContext<{
+type UserContextType = {
+  encryptionKey: ArrayBuffer | null;
+  setEncryptionKey: (encryptionKey: ArrayBuffer | null) => void;
   user: User | null;
-}>({
+};
+
+const UserContext = createContext<UserContextType>({
+  encryptionKey: null,
+  setEncryptionKey: () => undefined,
   user: null,
 });
 
@@ -17,6 +23,7 @@ type UserProviderProps = {
 };
 
 export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
+  const [encryptionKey, setEncryptionKey] = useState<ArrayBuffer | null>(null);
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
@@ -29,6 +36,8 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
   return (
     <UserContext.Provider
       value={{
+        encryptionKey,
+        setEncryptionKey,
         user,
       }}
     >

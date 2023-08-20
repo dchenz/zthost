@@ -4,8 +4,9 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { UserProvider } from "../context/user";
 import AuthRequired from "./AuthRequired";
 import FileBrowser from "./FileBrowser";
-import Login from "./Login";
 import Navbar from "./Navbar";
+import PasswordLogin from "./PasswordLogin";
+import Login from "./ProviderLogin";
 
 const App = () => {
   return (
@@ -15,6 +16,7 @@ const App = () => {
         <BrowserRouter>
           <Routes>
             <Route path="/login" element={<Login />} />
+            <Route path="/login/password" element={<PasswordLogin />} />
             <Route
               path="/"
               element={

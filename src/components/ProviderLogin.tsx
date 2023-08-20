@@ -5,14 +5,14 @@ import ReactGoogleButton from "react-google-button";
 import { useNavigate } from "react-router-dom";
 import { auth } from "../firebase";
 
-const Login: React.FC = () => {
+const ProviderLogin: React.FC = () => {
   const navigate = useNavigate();
 
   const onLoginClick = async () => {
     const provider = new GoogleAuthProvider();
     const response = await signInWithPopup(auth, provider);
     if (response.user) {
-      navigate("/");
+      navigate("/login/password");
     }
   };
 
@@ -26,4 +26,4 @@ const Login: React.FC = () => {
   );
 };
 
-export default Login;
+export default ProviderLogin;
