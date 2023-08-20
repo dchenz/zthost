@@ -9,6 +9,8 @@ import {
   ModalOverlay,
 } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
+import { useCurrentUser } from "../../context/user";
+import { createFolder } from "../../database/files";
 
 type NewFolderModalProps = {
   onClose: () => void;
@@ -16,6 +18,7 @@ type NewFolderModalProps = {
 };
 
 const NewFolderModal: React.FC<NewFolderModalProps> = ({ onClose, open }) => {
+  const { user } = useCurrentUser();
   const [name, setName] = useState("");
 
   useEffect(() => {
@@ -24,10 +27,23 @@ const NewFolderModal: React.FC<NewFolderModalProps> = ({ onClose, open }) => {
     }
   }, [open]);
 
+  if (!user) {
+    return null;
+  }
+
+  const onFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name) {
+      return;
+    }
+    await createFolder(name, user.uid, null);
+    onClose();
+  };
+
   return (
     <Modal isOpen={open} onClose={onClose} size="2xl" isCentered>
       <ModalOverlay />
-      <ModalContent as="form" onSubmit={(e) => e.preventDefault()}>
+      <ModalContent as="form" onSubmit={onFormSubmit}>
         <ModalHeader>New folder</ModalHeader>
         <ModalBody>
           <Input
@@ -38,7 +54,9 @@ const NewFolderModal: React.FC<NewFolderModalProps> = ({ onClose, open }) => {
           />
         </ModalBody>
         <ModalFooter>
-          <Button type="submit">Create</Button>
+          <Button type="submit" disabled={!name}>
+            Create
+          </Button>
         </ModalFooter>
       </ModalContent>
     </Modal>
