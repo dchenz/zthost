@@ -9,18 +9,18 @@ import Login from "./ProviderLogin";
 
 const App = () => {
   return (
-    <ChakraProvider>
-      <UserProvider>
-        <Navbar />
-        <BrowserRouter>
+    <BrowserRouter>
+      <ChakraProvider>
+        <UserProvider>
+          <Navbar />
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/login/password" element={<PasswordLogin />} />
             <Route path="/" element={<FileBrowser />} />
           </Routes>
-        </BrowserRouter>
-      </UserProvider>
-    </ChakraProvider>
+        </UserProvider>
+      </ChakraProvider>
+    </BrowserRouter>
   );
 };
 
