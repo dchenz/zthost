@@ -15,4 +15,24 @@ export type Folder = {
   type: "folder";
 };
 
-export type FolderEntry = Folder;
+export type FileMetadata = {
+  name: string;
+  size: number;
+  type: string;
+};
+
+export type FileEntity = {
+  folderId: string | null;
+  id: string;
+  metadata: FileMetadata;
+  ownerId: string;
+  thumbnail?: Blob;
+  type: "file";
+};
+
+export type BlobRef = {
+  id: string;
+  key: string;
+};
+
+export type FolderEntry = Folder | FileEntity;
