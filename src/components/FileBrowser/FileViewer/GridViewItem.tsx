@@ -1,14 +1,13 @@
 import { Box, Image, Text } from "@chakra-ui/react";
 import React from "react";
-import { useFiles } from "../../../context/files";
 import type { FolderEntry } from "../../../database/model";
 
 type GridViewItemProps = {
   item: FolderEntry;
+  onClick: () => void;
 };
 
-const GridViewItem: React.FC<GridViewItemProps> = ({ item }) => {
-  const { path, setPath } = useFiles();
+const GridViewItem: React.FC<GridViewItemProps> = ({ item, onClick }) => {
   return (
     <Box
       cursor="pointer"
@@ -16,7 +15,7 @@ const GridViewItem: React.FC<GridViewItemProps> = ({ item }) => {
       transition="background-color 300ms"
       width="200px"
       _hover={{ backgroundColor: "#f5f5f5" }}
-      onClick={() => setPath([...path, item])}
+      onClick={onClick}
     >
       <Image
         src={"/static/media/folder-icon.png"}

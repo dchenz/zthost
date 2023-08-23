@@ -1,10 +1,14 @@
 import { Table, TableContainer, Tbody, Th, Thead, Tr } from "@chakra-ui/react";
 import React from "react";
-import { useFiles } from "../../../context/files";
 import ListViewItem from "./ListViewItem";
+import type { FolderEntry } from "../../../database/model";
 
-const ListView: React.FC = () => {
-  const { items } = useFiles();
+type ListViewProps = {
+  items: FolderEntry[];
+  onItemClick: (item: FolderEntry) => void;
+};
+
+const ListView: React.FC<ListViewProps> = ({ items, onItemClick }) => {
   return (
     <TableContainer className="file-list-container">
       <Table>
@@ -20,7 +24,11 @@ const ListView: React.FC = () => {
         </Thead>
         <Tbody>
           {items.map((item) => (
-            <ListViewItem key={item.id} item={item} />
+            <ListViewItem
+              key={item.id}
+              item={item}
+              onClick={() => onItemClick(item)}
+            />
           ))}
         </Tbody>
       </Table>
