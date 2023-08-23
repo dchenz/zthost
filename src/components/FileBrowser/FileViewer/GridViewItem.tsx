@@ -18,7 +18,11 @@ const GridViewItem: React.FC<GridViewItemProps> = ({ item, onClick }) => {
       onClick={onClick}
     >
       <Image
-        src={"/static/media/folder-icon.png"}
+        src={
+          item.type === "file"
+            ? "/static/media/file-icon.png"
+            : "/static/media/folder-icon.png"
+        }
         alt={item.metadata.name}
         width="96px"
         margin="0 auto"

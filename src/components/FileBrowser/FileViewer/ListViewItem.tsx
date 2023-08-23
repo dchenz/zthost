@@ -17,7 +17,11 @@ const ListViewItem: React.FC<ListViewItemProps> = ({ item, onClick }) => {
     >
       <Td onClick={onClick} padding="5px">
         <Image
-          src={"/static/media/folder-icon.png"}
+          src={
+            item.type === "file"
+              ? "/static/media/file-icon.png"
+              : "/static/media/folder-icon.png"
+          }
           height="30px"
           margin="0 auto"
         />

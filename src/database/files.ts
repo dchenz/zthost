@@ -44,18 +44,18 @@ export const createFolder = async (
   return { ...folder, type: "folder", id, metadata };
 };
 
-export const getFolderContents = async (
+export const getFoldersInFolder = async (
   ownerId: string,
   folderId: string | null,
   encryptionKey: ArrayBuffer
-): Promise<FolderEntry[]> => {
+): Promise<Folder[]> => {
   const folderCollection = collection(fstore, "folders");
   const q = query(
     folderCollection,
     where("ownerId", "==", ownerId),
     where("folderId", "==", folderId)
   );
-  const results: FolderEntry[] = [];
+  const results: Folder[] = [];
   for (const folder of (await getDocs(q)).docs) {
     const data = folder.data();
     const decryptedMetadata = await decrypt(
@@ -76,6 +76,52 @@ export const getFolderContents = async (
     } as Folder);
   }
   return results;
+};
+
+export const getFilesInFolder = async (
+  ownerId: string,
+  folderId: string | null,
+  encryptionKey: ArrayBuffer
+): Promise<FileEntity[]> => {
+  const fileCollection = collection(fstore, "files");
+  const q = query(
+    fileCollection,
+    where("ownerId", "==", ownerId),
+    where("folderId", "==", folderId)
+  );
+  const results: FileEntity[] = [];
+  for (const file of (await getDocs(q)).docs) {
+    const data = file.data();
+    const decryptedMetadata = await decrypt(
+      Buffer.from(data.metadata, "base64"),
+      encryptionKey
+    );
+    if (!decryptedMetadata) {
+      throw new Error(`Unable to decrypt file ${data.id}`);
+    }
+    const metadata = JSON.parse(
+      Buffer.from(decryptedMetadata).toString("utf-8")
+    );
+    results.push({
+      ...data,
+      metadata,
+      id: file.id,
+      type: "file",
+    } as FileEntity);
+  }
+  return results;
+};
+
+export const getFolderContents = async (
+  ownerId: string,
+  folderId: string | null,
+  encryptionKey: ArrayBuffer
+): Promise<FolderEntry[]> => {
+  const [folders, files] = await Promise.all([
+    getFoldersInFolder(ownerId, folderId, encryptionKey),
+    getFilesInFolder(ownerId, folderId, encryptionKey),
+  ]);
+  return [...folders, ...files];
 };
 
 export class FileHandler {
