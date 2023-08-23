@@ -26,7 +26,7 @@ const ListViewItem: React.FC<ListViewItemProps> = ({ item }) => {
         />
       </Td>
       <Td onClick={navigateToFolder} padding="5px">
-        {item.name}
+        {item.metadata.name}
       </Td>
       <Td onClick={navigateToFolder} padding="5px"></Td>
       <Td onClick={navigateToFolder} padding="5px" isNumeric></Td>

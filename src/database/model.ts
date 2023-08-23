@@ -3,10 +3,14 @@ export type AuthProperties = {
   salt: ArrayBuffer;
 };
 
+export type FolderMetadata = {
+  name: string;
+};
+
 export type Folder = {
   folderId: string | null;
   id: string;
-  name: string;
+  metadata: FolderMetadata;
   ownerId: string;
   type: "folder";
 };

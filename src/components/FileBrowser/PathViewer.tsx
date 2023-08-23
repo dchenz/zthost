@@ -37,7 +37,7 @@ const PathViewer: React.FC = () => {
         overflow="hidden"
         textOverflow="ellipsis"
       >
-        {folder?.name ?? "My Files"}
+        {folder?.metadata.name ?? "My Files"}
       </Box>
     );
 

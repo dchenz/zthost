@@ -10,7 +10,7 @@ import { v4 as uuid } from "uuid";
 import { Buffer } from "buffer";
 import { fstore } from "../firebase";
 import { decrypt, encrypt } from "../utils/crypto";
-import type { Folder, FolderEntry } from "./model";
+import type { Folder, FolderEntry, FolderMetadata } from "./model";
 
 export const createFolder = async (
   name: string,
@@ -19,18 +19,21 @@ export const createFolder = async (
   encryptionKey: ArrayBuffer
 ): Promise<Folder> => {
   const id = uuid();
+  const metadata: FolderMetadata = {
+    name,
+  };
   const folderDoc = doc(fstore, "folders", id);
-  const encryptedFolderName = await encrypt(
-    Buffer.from(name, "utf-8"),
+  const encryptedMetadata = await encrypt(
+    Buffer.from(JSON.stringify(metadata), "utf-8"),
     encryptionKey
   );
   const folder = {
-    name: Buffer.from(encryptedFolderName).toString("base64"),
+    metadata: Buffer.from(encryptedMetadata).toString("base64"),
     ownerId,
     folderId: parentFolderId,
   };
   await setDoc(folderDoc, folder);
-  return { ...folder, type: "folder", id, name };
+  return { ...folder, type: "folder", id, metadata };
 };
 
 export const getFolderContents = async (
@@ -47,17 +50,21 @@ export const getFolderContents = async (
   const results: FolderEntry[] = [];
   for (const folder of (await getDocs(q)).docs) {
     const data = folder.data();
-    const decryptedFolderName = await decrypt(
-      Buffer.from(data.name, "base64"),
+    const decryptedMetadata = await decrypt(
+      Buffer.from(data.metadata, "base64"),
       encryptionKey
     );
-    if (!decryptedFolderName) {
+    if (!decryptedMetadata) {
       throw new Error(`Unable to decrypt folder ${data.id}`);
     }
+    const metadata = JSON.parse(
+      Buffer.from(decryptedMetadata).toString("utf-8")
+    );
     results.push({
       ...data,
-      name: Buffer.from(decryptedFolderName).toString("utf-8"),
+      metadata,
       id: folder.id,
+      type: "folder",
     } as Folder);
   }
   return results;

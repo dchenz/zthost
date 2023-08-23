@@ -20,13 +20,13 @@ const GridViewItem: React.FC<GridViewItemProps> = ({ item }) => {
     >
       <Image
         src={"/static/media/folder-icon.png"}
-        alt={item.name}
+        alt={item.metadata.name}
         width="96px"
         margin="0 auto"
       />
       <Box p={2}>
         <Text whiteSpace="nowrap" overflow="hidden" textOverflow="ellipsis">
-          {item.name}
+          {item.metadata.name}
         </Text>
       </Box>
     </Box>
