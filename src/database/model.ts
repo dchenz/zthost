@@ -8,6 +8,7 @@ export type FolderMetadata = {
 };
 
 export type Folder = {
+  creationTime: Date;
   folderId: string | null;
   id: string;
   metadata: FolderMetadata;
@@ -22,6 +23,7 @@ export type FileMetadata = {
 };
 
 export type FileEntity = {
+  creationTime: Date;
   folderId: string | null;
   id: string;
   metadata: FileMetadata;

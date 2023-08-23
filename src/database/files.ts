@@ -27,6 +27,7 @@ export const createFolder = async (
   encryptionKey: ArrayBuffer
 ): Promise<Folder> => {
   const id = uuid();
+  const creationTime = new Date();
   const metadata: FolderMetadata = {
     name,
   };
@@ -35,13 +36,20 @@ export const createFolder = async (
     Buffer.from(JSON.stringify(metadata), "utf-8"),
     encryptionKey
   );
-  const folder = {
+  await setDoc(folderDoc, {
+    creationTime: creationTime.getTime(),
     metadata: Buffer.from(encryptedMetadata).toString("base64"),
     ownerId,
     folderId: parentFolderId,
+  });
+  return {
+    id,
+    creationTime,
+    folderId: parentFolderId,
+    metadata,
+    ownerId,
+    type: "folder",
   };
-  await setDoc(folderDoc, folder);
-  return { ...folder, type: "folder", id, metadata };
 };
 
 export const getFoldersInFolder = async (
@@ -69,9 +77,11 @@ export const getFoldersInFolder = async (
       Buffer.from(decryptedMetadata).toString("utf-8")
     );
     results.push({
-      ...data,
-      metadata,
       id: folder.id,
+      creationTime: new Date(data.creationTime),
+      folderId: data.folderId,
+      ownerId: data.ownerId,
+      metadata,
       type: "folder",
     } as Folder);
   }
@@ -103,9 +113,11 @@ export const getFilesInFolder = async (
       Buffer.from(decryptedMetadata).toString("utf-8")
     );
     results.push({
-      ...data,
-      metadata,
       id: file.id,
+      creationTime: new Date(data.creationTime),
+      folderId: data.folderId,
+      ownerId: data.ownerId,
+      metadata,
       type: "file",
     } as FileEntity);
   }
@@ -140,6 +152,7 @@ export class FileHandler {
     userId: string
   ): Promise<FileEntity> {
     const fileId = uuid();
+    const creationTime = new Date();
     const metadata: FileMetadata = {
       name: file.name,
       size: file.size,
@@ -150,6 +163,7 @@ export class FileHandler {
       this.key
     );
     await setDoc(doc(fstore, "files", fileId), {
+      creationTime: creationTime.getTime(),
       folderId: parentFolderId,
       metadata: Buffer.from(encryptedMetadata).toString("base64"),
       ownerId: userId,
@@ -165,6 +179,7 @@ export class FileHandler {
     });
     return {
       id: fileId,
+      creationTime,
       folderId: parentFolderId,
       metadata,
       ownerId: userId,
