@@ -1,5 +1,6 @@
 import { Image, Td, Tr } from "@chakra-ui/react";
 import React from "react";
+import { formatBinarySize } from "../../../utils";
 import type { FolderEntry } from "../../../database/model";
 
 type ListViewItemProps = {
@@ -30,7 +31,9 @@ const ListViewItem: React.FC<ListViewItemProps> = ({ item, onClick }) => {
         {item.metadata.name}
       </Td>
       <Td onClick={onClick} padding="5px"></Td>
-      <Td onClick={onClick} padding="5px" isNumeric></Td>
+      <Td onClick={onClick} padding="5px" isNumeric>
+        {item.type === "file" ? formatBinarySize(item.metadata.size) : null}
+      </Td>
     </Tr>
   );
 };

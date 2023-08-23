@@ -10,14 +10,16 @@ type ListViewProps = {
 
 const ListView: React.FC<ListViewProps> = ({ items, onItemClick }) => {
   return (
-    <TableContainer className="file-list-container">
+    <TableContainer>
       <Table>
         <Thead>
-          <Tr className="file-list-header">
-            <Th width="70px"></Th>
-            <Th>Name</Th>
-            <Th width="20%">Created</Th>
-            <Th width="10%" isNumeric>
+          <Tr height="40px">
+            <Th padding="5px" width="70px"></Th>
+            <Th padding="5px">Name</Th>
+            <Th padding="5px" width="20%">
+              Created
+            </Th>
+            <Th padding="5px" width="10%" isNumeric>
               Size
             </Th>
           </Tr>
