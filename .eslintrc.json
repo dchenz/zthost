@@ -17,7 +17,13 @@
   },
   "plugins": ["@typescript-eslint", "typescript-sort-keys", "import"],
   "rules": {
-    "indent": ["error", 2],
+    "indent": [
+      "error",
+      2,
+      {
+        "SwitchCase": 1
+      }
+    ],
     "quotes": ["error", "double", "avoid-escape"],
     "semi": ["error", "always"],
     "@typescript-eslint/consistent-type-imports": "error",

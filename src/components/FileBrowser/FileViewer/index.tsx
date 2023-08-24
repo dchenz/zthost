@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useMemo } from "react";
 import { useFiles } from "../../../context/files";
 import GridView from "./GridView";
 import ListView from "./ListView";
@@ -6,6 +6,22 @@ import type { FolderEntry } from "../../../database/model";
 
 const FileViewer: React.FC = () => {
   const { viewMode, setPath, path, items } = useFiles();
+
+  const sortedItems = useMemo(
+    () =>
+      [...items].sort((a, b) => {
+        // The default sort shows folders first, then files.
+        // Within each type, sort them alphabetically by name.
+        if (a.type === "file" && b.type === "folder") {
+          return 1;
+        }
+        if (a.type === "folder" && b.type === "file") {
+          return -1;
+        }
+        return a.metadata.name.localeCompare(b.metadata.name);
+      }),
+    [items]
+  );
 
   const onItemClick = useCallback(
     (item: FolderEntry) => {
@@ -17,9 +33,9 @@ const FileViewer: React.FC = () => {
   );
 
   return viewMode === "list" ? (
-    <ListView items={items} onItemClick={onItemClick} />
+    <ListView items={sortedItems} onItemClick={onItemClick} />
   ) : (
-    <GridView items={items} onItemClick={onItemClick} />
+    <GridView items={sortedItems} onItemClick={onItemClick} />
   );
 };
 
