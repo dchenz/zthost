@@ -31,7 +31,7 @@ const UploadButton: React.FC = () => {
       <MenuButton as={Button} rightIcon={<ChevronDown />} size="sm">
         Upload
       </MenuButton>
-      <MenuList>
+      <MenuList zIndex={999}>
         <MenuItem
           onClick={() => {
             const fileForm = document.createElement("input");

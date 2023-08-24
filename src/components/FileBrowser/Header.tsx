@@ -9,7 +9,7 @@ import ViewModeSelector from "./ViewModeSelector";
 const Header: React.FC = () => {
   const [isCreatingFolder, setCreatingFolder] = useState(false);
   return (
-    <Box p={3}>
+    <Box height="48px" px={3} py={2}>
       <HStack gap={2} width="100%">
         <UploadButton />
         <ResponsiveIconButton

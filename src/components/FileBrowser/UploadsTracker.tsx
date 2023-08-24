@@ -12,7 +12,7 @@ const UploadsTracker: React.FC = () => {
     <Box
       position="absolute"
       bottom="0"
-      right="12px"
+      right="24px"
       backgroundColor="#ffffff"
       boxShadow="0px 1px 2px 2px rgba(214, 214, 214, 1)"
     >

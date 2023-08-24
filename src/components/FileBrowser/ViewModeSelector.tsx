@@ -21,7 +21,13 @@ const ViewModeSelector = () => {
               {viewMode === "grid" ? <Grid /> : <ListUl />}
             </IconButton>
           </PopoverTrigger>
-          <PopoverContent width="100px" p={2}>
+          <PopoverContent
+            width="100px"
+            p={2}
+            rootProps={{
+              zIndex: 999,
+            }}
+          >
             <Center gap={2}>
               <IconButton
                 aria-label="grid-mode"

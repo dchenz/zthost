@@ -10,9 +10,22 @@ type ListViewProps = {
 
 const ListView: React.FC<ListViewProps> = ({ items, onItemClick }) => {
   return (
-    <TableContainer>
+    <TableContainer
+      // Subtract navbar, toolbar and path viewer.
+      height="calc(100vh - 48px - 48px - 40px)"
+      // Push to the right to account for scrollbar.
+      pr={3}
+      overflowX="unset"
+      overflowY="scroll"
+    >
       <Table>
-        <Thead>
+        <Thead
+          position="sticky"
+          top={0}
+          zIndex="docked"
+          backgroundColor="#ffffff"
+          boxShadow="0px 0.5px 1px 1px #f5f5f5"
+        >
           <Tr height="40px">
             <Th padding="5px" width="70px"></Th>
             <Th padding="5px">Name</Th>

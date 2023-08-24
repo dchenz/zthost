@@ -11,7 +11,7 @@ const FileBrowser: React.FC = () => {
   return (
     <AuthRequired>
       <FilesProvider>
-        <Box minHeight="100vh">
+        <Box position="relative">
           <Header />
           <PathViewer />
           <FileViewer />
