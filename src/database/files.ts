@@ -195,7 +195,8 @@ export class FileHandler {
     const { rawKey, wrappedKey } = await generateWrappedKey(this.key);
     const encryptedChunk = await encrypt(await chunk.arrayBuffer(), rawKey);
     const blobId = await this.storageBackend.putBlob(
-      await new Response(encryptedChunk).blob()
+      await new Response(encryptedChunk).blob(),
+      () => undefined
     );
     return {
       id: blobId,
