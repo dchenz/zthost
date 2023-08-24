@@ -149,7 +149,10 @@ export class FileHandler {
   async uploadFile(
     file: File,
     parentFolderId: string,
-    userId: string
+    userId: string,
+    onUploadStart: (id: string) => void,
+    onUploadProgress: (id: string, progress: number) => void,
+    onUploadFinish: (id: string) => void
   ): Promise<FileEntity> {
     const fileId = uuid();
     const creationTime = new Date();
@@ -168,15 +171,37 @@ export class FileHandler {
       metadata: Buffer.from(encryptedMetadata).toString("base64"),
       ownerId: userId,
     });
+    // Aggregate the upload progress across all chunks and pass it to the
+    // callback to report overall upload progress.
+    const uploadProgress: Record<number, [number, number]> = {};
+    const onChunkProgress =
+      (chunkNumber: number) => (loaded: number, total: number) => {
+        if (chunkNumber in uploadProgress) {
+          uploadProgress[chunkNumber][0] = loaded;
+        } else {
+          uploadProgress[chunkNumber] = [loaded, total];
+        }
+        // Total chunk size may be different to the actual file size
+        // due to extra metadata added during encryption.
+        let loadedAllChunks = 0;
+        let totalAllChunks = 0;
+        for (const progress of Object.values(uploadProgress)) {
+          loadedAllChunks += progress[0];
+          totalAllChunks += progress[1];
+        }
+        onUploadProgress(fileId, loadedAllChunks / totalAllChunks);
+      };
+    onUploadStart(fileId);
     const nChunks = Math.ceil(file.size / this.chunkSize);
     const uploads: Promise<BlobRef>[] = [];
     for (let i = 0; i < nChunks; i++) {
-      uploads.push(this.uploadFileChunk(file, i));
+      uploads.push(this.uploadFileChunk(file, i, onChunkProgress(i)));
     }
     const results = await Promise.all(uploads);
     await setDoc(doc(fstore, "fileChunks", fileId), {
       chunks: results.map(({ id, key }) => ({ id, key })),
     });
+    onUploadFinish(fileId);
     return {
       id: fileId,
       creationTime,
@@ -187,7 +212,11 @@ export class FileHandler {
     };
   }
 
-  async uploadFileChunk(file: File, chunkNumber: number): Promise<BlobRef> {
+  async uploadFileChunk(
+    file: File,
+    chunkNumber: number,
+    onProgress: (loaded: number, total: number) => void
+  ): Promise<BlobRef> {
     const chunk = file.slice(
       chunkNumber * this.chunkSize,
       (chunkNumber + 1) * this.chunkSize
@@ -196,7 +225,7 @@ export class FileHandler {
     const encryptedChunk = await encrypt(await chunk.arrayBuffer(), rawKey);
     const blobId = await this.storageBackend.putBlob(
       await new Response(encryptedChunk).blob(),
-      () => undefined
+      onProgress
     );
     return {
       id: blobId,

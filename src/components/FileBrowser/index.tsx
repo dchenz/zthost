@@ -5,6 +5,7 @@ import AuthRequired from "../AuthRequired";
 import FileViewer from "./FileViewer";
 import Header from "./Header";
 import PathViewer from "./PathViewer";
+import UploadsTracker from "./UploadsTracker";
 
 const FileBrowser: React.FC = () => {
   return (
@@ -14,6 +15,7 @@ const FileBrowser: React.FC = () => {
           <Header />
           <PathViewer />
           <FileViewer />
+          <UploadsTracker />
         </Box>
       </FilesProvider>
     </AuthRequired>

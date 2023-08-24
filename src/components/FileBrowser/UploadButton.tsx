@@ -6,7 +6,7 @@ import { useCurrentUser } from "../../context/user";
 
 const UploadButton: React.FC = () => {
   const { fileHandler, user } = useCurrentUser();
-  const { path, addItem } = useFiles();
+  const { path, addItem, addUpload, setUploadProgress } = useFiles();
 
   if (!user) {
     return null;
@@ -17,7 +17,10 @@ const UploadButton: React.FC = () => {
       const f = await fileHandler.uploadFile(
         file,
         path[path.length - 1]?.id ?? null,
-        user.uid
+        user.uid,
+        (id) => addUpload(id, file.name),
+        setUploadProgress,
+        (id) => setUploadProgress(id, 1, true)
       );
       addItem(f);
     }
