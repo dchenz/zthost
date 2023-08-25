@@ -25,10 +25,10 @@ export type FileMetadata = {
 export type FileEntity = {
   creationTime: Date;
   folderId: string | null;
+  hasThumbnail: boolean;
   id: string;
   metadata: FileMetadata;
   ownerId: string;
-  thumbnail?: Blob;
   type: "file";
 };
 

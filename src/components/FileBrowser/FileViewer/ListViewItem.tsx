@@ -1,6 +1,7 @@
-import { Image, Td, Tr } from "@chakra-ui/react";
+import { Td, Tr } from "@chakra-ui/react";
 import React from "react";
 import { formatBinarySize, formatRelativeTime } from "../../../utils";
+import Thumbnail from "./Thumbnail";
 import type { FolderEntry } from "../../../database/model";
 
 type ListViewItemProps = {
@@ -17,15 +18,7 @@ const ListViewItem: React.FC<ListViewItemProps> = ({ item, onClick }) => {
       _hover={{ backgroundColor: "#f5f5f5" }}
     >
       <Td onClick={onClick} padding="5px">
-        <Image
-          src={
-            item.type === "file"
-              ? "/static/media/file-icon.png"
-              : "/static/media/folder-icon.png"
-          }
-          height="30px"
-          margin="0 auto"
-        />
+        <Thumbnail item={item} height="30px" margin="0 auto" />
       </Td>
       <Td onClick={onClick} padding="5px">
         {item.metadata.name}

@@ -1,6 +1,7 @@
 import {
   collection,
   doc,
+  getDoc,
   getDocs,
   query,
   setDoc,
@@ -9,6 +10,7 @@ import {
 import { v4 as uuid } from "uuid";
 import { Buffer } from "buffer";
 import { fstore } from "../firebase";
+import { blobToDataUri, createImageThumbnail } from "../utils";
 import { decrypt, encrypt, generateWrappedKey } from "../utils/crypto";
 import type {
   BlobRef,
@@ -22,12 +24,42 @@ import type { BlobStorage } from "../blobstorage/model";
 
 export class FileHandler {
   chunkSize = 1024 * 1024 * 64;
+  thumbnailSize = 32;
   storageBackend: BlobStorage;
   key: ArrayBuffer;
 
   constructor(storageBackend: BlobStorage, key: ArrayBuffer) {
     this.storageBackend = storageBackend;
     this.key = key;
+  }
+
+  async downloadThumbnail(fileId: string): Promise<string | null> {
+    const thumbnailDoc = await getDoc(doc(fstore, "thumbnails", fileId));
+    const encryptedThumbnail = thumbnailDoc.get("data");
+    if (!encryptedThumbnail) {
+      return null;
+    }
+    const thumbnail = await decrypt(
+      Buffer.from(encryptedThumbnail, "base64"),
+      this.key
+    );
+    if (!thumbnail) {
+      throw new Error("Unable to decrypt thumbnail");
+    }
+    return Buffer.from(thumbnail).toString("utf-8");
+  }
+
+  async uploadThumbnail(fileId: string, file: File): Promise<void> {
+    const thumbnail = await blobToDataUri(
+      await createImageThumbnail(file, this.thumbnailSize)
+    );
+    const encryptedThumbnail = await encrypt(
+      Buffer.from(thumbnail, "utf-8"),
+      this.key
+    );
+    await setDoc(doc(fstore, "thumbnails", fileId), {
+      data: Buffer.from(encryptedThumbnail).toString("base64"),
+    });
   }
 
   async uploadFile(
@@ -49,12 +81,17 @@ export class FileHandler {
       Buffer.from(JSON.stringify(metadata), "utf-8"),
       this.key
     );
+    const hasThumbnail = file.type.startsWith("image/");
     await setDoc(doc(fstore, "files", fileId), {
       creationTime: creationTime.getTime(),
       folderId: parentFolderId,
+      hasThumbnail,
       metadata: Buffer.from(encryptedMetadata).toString("base64"),
       ownerId: userId,
     });
+    if (hasThumbnail) {
+      await this.uploadThumbnail(fileId, file);
+    }
     // Aggregate the upload progress across all chunks and pass it to the
     // callback to report overall upload progress.
     const uploadProgress: Record<number, [number, number]> = {};
@@ -89,6 +126,7 @@ export class FileHandler {
     return {
       id: fileId,
       creationTime,
+      hasThumbnail,
       folderId: parentFolderId,
       metadata,
       ownerId: userId,
@@ -210,6 +248,7 @@ export class FileHandler {
         id: file.id,
         creationTime: new Date(data.creationTime),
         folderId: data.folderId,
+        hasThumbnail: data.hasThumbnail,
         ownerId: data.ownerId,
         metadata,
         type: "file",

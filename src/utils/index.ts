@@ -67,3 +67,50 @@ export function formatRelativeTime(date: Date): string {
   }
   return date.toLocaleString();
 }
+
+export const createImageThumbnail = (
+  file: File,
+  thumbnailSize: number
+): Promise<Blob> => {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = thumbnailSize;
+      canvas.height = thumbnailSize;
+      canvas
+        .getContext("2d")
+        ?.drawImage(
+          img,
+          0,
+          0,
+          img.width,
+          img.height,
+          0,
+          0,
+          thumbnailSize,
+          thumbnailSize
+        );
+      canvas.toBlob((blob) => {
+        if (blob) {
+          resolve(blob);
+        } else {
+          reject("empty canvas");
+        }
+      }, file.type);
+    };
+    blobToDataUri(file).then((dataUri) => {
+      img.src = dataUri;
+    });
+  });
+};
+
+export const blobToDataUri = (blob: Blob): Promise<string> => {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => reject(reader.error);
+    reader.onabort = () => reject(new Error("Read aborted"));
+    reader.readAsDataURL(blob);
+  });
+};
