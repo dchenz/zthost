@@ -20,122 +20,6 @@ import type {
 } from "./model";
 import type { BlobStorage } from "../blobstorage/model";
 
-export const createFolder = async (
-  name: string,
-  ownerId: string,
-  parentFolderId: string | null,
-  encryptionKey: ArrayBuffer
-): Promise<Folder> => {
-  const id = uuid();
-  const creationTime = new Date();
-  const metadata: FolderMetadata = {
-    name,
-  };
-  const folderDoc = doc(fstore, "folders", id);
-  const encryptedMetadata = await encrypt(
-    Buffer.from(JSON.stringify(metadata), "utf-8"),
-    encryptionKey
-  );
-  await setDoc(folderDoc, {
-    creationTime: creationTime.getTime(),
-    metadata: Buffer.from(encryptedMetadata).toString("base64"),
-    ownerId,
-    folderId: parentFolderId,
-  });
-  return {
-    id,
-    creationTime,
-    folderId: parentFolderId,
-    metadata,
-    ownerId,
-    type: "folder",
-  };
-};
-
-export const getFoldersInFolder = async (
-  ownerId: string,
-  folderId: string | null,
-  encryptionKey: ArrayBuffer
-): Promise<Folder[]> => {
-  const folderCollection = collection(fstore, "folders");
-  const q = query(
-    folderCollection,
-    where("ownerId", "==", ownerId),
-    where("folderId", "==", folderId)
-  );
-  const results: Folder[] = [];
-  for (const folder of (await getDocs(q)).docs) {
-    const data = folder.data();
-    const decryptedMetadata = await decrypt(
-      Buffer.from(data.metadata, "base64"),
-      encryptionKey
-    );
-    if (!decryptedMetadata) {
-      throw new Error(`Unable to decrypt folder ${data.id}`);
-    }
-    const metadata = JSON.parse(
-      Buffer.from(decryptedMetadata).toString("utf-8")
-    );
-    results.push({
-      id: folder.id,
-      creationTime: new Date(data.creationTime),
-      folderId: data.folderId,
-      ownerId: data.ownerId,
-      metadata,
-      type: "folder",
-    } as Folder);
-  }
-  return results;
-};
-
-export const getFilesInFolder = async (
-  ownerId: string,
-  folderId: string | null,
-  encryptionKey: ArrayBuffer
-): Promise<FileEntity[]> => {
-  const fileCollection = collection(fstore, "files");
-  const q = query(
-    fileCollection,
-    where("ownerId", "==", ownerId),
-    where("folderId", "==", folderId)
-  );
-  const results: FileEntity[] = [];
-  for (const file of (await getDocs(q)).docs) {
-    const data = file.data();
-    const decryptedMetadata = await decrypt(
-      Buffer.from(data.metadata, "base64"),
-      encryptionKey
-    );
-    if (!decryptedMetadata) {
-      throw new Error(`Unable to decrypt file ${data.id}`);
-    }
-    const metadata = JSON.parse(
-      Buffer.from(decryptedMetadata).toString("utf-8")
-    );
-    results.push({
-      id: file.id,
-      creationTime: new Date(data.creationTime),
-      folderId: data.folderId,
-      ownerId: data.ownerId,
-      metadata,
-      type: "file",
-    } as FileEntity);
-  }
-  return results;
-};
-
-export const getFolderContents = async (
-  ownerId: string,
-  folderId: string | null,
-  encryptionKey: ArrayBuffer
-): Promise<FolderEntry[]> => {
-  const [folders, files] = await Promise.all([
-    getFoldersInFolder(ownerId, folderId, encryptionKey),
-    getFilesInFolder(ownerId, folderId, encryptionKey),
-  ]);
-  return [...folders, ...files];
-};
-
 export class FileHandler {
   chunkSize = 1024 * 1024 * 64;
   storageBackend: BlobStorage;
@@ -231,5 +115,117 @@ export class FileHandler {
       id: blobId,
       key: Buffer.from(wrappedKey).toString("base64"),
     };
+  }
+
+  async createFolder(
+    name: string,
+    ownerId: string,
+    parentFolderId: string | null
+  ): Promise<Folder> {
+    const id = uuid();
+    const creationTime = new Date();
+    const metadata: FolderMetadata = {
+      name,
+    };
+    const folderDoc = doc(fstore, "folders", id);
+    const encryptedMetadata = await encrypt(
+      Buffer.from(JSON.stringify(metadata), "utf-8"),
+      this.key
+    );
+    await setDoc(folderDoc, {
+      creationTime: creationTime.getTime(),
+      metadata: Buffer.from(encryptedMetadata).toString("base64"),
+      ownerId,
+      folderId: parentFolderId,
+    });
+    return {
+      id,
+      creationTime,
+      folderId: parentFolderId,
+      metadata,
+      ownerId,
+      type: "folder",
+    };
+  }
+
+  async getFoldersInFolder(
+    ownerId: string,
+    folderId: string | null
+  ): Promise<Folder[]> {
+    const folderCollection = collection(fstore, "folders");
+    const q = query(
+      folderCollection,
+      where("ownerId", "==", ownerId),
+      where("folderId", "==", folderId)
+    );
+    const results: Folder[] = [];
+    for (const folder of (await getDocs(q)).docs) {
+      const data = folder.data();
+      const decryptedMetadata = await decrypt(
+        Buffer.from(data.metadata, "base64"),
+        this.key
+      );
+      if (!decryptedMetadata) {
+        throw new Error(`Unable to decrypt folder ${data.id}`);
+      }
+      const metadata = JSON.parse(
+        Buffer.from(decryptedMetadata).toString("utf-8")
+      );
+      results.push({
+        id: folder.id,
+        creationTime: new Date(data.creationTime),
+        folderId: data.folderId,
+        ownerId: data.ownerId,
+        metadata,
+        type: "folder",
+      } as Folder);
+    }
+    return results;
+  }
+
+  async getFilesInFolder(
+    ownerId: string,
+    folderId: string | null
+  ): Promise<FileEntity[]> {
+    const fileCollection = collection(fstore, "files");
+    const q = query(
+      fileCollection,
+      where("ownerId", "==", ownerId),
+      where("folderId", "==", folderId)
+    );
+    const results: FileEntity[] = [];
+    for (const file of (await getDocs(q)).docs) {
+      const data = file.data();
+      const decryptedMetadata = await decrypt(
+        Buffer.from(data.metadata, "base64"),
+        this.key
+      );
+      if (!decryptedMetadata) {
+        throw new Error(`Unable to decrypt file ${data.id}`);
+      }
+      const metadata = JSON.parse(
+        Buffer.from(decryptedMetadata).toString("utf-8")
+      );
+      results.push({
+        id: file.id,
+        creationTime: new Date(data.creationTime),
+        folderId: data.folderId,
+        ownerId: data.ownerId,
+        metadata,
+        type: "file",
+      } as FileEntity);
+    }
+    return results;
+  }
+
+  async getFolderContents(
+    ownerId: string,
+    folderId: string | null
+  ): Promise<FolderEntry[]> {
+    const [folders, files] = await Promise.all([
+      this.getFoldersInFolder(ownerId, folderId),
+      this.getFilesInFolder(ownerId, folderId),
+    ]);
+    return [...folders, ...files];
   }
 }

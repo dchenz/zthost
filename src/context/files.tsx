@@ -5,7 +5,6 @@ import React, {
   useEffect,
   useState,
 } from "react";
-import { getFolderContents } from "../database/files";
 import { usePersistentState } from "../utils";
 import { useCurrentUser } from "./user";
 import type { Folder, FolderEntry } from "../database/model";
@@ -58,7 +57,7 @@ type FilesProviderProps = {
 };
 
 export const FilesProvider: React.FC<FilesProviderProps> = ({ children }) => {
-  const { user, encryptionKey } = useCurrentUser();
+  const { user, fileHandler } = useCurrentUser();
   const [items, setItems] = useState<FolderEntry[]>([]);
   const [path, setPath] = useState<Folder[]>([]);
   const [isLoading, setLoading] = useState(false);
@@ -69,13 +68,10 @@ export const FilesProvider: React.FC<FilesProviderProps> = ({ children }) => {
   );
 
   useEffect(() => {
-    if (user && encryptionKey) {
+    if (user) {
       setLoading(true);
-      getFolderContents(
-        user.uid,
-        path[path.length - 1]?.id ?? null,
-        encryptionKey
-      )
+      fileHandler
+        .getFolderContents(user.uid, path[path.length - 1]?.id ?? null)
         .then(setItems)
         .finally(() => setLoading(false));
     }

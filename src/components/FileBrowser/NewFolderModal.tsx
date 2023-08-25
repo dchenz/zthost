@@ -11,7 +11,6 @@ import {
 import React, { useEffect, useState } from "react";
 import { useFiles } from "../../context/files";
 import { useCurrentUser } from "../../context/user";
-import { createFolder } from "../../database/files";
 
 type NewFolderModalProps = {
   onClose: () => void;
@@ -19,7 +18,7 @@ type NewFolderModalProps = {
 };
 
 const NewFolderModal: React.FC<NewFolderModalProps> = ({ onClose, open }) => {
-  const { user, encryptionKey } = useCurrentUser();
+  const { user, fileHandler } = useCurrentUser();
   const { addItem, path } = useFiles();
   const [name, setName] = useState("");
 
@@ -29,7 +28,7 @@ const NewFolderModal: React.FC<NewFolderModalProps> = ({ onClose, open }) => {
     }
   }, [open]);
 
-  if (!user || !encryptionKey) {
+  if (!user) {
     return null;
   }
 
@@ -38,11 +37,10 @@ const NewFolderModal: React.FC<NewFolderModalProps> = ({ onClose, open }) => {
     if (!name) {
       return;
     }
-    const newFolder = await createFolder(
+    const newFolder = await fileHandler.createFolder(
       name,
       user.uid,
-      path[path.length - 1]?.id ?? null,
-      encryptionKey
+      path[path.length - 1]?.id ?? null
     );
     addItem(newFolder);
     onClose();
