@@ -7,7 +7,7 @@ import React, {
 } from "react";
 import { usePersistentState } from "../utils";
 import { useSignedInUser } from "./user";
-import type { Folder, FolderEntry } from "../database/model";
+import type { FileEntity, Folder, FolderEntry } from "../database/model";
 
 type ViewMode = "grid" | "list";
 
@@ -26,8 +26,10 @@ type FilesContextType = {
   isLoading: boolean;
   items: FolderEntry[];
   path: Folder[];
+  previewFile: FileEntity | null;
   removeUpload: (id: string) => void;
   setPath: (path: Folder[]) => void;
+  setPreviewFile: (selectedFile: FileEntity | null) => void;
   setUploadProgress: (id: string, progress: number, ok?: boolean) => void;
   setViewMode: (viewMode: ViewMode) => void;
   uploads: PendingUpload[];
@@ -40,8 +42,10 @@ const FilesContext = createContext<FilesContextType>({
   isLoading: false,
   items: [],
   path: [],
+  previewFile: null,
   removeUpload: () => undefined,
   setPath: () => undefined,
+  setPreviewFile: () => undefined,
   setUploadProgress: () => undefined,
   setViewMode: () => undefined,
   uploads: [],
@@ -61,6 +65,7 @@ export const FilesProvider: React.FC<FilesProviderProps> = ({ children }) => {
   const [items, setItems] = useState<FolderEntry[]>([]);
   const [path, setPath] = useState<Folder[]>([]);
   const [isLoading, setLoading] = useState(false);
+  const [previewFile, setPreviewFile] = useState<FileEntity | null>(null);
   const [uploads, setUploads] = useState<PendingUpload[]>([]);
   const [viewMode, setViewMode] = usePersistentState<ViewMode>(
     "view-mode",
@@ -120,8 +125,10 @@ export const FilesProvider: React.FC<FilesProviderProps> = ({ children }) => {
         isLoading,
         items,
         path,
+        previewFile,
         removeUpload,
         setPath,
+        setPreviewFile,
         setUploadProgress,
         setViewMode,
         uploads,
