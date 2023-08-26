@@ -71,14 +71,11 @@ export class FileHandler {
     });
   }
 
-  async uploadFile(
+  async uploadFileMetadata(
+    fileId: string,
     file: File,
-    parentFolderId: string,
-    onUploadStart: (id: string) => void,
-    onUploadProgress: (id: string, progress: number) => void,
-    onUploadFinish: (id: string) => void
+    parentFolderId: string
   ): Promise<FileEntity> {
-    const fileId = uuid();
     const creationTime = new Date();
     const metadata: FileMetadata = {
       name: file.name,
@@ -100,6 +97,22 @@ export class FileHandler {
     if (hasThumbnail) {
       await this.uploadThumbnail(fileId, file);
     }
+    return {
+      id: fileId,
+      creationTime,
+      hasThumbnail,
+      folderId: parentFolderId,
+      metadata,
+      ownerId: this.ownerId,
+      type: "file",
+    };
+  }
+
+  async uploadFileChunks(
+    fileId: string,
+    file: File,
+    onProgress: (progress: number) => void
+  ): Promise<void> {
     const nChunks = Math.ceil(file.size / this.chunkSize);
     // Aggregate the upload progress across all chunks and pass it to the
     // callback to report overall upload progress.
@@ -112,30 +125,19 @@ export class FileHandler {
       }
       // Uploaded chunks have a 12 byte header and 16 byte trailer.
       const realUploadSize = file.size + nChunks * 28;
-      onUploadProgress(fileId, loadedAllChunks / realUploadSize);
+      onProgress(loadedAllChunks / realUploadSize);
     };
-    onUploadStart(fileId);
     const uploads: Promise<BlobRef>[] = [];
     for (let i = 0; i < nChunks; i++) {
-      uploads.push(this.uploadFileChunk(file, i, onChunkProgress(i)));
+      uploads.push(this.encryptAndUploadChunk(file, i, onChunkProgress(i)));
     }
     const results = await Promise.all(uploads);
     await setDoc(doc(fstore, "fileChunks", fileId), {
       chunks: results.map(({ id, key }) => ({ id, key })),
     });
-    onUploadFinish(fileId);
-    return {
-      id: fileId,
-      creationTime,
-      hasThumbnail,
-      folderId: parentFolderId,
-      metadata,
-      ownerId: this.ownerId,
-      type: "file",
-    };
   }
 
-  async uploadFileChunk(
+  async encryptAndUploadChunk(
     file: File,
     chunkNumber: number,
     onProgress: (loaded: number) => void

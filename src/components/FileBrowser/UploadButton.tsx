@@ -1,22 +1,32 @@
 import { Button, Menu, MenuButton, MenuItem, MenuList } from "@chakra-ui/react";
 import React from "react";
 import { ChevronDown } from "react-bootstrap-icons";
+import { v4 as uuid } from "uuid";
 import { useFiles } from "../../context/files";
 import { useSignedInUser } from "../../context/user";
 
 const UploadButton: React.FC = () => {
   const { fileHandler } = useSignedInUser();
-  const { path, addItem, addTask, setTaskProgress } = useFiles();
+  const { path, addItem, addTask, updateTask } = useFiles();
 
   const uploadFiles = async (files: FileList) => {
     for (const file of files) {
-      const f = await fileHandler.uploadFile(
+      const fileId = uuid();
+      addTask("upload", fileId, `Preparing to upload '${file.name}'`);
+      const f = await fileHandler.uploadFileMetadata(
+        fileId,
         file,
-        path[path.length - 1]?.id ?? null,
-        (id) => addTask("upload", id, file.name),
-        setTaskProgress,
-        (id) => setTaskProgress(id, 1, true)
+        path[path.length - 1]?.id ?? null
       );
+      updateTask(fileId, { title: `Uploading '${file.name}'` });
+      await fileHandler.uploadFileChunks(fileId, file, (progress) => {
+        updateTask(f.id, { progress });
+      });
+      updateTask(fileId, {
+        progress: 1,
+        ok: true,
+        title: file.name,
+      });
       addItem(f);
     }
   };

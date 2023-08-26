@@ -33,9 +33,9 @@ type FilesContextType = {
   removeTask: (id: string) => void;
   setPath: (path: Folder[]) => void;
   setPreviewFile: (selectedFile: FileEntity | null) => void;
-  setTaskProgress: (id: string, progress: number, ok?: boolean) => void;
   setViewMode: (viewMode: ViewMode) => void;
   tasks: PendingTask[];
+  updateTask: (id: string, updates: Partial<PendingTask>) => void;
   viewMode: ViewMode;
 };
 
@@ -49,9 +49,9 @@ const FilesContext = createContext<FilesContextType>({
   removeTask: () => undefined,
   setPath: () => undefined,
   setPreviewFile: () => undefined,
-  setTaskProgress: () => undefined,
   setViewMode: () => undefined,
   tasks: [],
+  updateTask: () => undefined,
   viewMode: "grid",
 });
 
@@ -112,10 +112,12 @@ export const FilesProvider: React.FC<FilesProviderProps> = ({ children }) => {
     [setTasks]
   );
 
-  const setTaskProgress = useCallback(
-    (id: string, progress: number, ok?: boolean) => {
+  const updateTask = useCallback(
+    (id: string, updates: Partial<PendingTask>) => {
       setTasks((currentTasks) =>
-        currentTasks.map((u) => (u.id === id ? { ...u, progress, ok } : u))
+        currentTasks.map((task) =>
+          task.id === id ? { ...task, ...updates } : task
+        )
       );
     },
     [setTasks]
@@ -131,7 +133,7 @@ export const FilesProvider: React.FC<FilesProviderProps> = ({ children }) => {
         path,
         previewFile,
         removeTask,
-        setTaskProgress,
+        updateTask,
         setPath,
         setPreviewFile,
         setViewMode,

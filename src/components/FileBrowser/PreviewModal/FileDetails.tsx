@@ -19,15 +19,26 @@ type FileDetailsProps = {
 
 const FileDetails: React.FC<FileDetailsProps> = ({ file }) => {
   const { fileHandler } = useSignedInUser();
-  const { addTask, setTaskProgress, setPreviewFile } = useFiles();
+  const { addTask, updateTask, setPreviewFile } = useFiles();
 
   const handleDownload = async () => {
     setPreviewFile(null);
-    addTask("download", file.id, file.metadata.name);
+    addTask(
+      "download",
+      file.id,
+      `Preparing to download '${file.metadata.name}'`
+    );
     await fileHandler.downloadFileToDisk(file, (progress) => {
-      setTaskProgress(file.id, progress);
+      updateTask(file.id, {
+        progress,
+        title: `Downloading '${file.metadata.name}'`,
+      });
     });
-    setTaskProgress(file.id, 1, true);
+    updateTask(file.id, {
+      progress: 1,
+      ok: true,
+      title: file.metadata.name,
+    });
   };
 
   return (
