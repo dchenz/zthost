@@ -15,18 +15,25 @@ export class GoogleDriveStorage implements BlobStorage {
   }
 
   async getBlob(id: string): Promise<Blob> {
-    const response = await fetch(
-      `https://www.googleapis.com/drive/v3/files/${id}?alt=media`,
-      {
-        headers: {
-          authorization: `Bearer ${this.accessToken}`,
-        },
-      }
-    );
-    if (!response.ok) {
-      throw new Error(await response.text());
-    }
-    return await response.blob();
+    const xhr = new XMLHttpRequest();
+    const response = await new Promise<Blob>((resolve) => {
+      xhr.addEventListener("loadend", () => {
+        if (xhr.readyState === XMLHttpRequest.DONE) {
+          if (xhr.status === 200) {
+            resolve(xhr.response);
+          }
+        }
+      });
+      xhr.open(
+        "GET",
+        `https://www.googleapis.com/drive/v3/files/${id}?alt=media`,
+        true
+      );
+      xhr.responseType = "blob";
+      xhr.setRequestHeader("authorization", `Bearer ${this.accessToken}`);
+      xhr.send();
+    });
+    return response;
   }
 
   async putBlob(
