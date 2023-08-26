@@ -100,28 +100,21 @@ export class FileHandler {
     if (hasThumbnail) {
       await this.uploadThumbnail(fileId, file);
     }
+    const nChunks = Math.ceil(file.size / this.chunkSize);
     // Aggregate the upload progress across all chunks and pass it to the
     // callback to report overall upload progress.
-    const uploadProgress: Record<number, [number, number]> = {};
-    const onChunkProgress =
-      (chunkNumber: number) => (loaded: number, total: number) => {
-        if (chunkNumber in uploadProgress) {
-          uploadProgress[chunkNumber][0] = loaded;
-        } else {
-          uploadProgress[chunkNumber] = [loaded, total];
-        }
-        // Total chunk size may be different to the actual file size
-        // due to extra metadata added during encryption.
-        let loadedAllChunks = 0;
-        let totalAllChunks = 0;
-        for (const progress of Object.values(uploadProgress)) {
-          loadedAllChunks += progress[0];
-          totalAllChunks += progress[1];
-        }
-        onUploadProgress(fileId, loadedAllChunks / totalAllChunks);
-      };
+    const uploadProgress: Record<number, number> = {};
+    const onChunkProgress = (chunkNumber: number) => (loaded: number) => {
+      uploadProgress[chunkNumber] = loaded;
+      let loadedAllChunks = 0;
+      for (const progress of Object.values(uploadProgress)) {
+        loadedAllChunks += progress;
+      }
+      // Uploaded chunks have a 12 byte header and 16 byte trailer.
+      const realUploadSize = file.size + nChunks * 28;
+      onUploadProgress(fileId, loadedAllChunks / realUploadSize);
+    };
     onUploadStart(fileId);
-    const nChunks = Math.ceil(file.size / this.chunkSize);
     const uploads: Promise<BlobRef>[] = [];
     for (let i = 0; i < nChunks; i++) {
       uploads.push(this.uploadFileChunk(file, i, onChunkProgress(i)));
@@ -145,7 +138,7 @@ export class FileHandler {
   async uploadFileChunk(
     file: File,
     chunkNumber: number,
-    onProgress: (loaded: number, total: number) => void
+    onProgress: (loaded: number) => void
   ): Promise<BlobRef> {
     const chunk = file.slice(
       chunkNumber * this.chunkSize,

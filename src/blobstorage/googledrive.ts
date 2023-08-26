@@ -44,14 +44,12 @@ export class GoogleDriveStorage implements BlobStorage {
 
   async putBlob(
     blob: Blob,
-    onProgress: (loaded: number, total: number) => void
+    onProgress: (loaded: number) => void
   ): Promise<string> {
     const xhr = new XMLHttpRequest();
     const response = await new Promise<PutBlobResponse>((resolve) => {
       xhr.upload.addEventListener("progress", (event) => {
-        if (event.lengthComputable) {
-          onProgress(event.loaded, event.total);
-        }
+        onProgress(event.loaded);
       });
       xhr.addEventListener("loadend", () => {
         if (xhr.readyState === XMLHttpRequest.DONE) {
