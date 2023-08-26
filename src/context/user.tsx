@@ -16,6 +16,7 @@ import type { AuthProperties } from "../database/model";
 type UserContext = {
   fileHandler: FileHandler | null;
   performLogin: () => void;
+  performLogout: () => void;
   setUserAuth: (userAuth: AuthProperties) => void;
   user: User | null;
 };
@@ -28,6 +29,7 @@ type SignedInUserContext = Omit<UserContext, "fileHandler" | "user"> & {
 const Context = createContext<UserContext>({
   fileHandler: null,
   performLogin: () => undefined,
+  performLogout: () => undefined,
   setUserAuth: () => undefined,
   user: null,
 });
@@ -74,6 +76,14 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     }
   }, []);
 
+  const performLogout = useCallback(async () => {
+    await auth.signOut();
+    setAccessToken(null);
+    setUserAuth(null);
+    setUser(null);
+    navigate("/login");
+  }, []);
+
   const fileHandler = useMemo(() => {
     if (accessToken && userAuth && user) {
       return new FileHandler(
@@ -90,6 +100,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
       value={{
         fileHandler,
         performLogin,
+        performLogout,
         setUserAuth,
         user,
       }}

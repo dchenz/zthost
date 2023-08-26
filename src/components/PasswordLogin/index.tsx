@@ -10,12 +10,13 @@ import type { AuthProperties } from "../../database/model";
 const PasswordLogin: React.FC = () => {
   const { user } = useCurrentUser();
   const navigate = useNavigate();
-  const [isLoading, setLoading] = useState(true);
+  const [isLoading, setLoading] = useState(false);
   const [encryptedUserAuth, setEncryptedUserAuth] =
     useState<AuthProperties | null>(null);
 
   useEffect(() => {
     if (user) {
+      setLoading(true);
       getUserAuth(user.uid)
         .then(setEncryptedUserAuth)
         .finally(() => setLoading(false));
@@ -31,6 +32,7 @@ const PasswordLogin: React.FC = () => {
   }
 
   const onAuthComplete = () => {
+    setEncryptedUserAuth(null);
     navigate("/");
   };
 
