@@ -268,17 +268,34 @@ export class FileHandler {
     return [...folders, ...files];
   }
 
-  async downloadFileToDisk(fileId: string, filename: string): Promise<void> {
-    const fileChunksDoc = await getDoc(doc(fstore, "fileChunks", fileId));
+  async downloadFileToDisk(
+    file: FileEntity,
+    onProgress: (progress: number) => void
+  ): Promise<void> {
+    const fileChunksDoc = await getDoc(doc(fstore, "fileChunks", file.id));
     const chunks: BlobRef[] = fileChunksDoc.get("chunks");
     if (!chunks) {
       throw new Error("Unable to find file chunks");
     }
-    const fileStream = streamSaver.createWriteStream(filename, {});
+    const fileStream = streamSaver.createWriteStream(file.metadata.name, {
+      size: file.metadata.size,
+    });
     const writer = fileStream.getWriter();
     try {
-      for (const chunk of chunks) {
-        const chunkData = await this.downloadFileChunk(chunk);
+      const downloadProgress: Record<number, number> = {};
+      const onChunkProgress = (i: number) => (loaded: number) => {
+        downloadProgress[i] = loaded;
+        let loadedAllChunks = 0;
+        for (const progress of Object.values(downloadProgress)) {
+          loadedAllChunks += progress;
+        }
+        onProgress(loadedAllChunks / file.metadata.size);
+      };
+      for (let i = 0; i < chunks.length; i++) {
+        const chunkData = await this.downloadFileChunk(
+          chunks[i],
+          onChunkProgress(i)
+        );
         await writer.write(new Uint8Array(chunkData));
       }
     } catch (e) {
@@ -288,7 +305,10 @@ export class FileHandler {
     await writer.close();
   }
 
-  async downloadFileChunk(chunk: BlobRef): Promise<ArrayBuffer> {
+  async downloadFileChunk(
+    chunk: BlobRef,
+    onProgress: (loaded: number) => void
+  ): Promise<ArrayBuffer> {
     const key = await decrypt(
       Buffer.from(chunk.key, "base64"),
       this.userAuth.fileKey
@@ -297,7 +317,7 @@ export class FileHandler {
       throw new Error("Unable to decrypt file chunk key");
     }
     const encryptedChunkData = await (
-      await this.storageBackend.getBlob(chunk.id)
+      await this.storageBackend.getBlob(chunk.id, onProgress)
     ).arrayBuffer();
     const chunkData = await decrypt(encryptedChunkData, key);
     if (!chunkData) {

@@ -14,9 +14,15 @@ export class GoogleDriveStorage implements BlobStorage {
     this.accessToken = accessToken;
   }
 
-  async getBlob(id: string): Promise<Blob> {
+  async getBlob(
+    id: string,
+    onProgress: (loaded: number) => void
+  ): Promise<Blob> {
     const xhr = new XMLHttpRequest();
     const response = await new Promise<Blob>((resolve) => {
+      xhr.addEventListener("progress", (event) => {
+        onProgress(event.loaded);
+      });
       xhr.addEventListener("loadend", () => {
         if (xhr.readyState === XMLHttpRequest.DONE) {
           if (xhr.status === 200) {

@@ -1,11 +1,16 @@
 import { Box, CircularProgress, IconButton } from "@chakra-ui/react";
-import React from "react";
+import React, { useMemo } from "react";
 import { CheckCircleFill } from "react-bootstrap-icons";
 import { useFiles } from "../../context/files";
 
 const UploadsTracker: React.FC = () => {
-  const { uploads, removeUpload } = useFiles();
-  if (uploads.length === 0) {
+  const { uploads, removeUpload, downloads } = useFiles();
+
+  const tasks = useMemo(() => {
+    return [...uploads, ...downloads];
+  }, [uploads, downloads]);
+
+  if (tasks.length === 0) {
     return null;
   }
   return (
@@ -16,19 +21,19 @@ const UploadsTracker: React.FC = () => {
       backgroundColor="#ffffff"
       boxShadow="0px 1px 2px 2px rgba(214, 214, 214, 1)"
     >
-      {uploads.map((upload) => (
+      {tasks.map((task) => (
         <Box
-          key={upload.id}
+          key={task.id}
           width="400px"
           display="flex"
           alignItems="center"
           padding="4px 12px"
         >
-          {upload.ok ? (
+          {task.ok ? (
             <IconButton
               variant="ghost"
               aria-label="close"
-              onClick={() => removeUpload(upload.id)}
+              onClick={() => removeUpload(task.id)}
               borderRadius="50%"
             >
               <CheckCircleFill color="#3db535" size="24px" />
@@ -38,18 +43,18 @@ const UploadsTracker: React.FC = () => {
               <CircularProgress
                 size="24px"
                 thickness="12px"
-                value={upload.progress * 100}
+                value={task.progress * 100}
               />
             </Box>
           )}
           <Box
-            title={upload.title}
+            title={task.title}
             marginLeft="12px"
             textOverflow="ellipsis"
             overflow="hidden"
             whiteSpace="nowrap"
           >
-            {upload.title}
+            {task.title}
           </Box>
         </Box>
       ))}

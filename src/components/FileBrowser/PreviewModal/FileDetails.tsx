@@ -8,6 +8,7 @@ import {
 } from "@chakra-ui/react";
 import React from "react";
 import { Download } from "react-bootstrap-icons";
+import { useFiles } from "../../../context/files";
 import { useSignedInUser } from "../../../context/user";
 import { formatBinarySize } from "../../../utils";
 import type { FileEntity } from "../../../database/model";
@@ -18,6 +19,17 @@ type FileDetailsProps = {
 
 const FileDetails: React.FC<FileDetailsProps> = ({ file }) => {
   const { fileHandler } = useSignedInUser();
+  const { addDownload, setDownloadProgress, setPreviewFile } = useFiles();
+
+  const handleDownload = async () => {
+    setPreviewFile(null);
+    addDownload(file.id, file.metadata.name);
+    await fileHandler.downloadFileToDisk(file, (progress) => {
+      setDownloadProgress(file.id, progress);
+    });
+    setDownloadProgress(file.id, 1, true);
+  };
+
   return (
     <VStack
       px={4}
@@ -39,9 +51,7 @@ const FileDetails: React.FC<FileDetailsProps> = ({ file }) => {
           <IconButton
             icon={<Download />}
             aria-label="download"
-            onClick={() =>
-              fileHandler.downloadFileToDisk(file.id, file.metadata.name)
-            }
+            onClick={handleDownload}
             onFocus={(e) => e.preventDefault()}
           />
         </Tooltip>

@@ -21,13 +21,17 @@ type PendingUpload = {
 };
 
 type FilesContextType = {
+  addDownload: (id: string, title: string) => void;
   addItem: (item: FolderEntry) => void;
   addUpload: (id: string, title: string) => void;
+  downloads: PendingUpload[];
   isLoading: boolean;
   items: FolderEntry[];
   path: Folder[];
   previewFile: FileEntity | null;
+  removeDownload: (id: string) => void;
   removeUpload: (id: string) => void;
+  setDownloadProgress: (id: string, progress: number, ok?: boolean) => void;
   setPath: (path: Folder[]) => void;
   setPreviewFile: (selectedFile: FileEntity | null) => void;
   setUploadProgress: (id: string, progress: number, ok?: boolean) => void;
@@ -37,13 +41,17 @@ type FilesContextType = {
 };
 
 const FilesContext = createContext<FilesContextType>({
+  addDownload: () => undefined,
   addItem: () => undefined,
   addUpload: () => undefined,
+  downloads: [],
   isLoading: false,
   items: [],
   path: [],
   previewFile: null,
+  removeDownload: () => undefined,
   removeUpload: () => undefined,
+  setDownloadProgress: () => undefined,
   setPath: () => undefined,
   setPreviewFile: () => undefined,
   setUploadProgress: () => undefined,
@@ -66,6 +74,7 @@ export const FilesProvider: React.FC<FilesProviderProps> = ({ children }) => {
   const [path, setPath] = useState<Folder[]>([]);
   const [isLoading, setLoading] = useState(false);
   const [previewFile, setPreviewFile] = useState<FileEntity | null>(null);
+  const [downloads, setDownloads] = useState<PendingUpload[]>([]);
   const [uploads, setUploads] = useState<PendingUpload[]>([]);
   const [viewMode, setViewMode] = usePersistentState<ViewMode>(
     "view-mode",
@@ -85,6 +94,38 @@ export const FilesProvider: React.FC<FilesProviderProps> = ({ children }) => {
       setItems((currentItems) => [...currentItems, newItem]);
     },
     [setItems]
+  );
+
+  const addDownload = useCallback(
+    (id: string, title: string) => {
+      setDownloads((currentDownloads) => [
+        ...currentDownloads,
+        {
+          id,
+          title,
+          progress: 0,
+        },
+      ]);
+    },
+    [setDownloads]
+  );
+
+  const removeDownload = useCallback(
+    (id: string) => {
+      setDownloads((currentDownloads) =>
+        currentDownloads.filter((u) => u.id !== id)
+      );
+    },
+    [setDownloads]
+  );
+
+  const setDownloadProgress = useCallback(
+    (id: string, progress: number, ok?: boolean) => {
+      setDownloads((currentDownloads) =>
+        currentDownloads.map((u) => (u.id === id ? { ...u, progress, ok } : u))
+      );
+    },
+    [setDownloads]
   );
 
   const addUpload = useCallback(
@@ -120,13 +161,17 @@ export const FilesProvider: React.FC<FilesProviderProps> = ({ children }) => {
   return (
     <FilesContext.Provider
       value={{
+        addDownload,
         addItem,
         addUpload,
+        downloads,
         isLoading,
         items,
         path,
         previewFile,
+        removeDownload,
         removeUpload,
+        setDownloadProgress,
         setPath,
         setPreviewFile,
         setUploadProgress,
