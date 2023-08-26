@@ -6,7 +6,7 @@ import React, {
   useState,
 } from "react";
 import { usePersistentState } from "../utils";
-import { useCurrentUser } from "./user";
+import { useSignedInUser } from "./user";
 import type { Folder, FolderEntry } from "../database/model";
 
 type ViewMode = "grid" | "list";
@@ -57,7 +57,7 @@ type FilesProviderProps = {
 };
 
 export const FilesProvider: React.FC<FilesProviderProps> = ({ children }) => {
-  const { user, fileHandler } = useCurrentUser();
+  const { user, fileHandler } = useSignedInUser();
   const [items, setItems] = useState<FolderEntry[]>([]);
   const [path, setPath] = useState<Folder[]>([]);
   const [isLoading, setLoading] = useState(false);
@@ -68,13 +68,11 @@ export const FilesProvider: React.FC<FilesProviderProps> = ({ children }) => {
   );
 
   useEffect(() => {
-    if (user) {
-      setLoading(true);
-      fileHandler
-        .getFolderContents(user.uid, path[path.length - 1]?.id ?? null)
-        .then(setItems)
-        .finally(() => setLoading(false));
-    }
+    setLoading(true);
+    fileHandler
+      .getFolderContents(user.uid, path[path.length - 1]?.id ?? null)
+      .then(setItems)
+      .finally(() => setLoading(false));
   }, [user, path]);
 
   const addItem = useCallback(

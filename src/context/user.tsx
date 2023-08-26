@@ -12,26 +12,35 @@ import { GoogleDriveStorage } from "../blobstorage/googledrive";
 import { FileHandler } from "../database/files";
 import { auth } from "../firebase";
 
-type UserContextType = {
-  encryptionKey: ArrayBuffer | null;
-  fileHandler: FileHandler;
+type UserContext = {
+  fileHandler: FileHandler | null;
   performLogin: () => void;
   setEncryptionKey: (encryptionKey: ArrayBuffer | null) => void;
   user: User | null;
 };
 
-const UserContext = createContext<UserContextType>({
-  encryptionKey: null,
+type SignedInUserContext = Omit<UserContext, "fileHandler" | "user"> & {
+  fileHandler: FileHandler;
+  user: User;
+};
+
+const Context = createContext<UserContext>({
+  fileHandler: null,
   performLogin: () => undefined,
   setEncryptionKey: () => undefined,
   user: null,
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  fileHandler: null,
 });
 
-export const useCurrentUser = () => {
-  return useContext(UserContext);
+export const useSignedInUser = (): SignedInUserContext => {
+  const ctx = useContext(Context);
+  if (!ctx.user) {
+    throw new Error("User is not signed-in as expected");
+  }
+  return ctx as SignedInUserContext;
+};
+
+export const useCurrentUser = (): UserContext => {
+  return useContext(Context);
 };
 
 type UserProviderProps = {
@@ -64,19 +73,19 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     }
   }, []);
 
-  const fileHandler = useMemo(
-    () =>
-      new FileHandler(
+  const fileHandler = useMemo(() => {
+    if (accessToken && encryptionKey) {
+      return new FileHandler(
         new GoogleDriveStorage(accessToken ?? ""),
-        encryptionKey ?? new Uint8Array()
-      ),
-    [accessToken, encryptionKey]
-  );
+        encryptionKey
+      );
+    }
+    return null;
+  }, [accessToken, encryptionKey]);
 
   return (
-    <UserContext.Provider
+    <Context.Provider
       value={{
-        encryptionKey,
         fileHandler,
         performLogin,
         setEncryptionKey,
@@ -84,6 +93,6 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
       }}
     >
       {children}
-    </UserContext.Provider>
+    </Context.Provider>
   );
 };

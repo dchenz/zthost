@@ -2,15 +2,11 @@ import { Button, Menu, MenuButton, MenuItem, MenuList } from "@chakra-ui/react";
 import React from "react";
 import { ChevronDown } from "react-bootstrap-icons";
 import { useFiles } from "../../context/files";
-import { useCurrentUser } from "../../context/user";
+import { useSignedInUser } from "../../context/user";
 
 const UploadButton: React.FC = () => {
-  const { fileHandler, user } = useCurrentUser();
+  const { fileHandler, user } = useSignedInUser();
   const { path, addItem, addUpload, setUploadProgress } = useFiles();
-
-  if (!user) {
-    return null;
-  }
 
   const uploadFiles = async (files: FileList) => {
     for (const file of files) {

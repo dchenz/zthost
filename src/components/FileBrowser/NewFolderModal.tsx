@@ -10,7 +10,7 @@ import {
 } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
 import { useFiles } from "../../context/files";
-import { useCurrentUser } from "../../context/user";
+import { useSignedInUser } from "../../context/user";
 
 type NewFolderModalProps = {
   onClose: () => void;
@@ -18,7 +18,7 @@ type NewFolderModalProps = {
 };
 
 const NewFolderModal: React.FC<NewFolderModalProps> = ({ onClose, open }) => {
-  const { user, fileHandler } = useCurrentUser();
+  const { user, fileHandler } = useSignedInUser();
   const { addItem, path } = useFiles();
   const [name, setName] = useState("");
 
@@ -27,10 +27,6 @@ const NewFolderModal: React.FC<NewFolderModalProps> = ({ onClose, open }) => {
       setName("");
     }
   }, [open]);
-
-  if (!user) {
-    return null;
-  }
 
   const onFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
