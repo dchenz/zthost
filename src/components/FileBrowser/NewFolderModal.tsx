@@ -55,7 +55,7 @@ const NewFolderModal: React.FC<NewFolderModalProps> = ({ onClose, open }) => {
           />
         </ModalBody>
         <ModalFooter>
-          <Button type="submit" disabled={!name}>
+          <Button type="submit" isDisabled={!name}>
             Create
           </Button>
         </ModalFooter>
