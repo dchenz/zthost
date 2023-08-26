@@ -1,5 +1,6 @@
 import {
   collection,
+  deleteDoc,
   doc,
   getDoc,
   getDocs,
@@ -332,5 +333,18 @@ export class FileHandler {
       return null;
     }
     return await this.downloadFileChunk(chunks[0], () => undefined);
+  }
+
+  async deleteFile(fileId: string): Promise<void> {
+    const fileChunksDoc = doc(fstore, "fileChunks", fileId);
+    const chunks = (await getDoc(fileChunksDoc)).get("chunks");
+    const operations = [];
+    for (const chunk of chunks) {
+      operations.push(this.storageBackend.deleteBlob(chunk.id));
+    }
+    operations.push(deleteDoc(fileChunksDoc));
+    operations.push(deleteDoc(doc(fstore, "thumbnails", fileId)));
+    await Promise.all(operations);
+    await deleteDoc(doc(fstore, "files", fileId));
   }
 }

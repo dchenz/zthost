@@ -14,6 +14,21 @@ export class GoogleDriveStorage implements BlobStorage {
     this.accessToken = accessToken;
   }
 
+  async deleteBlob(id: string): Promise<void> {
+    const response = await fetch(
+      `https://www.googleapis.com/drive/v3/files/${id}`,
+      {
+        method: "DELETE",
+        headers: {
+          authorization: `Bearer ${this.accessToken}`,
+        },
+      }
+    );
+    if (!response.ok) {
+      throw new Error(await response.text());
+    }
+  }
+
   async getBlob(
     id: string,
     onProgress: (loaded: number) => void

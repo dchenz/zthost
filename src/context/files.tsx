@@ -33,6 +33,7 @@ type FilesContextType = {
   path: Folder[];
   previewFile: FileEntity | null;
   removeDownloadTask: (id: string) => void;
+  removeItem: (id: string) => void;
   removeUploadTask: (id: string) => void;
   selectedItems: FolderEntry[];
   setPath: (path: Folder[]) => void;
@@ -53,6 +54,7 @@ const FilesContext = createContext<FilesContextType>({
   path: [],
   previewFile: null,
   removeDownloadTask: () => undefined,
+  removeItem: () => undefined,
   removeUploadTask: () => undefined,
   selectedItems: [],
   setPath: () => undefined,
@@ -95,6 +97,10 @@ export const FilesProvider: React.FC<FilesProviderProps> = ({ children }) => {
 
   const addItem = useCallback((newItem: FolderEntry) => {
     setItems((currentItems) => [...currentItems, newItem]);
+  }, []);
+
+  const removeItem = useCallback((id: string) => {
+    setItems((currentItems) => currentItems.filter((item) => item.id !== id));
   }, []);
 
   const updateTask = useCallback(
@@ -188,6 +194,7 @@ export const FilesProvider: React.FC<FilesProviderProps> = ({ children }) => {
         path,
         previewFile,
         removeDownloadTask: removeTask,
+        removeItem,
         removeUploadTask: removeTask,
         selectedItems,
         setPath,
