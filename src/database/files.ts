@@ -7,6 +7,7 @@ import {
   setDoc,
   where,
 } from "firebase/firestore";
+import streamSaver from "streamsaver";
 import { v4 as uuid } from "uuid";
 import { Buffer } from "buffer";
 import { fstore } from "../firebase";
@@ -265,5 +266,43 @@ export class FileHandler {
       this.getFilesInFolder(folderId),
     ]);
     return [...folders, ...files];
+  }
+
+  async downloadFileToDisk(fileId: string, filename: string): Promise<void> {
+    const fileChunksDoc = await getDoc(doc(fstore, "fileChunks", fileId));
+    const chunks: BlobRef[] = fileChunksDoc.get("chunks");
+    if (!chunks) {
+      throw new Error("Unable to find file chunks");
+    }
+    const fileStream = streamSaver.createWriteStream(filename, {});
+    const writer = fileStream.getWriter();
+    try {
+      for (const chunk of chunks) {
+        const chunkData = await this.downloadFileChunk(chunk);
+        await writer.write(new Uint8Array(chunkData));
+      }
+    } catch (e) {
+      await writer.abort();
+      throw e;
+    }
+    await writer.close();
+  }
+
+  async downloadFileChunk(chunk: BlobRef): Promise<ArrayBuffer> {
+    const key = await decrypt(
+      Buffer.from(chunk.key, "base64"),
+      this.userAuth.fileKey
+    );
+    if (!key) {
+      throw new Error("Unable to decrypt file chunk key");
+    }
+    const encryptedChunkData = await (
+      await this.storageBackend.getBlob(chunk.id)
+    ).arrayBuffer();
+    const chunkData = await decrypt(encryptedChunkData, key);
+    if (!chunkData) {
+      throw new Error("Unable to decrypt file chunk");
+    }
+    return chunkData;
   }
 }

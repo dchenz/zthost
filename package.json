@@ -16,6 +16,7 @@
     "react-router-dom": "^6.14.2",
     "react-scripts": "5.0.1",
     "scrypt-js": "^3.0.1",
+    "streamsaver": "^2.0.6",
     "uuid": "^9.0.0"
   },
   "scripts": {
@@ -47,6 +48,7 @@
     "@types/react": "^18.2.17",
     "@types/react-dom": "^18.2.7",
     "@types/react-router-dom": "^5.3.3",
+    "@types/streamsaver": "^2.0.1",
     "@types/uuid": "^9.0.2",
     "@typescript-eslint/eslint-plugin": "^6.2.0",
     "@typescript-eslint/parser": "^6.2.0",

@@ -1,5 +1,14 @@
-import { Text, VStack } from "@chakra-ui/react";
+import {
+  Box,
+  Divider,
+  IconButton,
+  Text,
+  Tooltip,
+  VStack,
+} from "@chakra-ui/react";
 import React from "react";
+import { Download } from "react-bootstrap-icons";
+import { useSignedInUser } from "../../../context/user";
 import { formatBinarySize } from "../../../utils";
 import type { FileEntity } from "../../../database/model";
 
@@ -8,6 +17,7 @@ type FileDetailsProps = {
 };
 
 const FileDetails: React.FC<FileDetailsProps> = ({ file }) => {
+  const { fileHandler } = useSignedInUser();
   return (
     <VStack
       px={4}
@@ -23,6 +33,19 @@ const FileDetails: React.FC<FileDetailsProps> = ({ file }) => {
       <Text fontSize="small" color="#777777">
         {formatBinarySize(file.metadata.size)}
       </Text>
+      <Divider />
+      <Box>
+        <Tooltip label="Download">
+          <IconButton
+            icon={<Download />}
+            aria-label="download"
+            onClick={() =>
+              fileHandler.downloadFileToDisk(file.id, file.metadata.name)
+            }
+            onFocus={(e) => e.preventDefault()}
+          />
+        </Tooltip>
+      </Box>
     </VStack>
   );
 };
