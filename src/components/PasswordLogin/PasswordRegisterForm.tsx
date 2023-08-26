@@ -12,11 +12,13 @@ import React, { useState } from "react";
 import { useCurrentUser } from "../../context/user";
 import { createUserAuth } from "../../database/auth";
 
-type CreatePasswordProps = {
+type PasswordRegisterFormProps = {
   onAuthComplete: () => void;
 };
 
-const CreatePassword: React.FC<CreatePasswordProps> = ({ onAuthComplete }) => {
+const PasswordRegisterForm: React.FC<PasswordRegisterFormProps> = ({
+  onAuthComplete,
+}) => {
   const { user, setUserAuth } = useCurrentUser();
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -76,4 +78,4 @@ const CreatePassword: React.FC<CreatePasswordProps> = ({ onAuthComplete }) => {
   );
 };
 
-export default CreatePassword;
+export default PasswordRegisterForm;

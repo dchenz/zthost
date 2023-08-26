@@ -14,12 +14,12 @@ import { useCurrentUser } from "../../context/user";
 import { decryptUserAuth } from "../../database/auth";
 import type { AuthProperties } from "../../database/model";
 
-type LoginPasswordProps = {
+type PasswordLoginFormProps = {
   encryptedUserAuth: AuthProperties;
   onAuthComplete: () => void;
 };
 
-const LoginPassword: React.FC<LoginPasswordProps> = ({
+const PasswordLoginForm: React.FC<PasswordLoginFormProps> = ({
   encryptedUserAuth,
   onAuthComplete,
 }) => {
@@ -79,4 +79,4 @@ const LoginPassword: React.FC<LoginPasswordProps> = ({
   );
 };
 
-export default LoginPassword;
+export default PasswordLoginForm;

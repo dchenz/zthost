@@ -5,7 +5,7 @@ import { UserProvider } from "../context/user";
 import FileBrowser from "./FileBrowser";
 import Navbar from "./Navbar";
 import PasswordLogin from "./PasswordLogin";
-import Login from "./ProviderLogin";
+import ProviderLogin from "./ProviderLogin";
 
 const App = () => {
   return (
@@ -14,7 +14,7 @@ const App = () => {
         <UserProvider>
           <Navbar />
           <Routes>
-            <Route path="/login" element={<Login />} />
+            <Route path="/login" element={<ProviderLogin />} />
             <Route path="/login/password" element={<PasswordLogin />} />
             <Route path="/" element={<FileBrowser />} />
           </Routes>

@@ -3,8 +3,8 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCurrentUser } from "../../context/user";
 import { getUserAuth } from "../../database/auth";
-import CreatePassword from "./CreatePassword";
-import LoginPassword from "./LoginPassword";
+import PasswordLoginForm from "./PasswordLoginForm";
+import PasswordRegisterForm from "./PasswordRegisterForm";
 import type { AuthProperties } from "../../database/model";
 
 const PasswordLogin: React.FC = () => {
@@ -37,11 +37,11 @@ const PasswordLogin: React.FC = () => {
   };
 
   if (!encryptedUserAuth) {
-    return <CreatePassword onAuthComplete={onAuthComplete} />;
+    return <PasswordRegisterForm onAuthComplete={onAuthComplete} />;
   }
 
   return (
-    <LoginPassword
+    <PasswordLoginForm
       encryptedUserAuth={encryptedUserAuth}
       onAuthComplete={onAuthComplete}
     />
