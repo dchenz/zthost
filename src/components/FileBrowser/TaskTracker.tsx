@@ -4,7 +4,7 @@ import { CheckCircleFill } from "react-bootstrap-icons";
 import { useFiles } from "../../context/files";
 
 const TaskTracker: React.FC = () => {
-  const { tasks, removeTask } = useFiles();
+  const { tasks, removeDownloadTask, removeUploadTask } = useFiles();
 
   if (tasks.length === 0) {
     return null;
@@ -30,7 +30,11 @@ const TaskTracker: React.FC = () => {
             <IconButton
               variant="ghost"
               aria-label="close"
-              onClick={() => removeTask(task.id)}
+              onClick={() =>
+                task.type === "download"
+                  ? removeDownloadTask(task.id)
+                  : removeUploadTask(task.id)
+              }
               borderRadius="50%"
             >
               <CheckCircleFill color="#3db535" size="24px" />

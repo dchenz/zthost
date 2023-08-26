@@ -9,7 +9,6 @@ import {
 import React from "react";
 import { Download } from "react-bootstrap-icons";
 import { useFiles } from "../../../context/files";
-import { useSignedInUser } from "../../../context/user";
 import { formatBinarySize } from "../../../utils";
 import type { FileEntity } from "../../../database/model";
 
@@ -18,27 +17,11 @@ type FileDetailsProps = {
 };
 
 const FileDetails: React.FC<FileDetailsProps> = ({ file }) => {
-  const { fileHandler } = useSignedInUser();
-  const { addTask, updateTask, setPreviewFile } = useFiles();
+  const { setPreviewFile, addDownloadTask } = useFiles();
 
   const handleDownload = async () => {
     setPreviewFile(null);
-    addTask(
-      "download",
-      file.id,
-      `Preparing to download '${file.metadata.name}'`
-    );
-    await fileHandler.downloadFileToDisk(file, (progress) => {
-      updateTask(file.id, {
-        progress,
-        title: `Downloading '${file.metadata.name}'`,
-      });
-    });
-    updateTask(file.id, {
-      progress: 1,
-      ok: true,
-      title: file.metadata.name,
-    });
+    addDownloadTask(file);
   };
 
   return (

@@ -5,6 +5,7 @@ import React, {
   useEffect,
   useState,
 } from "react";
+import { v4 as uuid } from "uuid";
 import { usePersistentState } from "../utils";
 import { useSignedInUser } from "./user";
 import type { FileEntity, Folder, FolderEntry } from "../database/model";
@@ -13,7 +14,7 @@ type ViewMode = "grid" | "list";
 
 type TaskType = "download" | "upload";
 
-type PendingTask = {
+export type PendingTask = {
   id: string;
   // Need to mark an upload/download as ok because it
   // may still be pending when XHR reports 100% progress.
@@ -24,34 +25,36 @@ type PendingTask = {
 };
 
 type FilesContextType = {
+  addDownloadTask: (file: FileEntity) => string;
   addItem: (item: FolderEntry) => void;
-  addTask: (type: TaskType, id: string, title: string) => void;
+  addUploadTask: (file: File) => string;
   isLoading: boolean;
   items: FolderEntry[];
   path: Folder[];
   previewFile: FileEntity | null;
-  removeTask: (id: string) => void;
+  removeDownloadTask: (id: string) => void;
+  removeUploadTask: (id: string) => void;
   setPath: (path: Folder[]) => void;
   setPreviewFile: (selectedFile: FileEntity | null) => void;
   setViewMode: (viewMode: ViewMode) => void;
   tasks: PendingTask[];
-  updateTask: (id: string, updates: Partial<PendingTask>) => void;
   viewMode: ViewMode;
 };
 
 const FilesContext = createContext<FilesContextType>({
+  addDownloadTask: () => "",
   addItem: () => undefined,
-  addTask: () => undefined,
+  addUploadTask: () => "",
   isLoading: false,
   items: [],
   path: [],
   previewFile: null,
-  removeTask: () => undefined,
+  removeDownloadTask: () => undefined,
+  removeUploadTask: () => undefined,
   setPath: () => undefined,
   setPreviewFile: () => undefined,
   setViewMode: () => undefined,
   tasks: [],
-  updateTask: () => undefined,
   viewMode: "grid",
 });
 
@@ -83,34 +86,9 @@ export const FilesProvider: React.FC<FilesProviderProps> = ({ children }) => {
       .finally(() => setLoading(false));
   }, [fileHandler, path]);
 
-  const addItem = useCallback(
-    (newItem: FolderEntry) => {
-      setItems((currentItems) => [...currentItems, newItem]);
-    },
-    [setItems]
-  );
-
-  const addTask = useCallback(
-    (type: TaskType, id: string, title: string) => {
-      setTasks((currentTasks) => [
-        ...currentTasks,
-        {
-          id,
-          title,
-          progress: 0,
-          type,
-        },
-      ]);
-    },
-    [setTasks]
-  );
-
-  const removeTask = useCallback(
-    (id: string) => {
-      setTasks((currentTasks) => currentTasks.filter((u) => u.id !== id));
-    },
-    [setTasks]
-  );
+  const addItem = useCallback((newItem: FolderEntry) => {
+    setItems((currentItems) => [...currentItems, newItem]);
+  }, []);
 
   const updateTask = useCallback(
     (id: string, updates: Partial<PendingTask>) => {
@@ -120,20 +98,80 @@ export const FilesProvider: React.FC<FilesProviderProps> = ({ children }) => {
         )
       );
     },
-    [setTasks]
+    []
   );
+
+  const removeTask = useCallback((id: string) => {
+    setTasks((currentTasks) => currentTasks.filter((u) => u.id !== id));
+  }, []);
+
+  const addDownloadTask = useCallback((file: FileEntity) => {
+    setTasks((currentTasks) => [
+      ...currentTasks,
+      {
+        id: file.id,
+        title: `Preparing to download '${file.metadata.name}'`,
+        progress: 0,
+        type: "download",
+      },
+    ]);
+    fileHandler
+      .downloadFileToDisk(file, (progress) => {
+        updateTask(file.id, {
+          progress,
+          title: `Downloading '${file.metadata.name}'`,
+        });
+      })
+      .then(() => {
+        updateTask(file.id, {
+          progress: 1,
+          ok: true,
+          title: file.metadata.name,
+        });
+      });
+    return file.id;
+  }, []);
+
+  const addUploadTask = useCallback((file: File) => {
+    const fileId = uuid();
+    setTasks((currentTasks) => [
+      ...currentTasks,
+      {
+        id: fileId,
+        title: `Preparing to upload '${file.name}'`,
+        progress: 0,
+        type: "upload",
+      },
+    ]);
+    fileHandler
+      .uploadFileMetadata(fileId, file, path[path.length - 1]?.id ?? null)
+      .then(async (f) => {
+        updateTask(fileId, { title: `Uploading '${file.name}'` });
+        await fileHandler.uploadFileChunks(fileId, file, (progress) => {
+          updateTask(f.id, { progress });
+        });
+        updateTask(fileId, {
+          progress: 1,
+          ok: true,
+          title: file.name,
+        });
+        addItem(f);
+      });
+    return fileId;
+  }, []);
 
   return (
     <FilesContext.Provider
       value={{
+        addDownloadTask,
         addItem,
-        addTask,
+        addUploadTask,
         isLoading,
         items,
         path,
         previewFile,
-        removeTask,
-        updateTask,
+        removeDownloadTask: removeTask,
+        removeUploadTask: removeTask,
         setPath,
         setPreviewFile,
         setViewMode,
