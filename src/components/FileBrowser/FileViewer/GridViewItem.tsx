@@ -1,5 +1,6 @@
 import { Box, Text } from "@chakra-ui/react";
 import React from "react";
+import Selector from "./Selector";
 import Thumbnail from "./Thumbnail";
 import type { FolderEntry } from "../../../database/model";
 
@@ -16,13 +17,18 @@ const GridViewItem: React.FC<GridViewItemProps> = ({ item, onClick }) => {
       transition="background-color 300ms"
       width="200px"
       _hover={{ backgroundColor: "#f5f5f5" }}
-      onClick={onClick}
+      role="group"
     >
-      <Thumbnail item={item} width="96px" margin="0 auto" />
-      <Box p={2}>
-        <Text whiteSpace="nowrap" overflow="hidden" textOverflow="ellipsis">
-          {item.metadata.name}
-        </Text>
+      <Box position="absolute" top="5px" left="5px">
+        <Selector item={item} />
+      </Box>
+      <Box onClick={onClick}>
+        <Thumbnail item={item} width="96px" margin="0 auto" />
+        <Box p={2}>
+          <Text whiteSpace="nowrap" overflow="hidden" textOverflow="ellipsis">
+            {item.metadata.name}
+          </Text>
+        </Box>
       </Box>
     </Box>
   );

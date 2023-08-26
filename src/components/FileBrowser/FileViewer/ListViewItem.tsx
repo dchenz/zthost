@@ -1,6 +1,7 @@
 import { Td, Tr } from "@chakra-ui/react";
 import React from "react";
 import { formatBinarySize, formatRelativeTime } from "../../../utils";
+import Selector from "./Selector";
 import Thumbnail from "./Thumbnail";
 import type { FolderEntry } from "../../../database/model";
 
@@ -15,8 +16,12 @@ const ListViewItem: React.FC<ListViewItemProps> = ({ item, onClick }) => {
       cursor="pointer"
       maxHeight="40px"
       transition="background-color 300ms"
+      role="group"
       _hover={{ backgroundColor: "#f5f5f5" }}
     >
+      <Td padding="5px">
+        <Selector item={item} />
+      </Td>
       <Td onClick={onClick} padding="5px">
         <Thumbnail item={item} height="30px" margin="0 auto" />
       </Td>

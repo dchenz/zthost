@@ -5,7 +5,7 @@ import { useFiles } from "../../context/files";
 import type { Folder } from "../../database/model";
 
 const PathViewer: React.FC = () => {
-  const { path, setPath } = useFiles();
+  const { path, setPath, setSelectedItems } = useFiles();
 
   const { parents, pwd } = useMemo(
     () => ({
@@ -26,6 +26,7 @@ const PathViewer: React.FC = () => {
       }
     }
     setPath(newPath);
+    setSelectedItems([]);
   };
 
   const renderPathItem = (folder: Folder | null, link: boolean) => {

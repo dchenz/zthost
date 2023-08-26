@@ -132,6 +132,7 @@ const ListView: React.FC<ListViewProps> = ({ items, onItemClick }) => {
         >
           <Tr height="40px">
             {renderTableHead(undefined, "70px", false)}
+            {renderTableHead(undefined, "70px", false)}
             {renderTableHead(
               "Name",
               undefined,

@@ -5,7 +5,15 @@ import ListView from "./ListView";
 import type { FolderEntry } from "../../../database/model";
 
 const FileViewer: React.FC = () => {
-  const { viewMode, setPath, path, items, setPreviewFile } = useFiles();
+  const {
+    viewMode,
+    setPath,
+    path,
+    items,
+    setPreviewFile,
+    selectedItems,
+    toggleSelectedItem,
+  } = useFiles();
 
   const sortedItems = useMemo(
     () =>
@@ -25,13 +33,15 @@ const FileViewer: React.FC = () => {
 
   const onItemClick = useCallback(
     (item: FolderEntry) => {
-      if (item.type === "folder") {
+      if (selectedItems.length) {
+        toggleSelectedItem(item);
+      } else if (item.type === "folder") {
         setPath([...path, item]);
       } else {
         setPreviewFile(item);
       }
     },
-    [path]
+    [path, selectedItems]
   );
 
   return viewMode === "list" ? (

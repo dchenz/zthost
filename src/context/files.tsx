@@ -34,10 +34,13 @@ type FilesContextType = {
   previewFile: FileEntity | null;
   removeDownloadTask: (id: string) => void;
   removeUploadTask: (id: string) => void;
+  selectedItems: FolderEntry[];
   setPath: (path: Folder[]) => void;
   setPreviewFile: (selectedFile: FileEntity | null) => void;
+  setSelectedItems: (items: FolderEntry[]) => void;
   setViewMode: (viewMode: ViewMode) => void;
   tasks: PendingTask[];
+  toggleSelectedItem: (item: FolderEntry) => void;
   viewMode: ViewMode;
 };
 
@@ -51,10 +54,13 @@ const FilesContext = createContext<FilesContextType>({
   previewFile: null,
   removeDownloadTask: () => undefined,
   removeUploadTask: () => undefined,
+  selectedItems: [],
   setPath: () => undefined,
   setPreviewFile: () => undefined,
+  setSelectedItems: () => undefined,
   setViewMode: () => undefined,
   tasks: [],
+  toggleSelectedItem: () => undefined,
   viewMode: "grid",
 });
 
@@ -72,6 +78,7 @@ export const FilesProvider: React.FC<FilesProviderProps> = ({ children }) => {
   const [path, setPath] = useState<Folder[]>([]);
   const [isLoading, setLoading] = useState(false);
   const [previewFile, setPreviewFile] = useState<FileEntity | null>(null);
+  const [selectedItems, setSelectedItems] = useState<FolderEntry[]>([]);
   const [tasks, setTasks] = useState<PendingTask[]>([]);
   const [viewMode, setViewMode] = usePersistentState<ViewMode>(
     "view-mode",
@@ -160,6 +167,16 @@ export const FilesProvider: React.FC<FilesProviderProps> = ({ children }) => {
     return fileId;
   }, []);
 
+  const toggleSelectedItem = useCallback((item: FolderEntry) => {
+    setSelectedItems((currentItems) => {
+      const newItems = currentItems.filter((f) => f.id !== item.id);
+      if (newItems.length === currentItems.length) {
+        newItems.push(item);
+      }
+      return newItems;
+    });
+  }, []);
+
   return (
     <FilesContext.Provider
       value={{
@@ -172,10 +189,13 @@ export const FilesProvider: React.FC<FilesProviderProps> = ({ children }) => {
         previewFile,
         removeDownloadTask: removeTask,
         removeUploadTask: removeTask,
+        selectedItems,
         setPath,
         setPreviewFile,
+        setSelectedItems,
         setViewMode,
         tasks,
+        toggleSelectedItem,
         viewMode,
       }}
     >
