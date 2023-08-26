@@ -6,16 +6,16 @@ import { useSignedInUser } from "../../context/user";
 
 const UploadButton: React.FC = () => {
   const { fileHandler } = useSignedInUser();
-  const { path, addItem, addUpload, setUploadProgress } = useFiles();
+  const { path, addItem, addTask, setTaskProgress } = useFiles();
 
   const uploadFiles = async (files: FileList) => {
     for (const file of files) {
       const f = await fileHandler.uploadFile(
         file,
         path[path.length - 1]?.id ?? null,
-        (id) => addUpload(id, file.name),
-        setUploadProgress,
-        (id) => setUploadProgress(id, 1, true)
+        (id) => addTask("upload", id, file.name),
+        setTaskProgress,
+        (id) => setTaskProgress(id, 1, true)
       );
       addItem(f);
     }

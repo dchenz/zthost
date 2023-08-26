@@ -6,7 +6,7 @@ import FileViewer from "./FileViewer";
 import Header from "./Header";
 import PathViewer from "./PathViewer";
 import PreviewModal from "./PreviewModal";
-import UploadsTracker from "./UploadsTracker";
+import TaskTracker from "./TaskTracker";
 
 const FileBrowser: React.FC = () => {
   return (
@@ -16,7 +16,7 @@ const FileBrowser: React.FC = () => {
           <Header />
           <PathViewer />
           <FileViewer />
-          <UploadsTracker />
+          <TaskTracker />
           <PreviewModal />
         </Box>
       </FilesProvider>

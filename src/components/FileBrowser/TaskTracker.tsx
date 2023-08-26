@@ -1,18 +1,15 @@
 import { Box, CircularProgress, IconButton } from "@chakra-ui/react";
-import React, { useMemo } from "react";
+import React from "react";
 import { CheckCircleFill } from "react-bootstrap-icons";
 import { useFiles } from "../../context/files";
 
-const UploadsTracker: React.FC = () => {
-  const { uploads, removeUpload, downloads } = useFiles();
-
-  const tasks = useMemo(() => {
-    return [...uploads, ...downloads];
-  }, [uploads, downloads]);
+const TaskTracker: React.FC = () => {
+  const { tasks, removeTask } = useFiles();
 
   if (tasks.length === 0) {
     return null;
   }
+
   return (
     <Box
       position="absolute"
@@ -33,7 +30,7 @@ const UploadsTracker: React.FC = () => {
             <IconButton
               variant="ghost"
               aria-label="close"
-              onClick={() => removeUpload(task.id)}
+              onClick={() => removeTask(task.id)}
               borderRadius="50%"
             >
               <CheckCircleFill color="#3db535" size="24px" />
@@ -62,4 +59,4 @@ const UploadsTracker: React.FC = () => {
   );
 };
 
-export default UploadsTracker;
+export default TaskTracker;

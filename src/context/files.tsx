@@ -11,52 +11,47 @@ import type { FileEntity, Folder, FolderEntry } from "../database/model";
 
 type ViewMode = "grid" | "list";
 
-type PendingUpload = {
+type TaskType = "download" | "upload";
+
+type PendingTask = {
   id: string;
-  // Need to mark an upload as ok because requests
+  // Need to mark an upload/download as ok because it
   // may still be pending when XHR reports 100% progress.
   ok?: boolean;
   progress: number;
   title: string;
+  type: TaskType;
 };
 
 type FilesContextType = {
-  addDownload: (id: string, title: string) => void;
   addItem: (item: FolderEntry) => void;
-  addUpload: (id: string, title: string) => void;
-  downloads: PendingUpload[];
+  addTask: (type: TaskType, id: string, title: string) => void;
   isLoading: boolean;
   items: FolderEntry[];
   path: Folder[];
   previewFile: FileEntity | null;
-  removeDownload: (id: string) => void;
-  removeUpload: (id: string) => void;
-  setDownloadProgress: (id: string, progress: number, ok?: boolean) => void;
+  removeTask: (id: string) => void;
   setPath: (path: Folder[]) => void;
   setPreviewFile: (selectedFile: FileEntity | null) => void;
-  setUploadProgress: (id: string, progress: number, ok?: boolean) => void;
+  setTaskProgress: (id: string, progress: number, ok?: boolean) => void;
   setViewMode: (viewMode: ViewMode) => void;
-  uploads: PendingUpload[];
+  tasks: PendingTask[];
   viewMode: ViewMode;
 };
 
 const FilesContext = createContext<FilesContextType>({
-  addDownload: () => undefined,
   addItem: () => undefined,
-  addUpload: () => undefined,
-  downloads: [],
+  addTask: () => undefined,
   isLoading: false,
   items: [],
   path: [],
   previewFile: null,
-  removeDownload: () => undefined,
-  removeUpload: () => undefined,
-  setDownloadProgress: () => undefined,
+  removeTask: () => undefined,
   setPath: () => undefined,
   setPreviewFile: () => undefined,
-  setUploadProgress: () => undefined,
+  setTaskProgress: () => undefined,
   setViewMode: () => undefined,
-  uploads: [],
+  tasks: [],
   viewMode: "grid",
 });
 
@@ -74,8 +69,7 @@ export const FilesProvider: React.FC<FilesProviderProps> = ({ children }) => {
   const [path, setPath] = useState<Folder[]>([]);
   const [isLoading, setLoading] = useState(false);
   const [previewFile, setPreviewFile] = useState<FileEntity | null>(null);
-  const [downloads, setDownloads] = useState<PendingUpload[]>([]);
-  const [uploads, setUploads] = useState<PendingUpload[]>([]);
+  const [tasks, setTasks] = useState<PendingTask[]>([]);
   const [viewMode, setViewMode] = usePersistentState<ViewMode>(
     "view-mode",
     "grid"
@@ -96,87 +90,52 @@ export const FilesProvider: React.FC<FilesProviderProps> = ({ children }) => {
     [setItems]
   );
 
-  const addDownload = useCallback(
-    (id: string, title: string) => {
-      setDownloads((currentDownloads) => [
-        ...currentDownloads,
+  const addTask = useCallback(
+    (type: TaskType, id: string, title: string) => {
+      setTasks((currentTasks) => [
+        ...currentTasks,
         {
           id,
           title,
           progress: 0,
+          type,
         },
       ]);
     },
-    [setDownloads]
+    [setTasks]
   );
 
-  const removeDownload = useCallback(
+  const removeTask = useCallback(
     (id: string) => {
-      setDownloads((currentDownloads) =>
-        currentDownloads.filter((u) => u.id !== id)
-      );
+      setTasks((currentTasks) => currentTasks.filter((u) => u.id !== id));
     },
-    [setDownloads]
+    [setTasks]
   );
 
-  const setDownloadProgress = useCallback(
+  const setTaskProgress = useCallback(
     (id: string, progress: number, ok?: boolean) => {
-      setDownloads((currentDownloads) =>
-        currentDownloads.map((u) => (u.id === id ? { ...u, progress, ok } : u))
+      setTasks((currentTasks) =>
+        currentTasks.map((u) => (u.id === id ? { ...u, progress, ok } : u))
       );
     },
-    [setDownloads]
-  );
-
-  const addUpload = useCallback(
-    (id: string, title: string) => {
-      setUploads((currentUploads) => [
-        ...currentUploads,
-        {
-          id,
-          title,
-          progress: 0,
-        },
-      ]);
-    },
-    [setUploads]
-  );
-
-  const removeUpload = useCallback(
-    (id: string) => {
-      setUploads((currentUploads) => currentUploads.filter((u) => u.id !== id));
-    },
-    [setUploads]
-  );
-
-  const setUploadProgress = useCallback(
-    (id: string, progress: number, ok?: boolean) => {
-      setUploads((currentUploads) =>
-        currentUploads.map((u) => (u.id === id ? { ...u, progress, ok } : u))
-      );
-    },
-    [setUploads]
+    [setTasks]
   );
 
   return (
     <FilesContext.Provider
       value={{
-        addDownload,
         addItem,
-        addUpload,
-        downloads,
+        addTask,
         isLoading,
         items,
         path,
         previewFile,
-        removeDownload,
-        removeUpload,
-        setDownloadProgress,
+        removeTask,
+        setTaskProgress,
         setPath,
         setPreviewFile,
-        setUploadProgress,
         setViewMode,
-        uploads,
+        tasks,
         viewMode,
       }}
     >
