@@ -11,14 +11,14 @@ const FileViewer: React.FC = () => {
     () =>
       [...items].sort((a, b) => {
         // The default sort shows folders first, then files.
-        // Within each type, sort them alphabetically by name.
+        // Within each type, sort them by most recent first.
         if (a.type === "file" && b.type === "folder") {
           return 1;
         }
         if (a.type === "folder" && b.type === "file") {
           return -1;
         }
-        return a.metadata.name.localeCompare(b.metadata.name);
+        return b.creationTime.getTime() - a.creationTime.getTime();
       }),
     [items]
   );
