@@ -11,6 +11,7 @@ import { useNavigate } from "react-router-dom";
 import { GoogleDriveStorage } from "../blobstorage/googledrive";
 import { FileHandler } from "../database/files";
 import { auth } from "../firebase";
+import { useChakraToast } from "../utils";
 import type { AuthProperties } from "../database/model";
 
 type UserContext = {
@@ -55,6 +56,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
   const [userAuth, setUserAuth] = useState<AuthProperties | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
+  const { openToast, updateToast, closeToast } = useChakraToast();
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
@@ -64,15 +66,29 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
   }, []);
 
   const performLogin = useCallback(async () => {
+    openToast({
+      title: "Waiting for confirmation.",
+      status: "info",
+      duration: null,
+    });
     const provider = new GoogleAuthProvider();
     provider.addScope("https://www.googleapis.com/auth/drive.file");
-    const response = await signInWithPopup(auth, provider);
-    if (response.user) {
-      navigate("/login/password");
-    }
-    const credentials = GoogleAuthProvider.credentialFromResult(response);
-    if (credentials?.accessToken) {
-      setAccessToken(credentials.accessToken);
+    try {
+      const response = await signInWithPopup(auth, provider);
+      if (response.user) {
+        closeToast();
+        navigate("/login/password");
+      }
+      const credentials = GoogleAuthProvider.credentialFromResult(response);
+      if (credentials?.accessToken) {
+        setAccessToken(credentials.accessToken);
+      }
+    } catch {
+      updateToast({
+        title: "Unable to sign in with Google. Please try again.",
+        status: "error",
+        duration: 3000,
+      });
     }
   }, []);
 

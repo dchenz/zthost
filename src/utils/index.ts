@@ -1,5 +1,6 @@
-import { useMediaQuery } from "@chakra-ui/react";
-import { useCallback, useMemo, useState } from "react";
+import { useMediaQuery, useToast } from "@chakra-ui/react";
+import { useCallback, useMemo, useRef, useState } from "react";
+import type { ToastId, UseToastOptions } from "@chakra-ui/react";
 
 export const useMobileView = () => {
   const [isMobileView] = useMediaQuery("(max-width: 600px)");
@@ -113,4 +114,40 @@ export const blobToDataUri = (blob: Blob): Promise<string> => {
     reader.onabort = () => reject(new Error("Read aborted"));
     reader.readAsDataURL(blob);
   });
+};
+
+export const useChakraToast = () => {
+  const toast = useToast();
+  const toastRef = useRef<ToastId>();
+
+  const openToast = useCallback(
+    (options: UseToastOptions) => {
+      if (toastRef.current) {
+        toast.close(toastRef.current);
+      }
+      toastRef.current = toast(options);
+    },
+    [toast, toastRef.current]
+  );
+
+  const updateToast = useCallback(
+    (options: Omit<UseToastOptions, "id">) => {
+      if (toastRef.current) {
+        toast.update(toastRef.current, options);
+      }
+    },
+    [toast, toastRef.current]
+  );
+
+  const closeToast = useCallback(() => {
+    if (toastRef.current) {
+      toast.close(toastRef.current);
+    }
+  }, [toast, toastRef.current]);
+
+  return {
+    openToast,
+    updateToast,
+    closeToast,
+  };
 };
