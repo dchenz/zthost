@@ -57,7 +57,7 @@ type FilesProviderProps = {
 };
 
 export const FilesProvider: React.FC<FilesProviderProps> = ({ children }) => {
-  const { user, fileHandler } = useSignedInUser();
+  const { fileHandler } = useSignedInUser();
   const [items, setItems] = useState<FolderEntry[]>([]);
   const [path, setPath] = useState<Folder[]>([]);
   const [isLoading, setLoading] = useState(false);
@@ -70,10 +70,10 @@ export const FilesProvider: React.FC<FilesProviderProps> = ({ children }) => {
   useEffect(() => {
     setLoading(true);
     fileHandler
-      .getFolderContents(user.uid, path[path.length - 1]?.id ?? null)
+      .getFolderContents(path[path.length - 1]?.id ?? null)
       .then(setItems)
       .finally(() => setLoading(false));
-  }, [user, path]);
+  }, [fileHandler, path]);
 
   const addItem = useCallback(
     (newItem: FolderEntry) => {

@@ -5,7 +5,7 @@ import { useFiles } from "../../context/files";
 import { useSignedInUser } from "../../context/user";
 
 const UploadButton: React.FC = () => {
-  const { fileHandler, user } = useSignedInUser();
+  const { fileHandler } = useSignedInUser();
   const { path, addItem, addUpload, setUploadProgress } = useFiles();
 
   const uploadFiles = async (files: FileList) => {
@@ -13,7 +13,6 @@ const UploadButton: React.FC = () => {
       const f = await fileHandler.uploadFile(
         file,
         path[path.length - 1]?.id ?? null,
-        user.uid,
         (id) => addUpload(id, file.name),
         setUploadProgress,
         (id) => setUploadProgress(id, 1, true)

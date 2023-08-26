@@ -18,7 +18,7 @@ type NewFolderModalProps = {
 };
 
 const NewFolderModal: React.FC<NewFolderModalProps> = ({ onClose, open }) => {
-  const { user, fileHandler } = useSignedInUser();
+  const { fileHandler } = useSignedInUser();
   const { addItem, path } = useFiles();
   const [name, setName] = useState("");
 
@@ -35,7 +35,6 @@ const NewFolderModal: React.FC<NewFolderModalProps> = ({ onClose, open }) => {
     }
     const newFolder = await fileHandler.createFolder(
       name,
-      user.uid,
       path[path.length - 1]?.id ?? null
     );
     addItem(newFolder);

@@ -74,14 +74,15 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
   }, []);
 
   const fileHandler = useMemo(() => {
-    if (accessToken && encryptionKey) {
+    if (accessToken && encryptionKey && user) {
       return new FileHandler(
-        new GoogleDriveStorage(accessToken ?? ""),
-        encryptionKey
+        new GoogleDriveStorage(accessToken),
+        encryptionKey,
+        user
       );
     }
     return null;
-  }, [accessToken, encryptionKey]);
+  }, [accessToken, encryptionKey, user]);
 
   return (
     <Context.Provider

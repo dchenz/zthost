@@ -21,16 +21,19 @@ import type {
   FolderMetadata,
 } from "./model";
 import type { BlobStorage } from "../blobstorage/model";
+import type { User } from "firebase/auth";
 
 export class FileHandler {
   chunkSize = 1024 * 1024 * 64;
   thumbnailSize = 32;
   storageBackend: BlobStorage;
   key: ArrayBuffer;
+  ownerId: string;
 
-  constructor(storageBackend: BlobStorage, key: ArrayBuffer) {
+  constructor(storageBackend: BlobStorage, key: ArrayBuffer, user: User) {
     this.storageBackend = storageBackend;
     this.key = key;
+    this.ownerId = user.uid;
   }
 
   async downloadThumbnail(fileId: string): Promise<string | null> {
@@ -65,7 +68,6 @@ export class FileHandler {
   async uploadFile(
     file: File,
     parentFolderId: string,
-    userId: string,
     onUploadStart: (id: string) => void,
     onUploadProgress: (id: string, progress: number) => void,
     onUploadFinish: (id: string) => void
@@ -87,7 +89,7 @@ export class FileHandler {
       folderId: parentFolderId,
       hasThumbnail,
       metadata: Buffer.from(encryptedMetadata).toString("base64"),
-      ownerId: userId,
+      ownerId: this.ownerId,
     });
     if (hasThumbnail) {
       await this.uploadThumbnail(fileId, file);
@@ -129,7 +131,7 @@ export class FileHandler {
       hasThumbnail,
       folderId: parentFolderId,
       metadata,
-      ownerId: userId,
+      ownerId: this.ownerId,
       type: "file",
     };
   }
@@ -157,7 +159,6 @@ export class FileHandler {
 
   async createFolder(
     name: string,
-    ownerId: string,
     parentFolderId: string | null
   ): Promise<Folder> {
     const id = uuid();
@@ -173,7 +174,7 @@ export class FileHandler {
     await setDoc(folderDoc, {
       creationTime: creationTime.getTime(),
       metadata: Buffer.from(encryptedMetadata).toString("base64"),
-      ownerId,
+      ownerId: this.ownerId,
       folderId: parentFolderId,
     });
     return {
@@ -181,19 +182,16 @@ export class FileHandler {
       creationTime,
       folderId: parentFolderId,
       metadata,
-      ownerId,
+      ownerId: this.ownerId,
       type: "folder",
     };
   }
 
-  async getFoldersInFolder(
-    ownerId: string,
-    folderId: string | null
-  ): Promise<Folder[]> {
+  async getFoldersInFolder(folderId: string | null): Promise<Folder[]> {
     const folderCollection = collection(fstore, "folders");
     const q = query(
       folderCollection,
-      where("ownerId", "==", ownerId),
+      where("ownerId", "==", this.ownerId),
       where("folderId", "==", folderId)
     );
     const results: Folder[] = [];
@@ -221,14 +219,11 @@ export class FileHandler {
     return results;
   }
 
-  async getFilesInFolder(
-    ownerId: string,
-    folderId: string | null
-  ): Promise<FileEntity[]> {
+  async getFilesInFolder(folderId: string | null): Promise<FileEntity[]> {
     const fileCollection = collection(fstore, "files");
     const q = query(
       fileCollection,
-      where("ownerId", "==", ownerId),
+      where("ownerId", "==", this.ownerId),
       where("folderId", "==", folderId)
     );
     const results: FileEntity[] = [];
@@ -257,13 +252,10 @@ export class FileHandler {
     return results;
   }
 
-  async getFolderContents(
-    ownerId: string,
-    folderId: string | null
-  ): Promise<FolderEntry[]> {
+  async getFolderContents(folderId: string | null): Promise<FolderEntry[]> {
     const [folders, files] = await Promise.all([
-      this.getFoldersInFolder(ownerId, folderId),
-      this.getFilesInFolder(ownerId, folderId),
+      this.getFoldersInFolder(folderId),
+      this.getFilesInFolder(folderId),
     ]);
     return [...folders, ...files];
   }

@@ -16,6 +16,10 @@ const AuthRequired: React.FC<AuthRequiredProps> = ({ children }) => {
     }
   }, [user]);
 
+  if (!user) {
+    return null;
+  }
+
   return <>{children}</>;
 };
 
