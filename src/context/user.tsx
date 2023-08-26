@@ -11,11 +11,12 @@ import { useNavigate } from "react-router-dom";
 import { GoogleDriveStorage } from "../blobstorage/googledrive";
 import { FileHandler } from "../database/files";
 import { auth } from "../firebase";
+import type { AuthProperties } from "../database/model";
 
 type UserContext = {
   fileHandler: FileHandler | null;
   performLogin: () => void;
-  setEncryptionKey: (encryptionKey: ArrayBuffer | null) => void;
+  setUserAuth: (userAuth: AuthProperties) => void;
   user: User | null;
 };
 
@@ -27,7 +28,7 @@ type SignedInUserContext = Omit<UserContext, "fileHandler" | "user"> & {
 const Context = createContext<UserContext>({
   fileHandler: null,
   performLogin: () => undefined,
-  setEncryptionKey: () => undefined,
+  setUserAuth: () => undefined,
   user: null,
 });
 
@@ -49,7 +50,7 @@ type UserProviderProps = {
 
 export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
   const navigate = useNavigate();
-  const [encryptionKey, setEncryptionKey] = useState<ArrayBuffer | null>(null);
+  const [userAuth, setUserAuth] = useState<AuthProperties | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
 
@@ -74,22 +75,22 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
   }, []);
 
   const fileHandler = useMemo(() => {
-    if (accessToken && encryptionKey && user) {
+    if (accessToken && userAuth && user) {
       return new FileHandler(
         new GoogleDriveStorage(accessToken),
-        encryptionKey,
+        userAuth,
         user
       );
     }
     return null;
-  }, [accessToken, encryptionKey, user]);
+  }, [accessToken, userAuth, user]);
 
   return (
     <Context.Provider
       value={{
         fileHandler,
         performLogin,
-        setEncryptionKey,
+        setUserAuth,
         user,
       }}
     >

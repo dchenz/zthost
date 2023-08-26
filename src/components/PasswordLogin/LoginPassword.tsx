@@ -10,22 +10,20 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import React, { useState } from "react";
-import { Buffer } from "buffer";
 import { useCurrentUser } from "../../context/user";
-import { decrypt, deriveKey } from "../../utils/crypto";
+import { decryptUserAuth } from "../../database/auth";
+import type { AuthProperties } from "../../database/model";
 
 type LoginPasswordProps = {
-  encryptedMainKey: ArrayBuffer;
+  encryptedUserAuth: AuthProperties;
   onAuthComplete: () => void;
-  salt: ArrayBuffer;
 };
 
 const LoginPassword: React.FC<LoginPasswordProps> = ({
-  encryptedMainKey,
+  encryptedUserAuth,
   onAuthComplete,
-  salt,
 }) => {
-  const { setEncryptionKey } = useCurrentUser();
+  const { setUserAuth } = useCurrentUser();
   const [password, setPassword] = useState("");
   const [loginFailed, setLoginFailed] = useState(false);
 
@@ -34,12 +32,9 @@ const LoginPassword: React.FC<LoginPasswordProps> = ({
     if (!password) {
       return;
     }
-    const mainKey = await decrypt(
-      encryptedMainKey,
-      deriveKey(Buffer.from(password, "utf-8"), salt)
-    );
-    if (mainKey) {
-      setEncryptionKey(mainKey);
+    const userAuth = await decryptUserAuth(encryptedUserAuth, password);
+    if (userAuth) {
+      setUserAuth(userAuth);
       onAuthComplete();
     } else {
       setLoginFailed(true);

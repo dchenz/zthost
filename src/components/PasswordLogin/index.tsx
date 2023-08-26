@@ -2,7 +2,7 @@ import { Spinner } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCurrentUser } from "../../context/user";
-import { getAuthPropertiesById } from "../../database/auth";
+import { getUserAuth } from "../../database/auth";
 import CreatePassword from "./CreatePassword";
 import LoginPassword from "./LoginPassword";
 import type { AuthProperties } from "../../database/model";
@@ -11,14 +11,13 @@ const PasswordLogin: React.FC = () => {
   const { user } = useCurrentUser();
   const navigate = useNavigate();
   const [isLoading, setLoading] = useState(true);
-  const [authProperties, setAuthProperties] = useState<AuthProperties | null>(
-    null
-  );
+  const [encryptedUserAuth, setEncryptedUserAuth] =
+    useState<AuthProperties | null>(null);
 
   useEffect(() => {
     if (user) {
-      getAuthPropertiesById(user.uid)
-        .then(setAuthProperties)
+      getUserAuth(user.uid)
+        .then(setEncryptedUserAuth)
         .finally(() => setLoading(false));
     }
   }, [user]);
@@ -35,15 +34,14 @@ const PasswordLogin: React.FC = () => {
     navigate("/");
   };
 
-  if (!authProperties) {
+  if (!encryptedUserAuth) {
     return <CreatePassword onAuthComplete={onAuthComplete} />;
   }
 
   return (
     <LoginPassword
-      encryptedMainKey={authProperties.mainKey}
+      encryptedUserAuth={encryptedUserAuth}
       onAuthComplete={onAuthComplete}
-      salt={authProperties.salt}
     />
   );
 };

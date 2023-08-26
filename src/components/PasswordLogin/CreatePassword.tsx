@@ -10,14 +10,14 @@ import {
 } from "@chakra-ui/react";
 import React, { useState } from "react";
 import { useCurrentUser } from "../../context/user";
-import { createAuthProperties } from "../../database/auth";
+import { createUserAuth } from "../../database/auth";
 
 type CreatePasswordProps = {
   onAuthComplete: () => void;
 };
 
 const CreatePassword: React.FC<CreatePasswordProps> = ({ onAuthComplete }) => {
-  const { user, setEncryptionKey } = useCurrentUser();
+  const { user, setUserAuth } = useCurrentUser();
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
@@ -32,7 +32,7 @@ const CreatePassword: React.FC<CreatePasswordProps> = ({ onAuthComplete }) => {
     if (!canSubmit) {
       return;
     }
-    setEncryptionKey(await createAuthProperties(user.uid, password));
+    setUserAuth(await createUserAuth(user.uid, password));
     onAuthComplete();
   };
 

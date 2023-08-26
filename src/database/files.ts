@@ -13,6 +13,7 @@ import { fstore } from "../firebase";
 import { blobToDataUri, createImageThumbnail } from "../utils";
 import { decrypt, encrypt, generateWrappedKey } from "../utils/crypto";
 import type {
+  AuthProperties,
   BlobRef,
   FileEntity,
   FileMetadata,
@@ -27,12 +28,16 @@ export class FileHandler {
   chunkSize = 1024 * 1024 * 64;
   thumbnailSize = 32;
   storageBackend: BlobStorage;
-  key: ArrayBuffer;
+  userAuth: AuthProperties;
   ownerId: string;
 
-  constructor(storageBackend: BlobStorage, key: ArrayBuffer, user: User) {
+  constructor(
+    storageBackend: BlobStorage,
+    userAuth: AuthProperties,
+    user: User
+  ) {
     this.storageBackend = storageBackend;
-    this.key = key;
+    this.userAuth = userAuth;
     this.ownerId = user.uid;
   }
 
@@ -44,7 +49,7 @@ export class FileHandler {
     }
     const thumbnail = await decrypt(
       Buffer.from(encryptedThumbnail, "base64"),
-      this.key
+      this.userAuth.thumbnailKey
     );
     if (!thumbnail) {
       throw new Error("Unable to decrypt thumbnail");
@@ -58,7 +63,7 @@ export class FileHandler {
     );
     const encryptedThumbnail = await encrypt(
       Buffer.from(thumbnail, "utf-8"),
-      this.key
+      this.userAuth.thumbnailKey
     );
     await setDoc(doc(fstore, "thumbnails", fileId), {
       data: Buffer.from(encryptedThumbnail).toString("base64"),
@@ -81,7 +86,7 @@ export class FileHandler {
     };
     const encryptedMetadata = await encrypt(
       Buffer.from(JSON.stringify(metadata), "utf-8"),
-      this.key
+      this.userAuth.metadataKey
     );
     const hasThumbnail = file.type.startsWith("image/");
     await setDoc(doc(fstore, "files", fileId), {
@@ -145,7 +150,9 @@ export class FileHandler {
       chunkNumber * this.chunkSize,
       (chunkNumber + 1) * this.chunkSize
     );
-    const { rawKey, wrappedKey } = await generateWrappedKey(this.key);
+    const { rawKey, wrappedKey } = await generateWrappedKey(
+      this.userAuth.fileKey
+    );
     const encryptedChunk = await encrypt(await chunk.arrayBuffer(), rawKey);
     const blobId = await this.storageBackend.putBlob(
       await new Response(encryptedChunk).blob(),
@@ -169,7 +176,7 @@ export class FileHandler {
     const folderDoc = doc(fstore, "folders", id);
     const encryptedMetadata = await encrypt(
       Buffer.from(JSON.stringify(metadata), "utf-8"),
-      this.key
+      this.userAuth.metadataKey
     );
     await setDoc(folderDoc, {
       creationTime: creationTime.getTime(),
@@ -199,7 +206,7 @@ export class FileHandler {
       const data = folder.data();
       const decryptedMetadata = await decrypt(
         Buffer.from(data.metadata, "base64"),
-        this.key
+        this.userAuth.metadataKey
       );
       if (!decryptedMetadata) {
         throw new Error(`Unable to decrypt folder ${data.id}`);
@@ -231,7 +238,7 @@ export class FileHandler {
       const data = file.data();
       const decryptedMetadata = await decrypt(
         Buffer.from(data.metadata, "base64"),
-        this.key
+        this.userAuth.metadataKey
       );
       if (!decryptedMetadata) {
         throw new Error(`Unable to decrypt file ${data.id}`);

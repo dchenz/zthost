@@ -1,6 +1,12 @@
 export type AuthProperties = {
-  mainKey: ArrayBuffer;
+  // Used to encrypt keys of file chunks uploaded to blob storage.
+  fileKey: ArrayBuffer;
+  // Used to encrypt metadata for files and folders.
+  metadataKey: ArrayBuffer;
+  // Used to salt the user's password.
   salt: ArrayBuffer;
+  // Used to encrypt thumbnail data uploaded to firebase.
+  thumbnailKey: ArrayBuffer;
 };
 
 export type FolderMetadata = {
