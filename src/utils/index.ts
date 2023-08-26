@@ -151,3 +151,7 @@ export const useChakraToast = () => {
     closeToast,
   };
 };
+
+export const isImage = (mimetype: string) => {
+  return mimetype.startsWith("image/");
+};

@@ -11,7 +11,7 @@ import streamSaver from "streamsaver";
 import { v4 as uuid } from "uuid";
 import { Buffer } from "buffer";
 import { fstore } from "../firebase";
-import { blobToDataUri, createImageThumbnail } from "../utils";
+import { blobToDataUri, createImageThumbnail, isImage } from "../utils";
 import { decrypt, encrypt, generateWrappedKey } from "../utils/crypto";
 import type {
   AuthProperties,
@@ -86,7 +86,7 @@ export class FileHandler {
       Buffer.from(JSON.stringify(metadata), "utf-8"),
       this.userAuth.metadataKey
     );
-    const hasThumbnail = file.type.startsWith("image/");
+    const hasThumbnail = isImage(file.type);
     await setDoc(doc(fstore, "files", fileId), {
       creationTime: creationTime.getTime(),
       folderId: parentFolderId,
@@ -319,5 +319,18 @@ export class FileHandler {
       throw new Error("Unable to decrypt file chunk");
     }
     return chunkData;
+  }
+
+  // Downloading files in-memory is only supported for files with one chunk.
+  async downloadFileInMemory(fileId: string): Promise<ArrayBuffer | null> {
+    const fileChunksDoc = await getDoc(doc(fstore, "fileChunks", fileId));
+    const chunks: BlobRef[] = fileChunksDoc.get("chunks");
+    if (!chunks) {
+      throw new Error("Unable to find file chunks");
+    }
+    if (chunks.length > 1) {
+      return null;
+    }
+    return await this.downloadFileChunk(chunks[0], () => undefined);
   }
 }
