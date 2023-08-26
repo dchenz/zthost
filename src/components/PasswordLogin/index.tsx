@@ -3,14 +3,15 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCurrentUser } from "../../context/user";
 import { getUserAuth } from "../../database/auth";
+import AuthRequired from "../AuthRequired";
 import PasswordLoginForm from "./PasswordLoginForm";
 import PasswordRegisterForm from "./PasswordRegisterForm";
 import type { AuthProperties } from "../../database/model";
 
-const PasswordLogin: React.FC = () => {
+const CheckUserAuth: React.FC = () => {
   const { user } = useCurrentUser();
   const navigate = useNavigate();
-  const [isLoading, setLoading] = useState(false);
+  const [isLoading, setLoading] = useState(true);
   const [encryptedUserAuth, setEncryptedUserAuth] =
     useState<AuthProperties | null>(null);
 
@@ -22,10 +23,6 @@ const PasswordLogin: React.FC = () => {
         .finally(() => setLoading(false));
     }
   }, [user]);
-
-  if (!user) {
-    return null;
-  }
 
   if (isLoading) {
     return <Spinner />;
@@ -45,6 +42,14 @@ const PasswordLogin: React.FC = () => {
       encryptedUserAuth={encryptedUserAuth}
       onAuthComplete={onAuthComplete}
     />
+  );
+};
+
+const PasswordLogin: React.FC = () => {
+  return (
+    <AuthRequired>
+      <CheckUserAuth />
+    </AuthRequired>
   );
 };
 
