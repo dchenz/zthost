@@ -27,7 +27,7 @@ const UploadButton: React.FC = () => {
       <MenuButton as={Button} rightIcon={<ChevronDown />} size="sm">
         Upload
       </MenuButton>
-      <MenuList zIndex={999}>
+      <MenuList zIndex={999} minW={0} w="150px" padding={0}>
         <MenuItem onClick={handleFileUpload}>File</MenuItem>
         <MenuItem>Folder</MenuItem>
       </MenuList>
