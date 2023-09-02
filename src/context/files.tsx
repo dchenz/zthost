@@ -145,33 +145,36 @@ export const FilesProvider: React.FC<FilesProviderProps> = ({ children }) => {
     return file.id;
   }, []);
 
-  const addUploadTask = useCallback((file: File) => {
-    const fileId = uuid();
-    setTasks((currentTasks) => [
-      ...currentTasks,
-      {
-        id: fileId,
-        title: `Preparing to upload '${file.name}'`,
-        progress: 0,
-        type: "upload",
-      },
-    ]);
-    fileHandler
-      .uploadFileMetadata(fileId, file, path[path.length - 1]?.id ?? null)
-      .then(async (f) => {
-        updateTask(fileId, { title: `Uploading '${file.name}'` });
-        await fileHandler.uploadFileChunks(fileId, file, (progress) => {
-          updateTask(f.id, { progress });
+  const addUploadTask = useCallback(
+    (file: File) => {
+      const fileId = uuid();
+      setTasks((currentTasks) => [
+        ...currentTasks,
+        {
+          id: fileId,
+          title: `Preparing to upload '${file.name}'`,
+          progress: 0,
+          type: "upload",
+        },
+      ]);
+      fileHandler
+        .uploadFileMetadata(fileId, file, path[path.length - 1]?.id ?? null)
+        .then(async (f) => {
+          updateTask(fileId, { title: `Uploading '${file.name}'` });
+          await fileHandler.uploadFileChunks(fileId, file, (progress) => {
+            updateTask(f.id, { progress });
+          });
+          updateTask(fileId, {
+            progress: 1,
+            ok: true,
+            title: file.name,
+          });
+          addItem(f);
         });
-        updateTask(fileId, {
-          progress: 1,
-          ok: true,
-          title: file.name,
-        });
-        addItem(f);
-      });
-    return fileId;
-  }, []);
+      return fileId;
+    },
+    [path]
+  );
 
   const toggleSelectedItem = useCallback((item: FolderEntry) => {
     setSelectedItems((currentItems) => {
