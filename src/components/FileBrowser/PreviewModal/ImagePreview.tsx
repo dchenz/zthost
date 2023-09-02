@@ -23,7 +23,15 @@ const ImagePreview: React.FC<ImagePreviewProps> = ({ file, fileBytes }) => {
     return null;
   }
 
-  return <Image src={src} alt={file.metadata.name} maxW="100%" maxH="100%" />;
+  return (
+    <Image
+      src={src}
+      alt={file.metadata.name}
+      width="100%"
+      height="100%"
+      objectFit="contain"
+    />
+  );
 };
 
 export default ImagePreview;
