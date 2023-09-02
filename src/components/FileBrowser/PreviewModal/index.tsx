@@ -7,13 +7,18 @@ import FilePreview from "./FilePreview";
 const PreviewModal: React.FC = () => {
   const { previewFile, setPreviewFile } = useFiles();
   return (
-    <Modal isOpen={previewFile !== null} onClose={() => setPreviewFile(null)}>
+    <Modal
+      isOpen={previewFile !== null}
+      onClose={() => setPreviewFile(null)}
+      blockScrollOnMount={false}
+      size="full"
+    >
       <ModalOverlay />
-      <ModalContent maxW="80vw">
+      <ModalContent height="100%">
         {previewFile ? (
-          <Box display={{ md: "block", lg: "flex" }}>
-            <FilePreview file={previewFile} />
+          <Box display={{ md: "block", lg: "flex" }} height="100%">
             <FileDetails file={previewFile} />
+            <FilePreview file={previewFile} />
           </Box>
         ) : null}
       </ModalContent>

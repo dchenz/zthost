@@ -50,9 +50,8 @@ const FilePreview: React.FC<FilePreviewProps> = ({ file }) => {
       alignItems="center"
       display="flex"
       flexGrow={1}
-      h="80vh"
+      minH="100px"
       justifyContent="center"
-      overflowY="scroll"
     >
       {isLoading ? <Spinner /> : null}
       {message ? <Text color="#777777">{message}</Text> : null}
