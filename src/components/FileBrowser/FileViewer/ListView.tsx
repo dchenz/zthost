@@ -12,6 +12,7 @@ import {
 import React, { useMemo, useState } from "react";
 import { ChevronDown, ChevronUp } from "react-bootstrap-icons";
 import ListViewItem from "./ListViewItem";
+import { AllSelector } from "./Selector";
 import type { FolderEntry } from "../../../database/model";
 
 type ListViewProps = {
@@ -131,8 +132,10 @@ const ListView: React.FC<ListViewProps> = ({ items, onItemClick }) => {
           boxShadow="0px 0.5px 1px 1px #f5f5f5"
         >
           <Tr height="40px">
-            {renderTableHead(undefined, "70px", false)}
-            {renderTableHead(undefined, "70px", false)}
+            <Th padding="5px" width="70px">
+              <AllSelector />
+            </Th>
+            <Th padding="5px" width="70px"></Th>
             {renderTableHead(
               "Name",
               undefined,

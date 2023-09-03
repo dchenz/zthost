@@ -5,30 +5,22 @@ import { useFiles } from "../../../context/files";
 import type { FolderEntry } from "../../../database/model";
 
 type SelectorProps = {
-  item: FolderEntry;
+  isSelected: boolean;
+  onSelect: () => void;
+  show: boolean;
 };
 
-const Selector: React.FC<SelectorProps> = ({ item }) => {
-  const { selectedItems, toggleSelectedItem } = useFiles();
-
-  const isSelected = useMemo(() => {
-    return selectedItems.find((f) => f.id === item.id) !== undefined;
-  }, [item, selectedItems]);
-
-  const onSelect = () => {
-    toggleSelectedItem(item);
-  };
-
+const Selector: React.FC<SelectorProps> = ({ isSelected, onSelect, show }) => {
   return (
     <Button
       minW="24px"
       height="24px"
-      display={selectedItems.length ? "flex" : "none"}
+      display={show ? "flex" : "none"}
       alignItems="center"
       justifyContent="center"
       margin="0 auto"
       border="solid 0.5px grey"
-      backgroundColor={-isSelected ? "#5a5aa2" : "#ffffff"}
+      backgroundColor={isSelected ? "#5a5aa2" : "#ffffff"}
       fontSize="18px"
       role="checkbox"
       padding={0}
@@ -41,4 +33,48 @@ const Selector: React.FC<SelectorProps> = ({ item }) => {
   );
 };
 
-export default Selector;
+type ItemSelectorProps = {
+  item: FolderEntry;
+};
+
+export const ItemSelector: React.FC<ItemSelectorProps> = ({ item }) => {
+  const { selectedItems, toggleSelectedItem } = useFiles();
+
+  const isSelected = useMemo(() => {
+    return selectedItems.find((f) => f.id === item.id) !== undefined;
+  }, [item, selectedItems]);
+
+  const onSelect = () => {
+    toggleSelectedItem(item);
+  };
+
+  return (
+    <Selector
+      isSelected={isSelected}
+      onSelect={onSelect}
+      show={selectedItems.length > 0}
+    />
+  );
+};
+
+export const AllSelector: React.FC = () => {
+  const { selectedItems, setSelectedItems, items } = useFiles();
+
+  const isSelected = items.length > 0 && items.length === selectedItems.length;
+
+  const onSelect = () => {
+    if (isSelected) {
+      setSelectedItems([]);
+    } else {
+      setSelectedItems(items);
+    }
+  };
+
+  return (
+    <Selector
+      isSelected={isSelected}
+      onSelect={onSelect}
+      show={items.length > 0}
+    />
+  );
+};

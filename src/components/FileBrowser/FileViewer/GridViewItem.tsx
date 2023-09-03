@@ -1,6 +1,6 @@
 import { Box, Text } from "@chakra-ui/react";
 import React from "react";
-import Selector from "./Selector";
+import { ItemSelector } from "./Selector";
 import Thumbnail from "./Thumbnail";
 import type { FolderEntry } from "../../../database/model";
 
@@ -20,7 +20,7 @@ const GridViewItem: React.FC<GridViewItemProps> = ({ item, onClick }) => {
       role="group"
     >
       <Box position="absolute" top="5px" left="5px">
-        <Selector item={item} />
+        <ItemSelector item={item} />
       </Box>
       <Box onClick={onClick}>
         <Thumbnail item={item} width="96px" margin="0 auto" />
