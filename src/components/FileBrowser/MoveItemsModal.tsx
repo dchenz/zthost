@@ -103,7 +103,13 @@ const _MoveItemsModal: React.FC<MoveItemsModalProps> = ({
 const MoveItemsModal: React.FC<MoveItemsModalProps> = (props) => {
   // Force the provider to be destroyed so it resets.
   return (
-    <Modal isOpen={props.open} onClose={props.onClose} size="4xl" isCentered>
+    <Modal
+      isOpen={props.open}
+      onClose={props.onClose}
+      size="4xl"
+      isCentered
+      blockScrollOnMount={false}
+    >
       <ModalOverlay />
       {props.open ? (
         <FilesProvider>

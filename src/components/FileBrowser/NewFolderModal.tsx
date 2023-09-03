@@ -42,7 +42,13 @@ const NewFolderModal: React.FC<NewFolderModalProps> = ({ onClose, open }) => {
   };
 
   return (
-    <Modal isOpen={open} onClose={onClose} size="2xl" isCentered>
+    <Modal
+      isOpen={open}
+      onClose={onClose}
+      size="2xl"
+      isCentered
+      blockScrollOnMount={false}
+    >
       <ModalOverlay />
       <ModalContent as="form" onSubmit={onFormSubmit}>
         <ModalHeader>New folder</ModalHeader>
