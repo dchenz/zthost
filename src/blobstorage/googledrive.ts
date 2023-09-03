@@ -1,5 +1,6 @@
 import { v4 as uuid } from "uuid";
 import { Buffer } from "buffer";
+import { firebaseConfig } from "../firebase";
 import type { BlobStorage } from "./model";
 
 type PutBlobResponse = {
@@ -19,8 +20,8 @@ export class GoogleDriveStorage implements BlobStorage {
   }
 
   async initialize(): Promise<string> {
-    const instanceName = process.env.REACT_APP_FIREBASE_PROJECT_ID;
-    return this.createFolder(`DO NOT DELETE - zthost:${instanceName}`);
+    const folderName = `DO NOT DELETE - zthost:${firebaseConfig.projectId}`;
+    return this.createFolder(folderName);
   }
 
   async createFolder(name: string): Promise<string> {
