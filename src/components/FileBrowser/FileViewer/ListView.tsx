@@ -111,6 +111,7 @@ const ListView: React.FC<ListViewProps> = ({
                     setSortBy(name);
                   }
                 }}
+                onFocus={(e) => e.preventDefault()}
               >
                 {isSelected && !isReversed ? <ChevronUp /> : <ChevronDown />}
               </Button>
