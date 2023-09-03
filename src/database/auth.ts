@@ -1,9 +1,10 @@
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { Buffer } from "buffer";
 import { fstore } from "../firebase";
 import {
   decrypt,
   deriveKey,
+  encrypt,
   generateWrappedKey,
   randomBytes,
 } from "../utils/crypto";
@@ -104,4 +105,24 @@ export const decryptUserAuth = async (
     salt: encryptedUserAuth.salt,
     bucketId: encryptedUserAuth.bucketId,
   };
+};
+
+export const updatePassword = async (
+  userId: string,
+  userAuth: AuthProperties,
+  newPassword: string
+): Promise<void> => {
+  const userDoc = doc(fstore, "userAuth", userId);
+  const newPasswordKey = deriveKey(
+    Buffer.from(newPassword, "utf-8"),
+    userAuth.salt
+  );
+  const fileKey = await encrypt(userAuth.fileKey, newPasswordKey);
+  const metadataKey = await encrypt(userAuth.metadataKey, newPasswordKey);
+  const thumbnailKey = await encrypt(userAuth.thumbnailKey, newPasswordKey);
+  await updateDoc(userDoc, {
+    fileKey: Buffer.from(fileKey).toString("base64"),
+    metadataKey: Buffer.from(metadataKey).toString("base64"),
+    thumbnailKey: Buffer.from(thumbnailKey).toString("base64"),
+  });
 };
