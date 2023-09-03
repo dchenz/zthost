@@ -39,7 +39,7 @@ type ItemSelectorProps = {
 };
 
 export const ItemSelector: React.FC<ItemSelectorProps> = ({
-  allowMultiSelect,
+  allowMultiSelect = true,
   item,
 }) => {
   const { selectedItems, setSelectedItems, toggleSelectedItem } = useFiles();
