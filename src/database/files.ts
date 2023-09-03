@@ -6,6 +6,7 @@ import {
   getDocs,
   query,
   setDoc,
+  updateDoc,
   where,
 } from "firebase/firestore";
 import streamSaver from "streamsaver";
@@ -374,5 +375,20 @@ export class FileHandler {
       operations.push(this.deleteFolder(folder.id));
     }
     await Promise.all(operations);
+  }
+
+  async moveFile(fileId: string, targetFolderId: string | null): Promise<void> {
+    await updateDoc(doc(fstore, "files", fileId), {
+      folderId: targetFolderId,
+    });
+  }
+
+  async moveFolder(
+    folderId: string,
+    targetFolderId: string | null
+  ): Promise<void> {
+    await updateDoc(doc(fstore, "folders", folderId), {
+      folderId: targetFolderId,
+    });
   }
 }

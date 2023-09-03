@@ -31,6 +31,10 @@ type FilesContextType = {
   deleteItems: (items: FolderEntry[]) => Promise<void>;
   isLoading: boolean;
   items: FolderEntry[];
+  moveItems: (
+    items: FolderEntry[],
+    targetFolderId: string | null
+  ) => Promise<void>;
   path: Folder[];
   previewFile: FileEntity | null;
   removeDownloadTask: (id: string) => void;
@@ -52,6 +56,7 @@ const FilesContext = createContext<FilesContextType>({
   deleteItems: async () => undefined,
   isLoading: false,
   items: [],
+  moveItems: async () => undefined,
   path: [],
   previewFile: null,
   removeDownloadTask: () => undefined,
@@ -205,6 +210,21 @@ export const FilesProvider: React.FC<FilesProviderProps> = ({ children }) => {
     [removeItem, setSelectedItems]
   );
 
+  const moveItems = useCallback(
+    async (items: FolderEntry[], targetFolderId: string | null) => {
+      for (const item of items) {
+        if (item.type === "file") {
+          await fileHandler.moveFile(item.id, targetFolderId);
+        } else {
+          await fileHandler.moveFolder(item.id, targetFolderId);
+        }
+        removeItem(item.id);
+      }
+      setSelectedItems([]);
+    },
+    [removeItem, setSelectedItems]
+  );
+
   return (
     <FilesContext.Provider
       value={{
@@ -214,6 +234,7 @@ export const FilesProvider: React.FC<FilesProviderProps> = ({ children }) => {
         deleteItems,
         isLoading,
         items,
+        moveItems,
         path,
         previewFile,
         removeDownloadTask: removeTask,

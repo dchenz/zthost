@@ -1,16 +1,18 @@
 import { Box, HStack } from "@chakra-ui/react";
 import React, { useState } from "react";
-import { Folder2, Trash } from "react-bootstrap-icons";
+import { ArrowsMove, Folder2, Trash } from "react-bootstrap-icons";
 import { useFiles } from "../../context/files";
 import ConfirmPopup from "../ConfirmPopup";
+import MoveItemsModal from "./MoveItemsModal";
 import NewFolderModal from "./NewFolderModal";
 import ResponsiveIconButton from "./ResponsiveIconButton";
 import UploadButton from "./UploadButton";
 import ViewModeSelector from "./ViewModeSelector";
 
 const Header: React.FC = () => {
-  const { selectedItems, deleteItems } = useFiles();
+  const { selectedItems, deleteItems, moveItems } = useFiles();
   const [isCreatingFolder, setCreatingFolder] = useState(false);
+  const [isMoving, setMoving] = useState(false);
 
   const deleteConfirmationPrompt = `Delete ${selectedItems.length} item${
     selectedItems.length > 1 ? "s" : ""
@@ -33,6 +35,14 @@ const Header: React.FC = () => {
                 title="Delete selected items"
               />
             </ConfirmPopup>
+            <ResponsiveIconButton
+              ariaLabel="move-selected"
+              icon={<ArrowsMove />}
+              size="sm"
+              text="Move"
+              title="Move selected items"
+              onClick={() => setMoving(true)}
+            />
           </React.Fragment>
         ) : (
           <React.Fragment>
@@ -53,6 +63,12 @@ const Header: React.FC = () => {
       <NewFolderModal
         open={isCreatingFolder}
         onClose={() => setCreatingFolder(false)}
+      />
+      <MoveItemsModal
+        itemsToMove={selectedItems}
+        moveItems={moveItems}
+        open={isMoving}
+        onClose={() => setMoving(false)}
       />
     </Box>
   );

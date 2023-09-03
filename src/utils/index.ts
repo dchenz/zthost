@@ -1,5 +1,6 @@
 import { useMediaQuery, useToast } from "@chakra-ui/react";
 import { useCallback, useMemo, useRef, useState } from "react";
+import type { Folder, FolderEntry } from "../database/model";
 import type { ToastId, UseToastOptions } from "@chakra-ui/react";
 
 export const useMobileView = () => {
@@ -154,4 +155,16 @@ export const useChakraToast = () => {
 
 export const isImage = (mimetype: string) => {
   return mimetype.startsWith("image/");
+};
+
+// Returns true, if the path is recursively inside or equal to the folder.
+export const folderContains = (folder: Folder, path: FolderEntry[]) => {
+  // The folder must appear somewhere in the path,
+  // if it refers to the folder itself or something inside.
+  for (const item of path) {
+    if (item.id === folder.id) {
+      return true;
+    }
+  }
+  return false;
 };

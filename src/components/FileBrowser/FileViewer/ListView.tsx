@@ -16,11 +16,18 @@ import { AllSelector } from "./Selector";
 import type { FolderEntry } from "../../../database/model";
 
 type ListViewProps = {
+  allowMultiSelect?: boolean;
+  isDisabled?: (item: FolderEntry) => boolean;
   items: FolderEntry[];
   onItemClick: (item: FolderEntry) => void;
 };
 
-const ListView: React.FC<ListViewProps> = ({ items, onItemClick }) => {
+const ListView: React.FC<ListViewProps> = ({
+  allowMultiSelect = true,
+  isDisabled,
+  items,
+  onItemClick,
+}) => {
   const [sortBy, setSortBy] = useState<string | null>(null);
   const [isReversed, setReversed] = useState(false);
 
@@ -115,14 +122,7 @@ const ListView: React.FC<ListViewProps> = ({ items, onItemClick }) => {
   };
 
   return (
-    <TableContainer
-      // Subtract navbar, toolbar and path viewer.
-      height="calc(100vh - 48px - 48px - 40px)"
-      // Push to the right to account for scrollbar.
-      pr={3}
-      overflowX="unset"
-      overflowY="scroll"
-    >
+    <TableContainer>
       <Table>
         <Thead
           position="sticky"
@@ -133,7 +133,7 @@ const ListView: React.FC<ListViewProps> = ({ items, onItemClick }) => {
         >
           <Tr height="40px">
             <Th padding="5px" width="70px">
-              <AllSelector />
+              {allowMultiSelect ? <AllSelector /> : null}
             </Th>
             <Th padding="5px" width="70px"></Th>
             {renderTableHead(
@@ -164,7 +164,9 @@ const ListView: React.FC<ListViewProps> = ({ items, onItemClick }) => {
             <ListViewItem
               key={item.id}
               item={item}
+              allowMultiSelect={allowMultiSelect}
               onClick={() => onItemClick(item)}
+              disabled={isDisabled?.(item)}
             />
           ))}
         </Tbody>

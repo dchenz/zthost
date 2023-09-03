@@ -1,3 +1,4 @@
+import { Box } from "@chakra-ui/react";
 import React, { useCallback, useMemo } from "react";
 import { useFiles } from "../../../context/files";
 import GridView from "./GridView";
@@ -45,9 +46,24 @@ const FileViewer: React.FC = () => {
   );
 
   return viewMode === "list" ? (
-    <ListView items={sortedItems} onItemClick={onItemClick} />
+    <Box
+      // Subtract navbar, toolbar and path viewer.
+      height="calc(100vh - 48px - 48px - 40px)"
+      // Push to the right to account for scrollbar.
+      pr={3}
+      overflowX="unset"
+      overflowY="scroll"
+    >
+      <ListView items={sortedItems} onItemClick={onItemClick} />
+    </Box>
   ) : (
-    <GridView items={sortedItems} onItemClick={onItemClick} />
+    <Box
+      // Subtract navbar, toolbar and path viewer.
+      height="calc(100vh - 48px - 48px - 40px)"
+      overflowY="scroll"
+    >
+      <GridView items={sortedItems} onItemClick={onItemClick} />
+    </Box>
   );
 };
 

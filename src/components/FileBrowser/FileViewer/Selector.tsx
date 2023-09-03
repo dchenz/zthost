@@ -34,18 +34,30 @@ const Selector: React.FC<SelectorProps> = ({ isSelected, onSelect, show }) => {
 };
 
 type ItemSelectorProps = {
+  allowMultiSelect?: boolean;
   item: FolderEntry;
 };
 
-export const ItemSelector: React.FC<ItemSelectorProps> = ({ item }) => {
-  const { selectedItems, toggleSelectedItem } = useFiles();
+export const ItemSelector: React.FC<ItemSelectorProps> = ({
+  allowMultiSelect,
+  item,
+}) => {
+  const { selectedItems, setSelectedItems, toggleSelectedItem } = useFiles();
 
   const isSelected = useMemo(() => {
     return selectedItems.find((f) => f.id === item.id) !== undefined;
   }, [item, selectedItems]);
 
   const onSelect = () => {
-    toggleSelectedItem(item);
+    if (allowMultiSelect) {
+      toggleSelectedItem(item);
+    } else {
+      if (selectedItems.length > 0 && selectedItems[0].id === item.id) {
+        setSelectedItems([]);
+      } else {
+        setSelectedItems([item]);
+      }
+    }
   };
 
   return (
