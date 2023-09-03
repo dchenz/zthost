@@ -4,6 +4,7 @@ export interface BlobStorage {
     id: string,
     onProgress: (loaded: number) => void
   ) => Promise<ArrayBuffer>;
+  initialize: () => Promise<string>;
   putBlob: (
     blob: ArrayBuffer,
     onProgress: (loaded: number) => void

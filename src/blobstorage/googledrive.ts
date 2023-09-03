@@ -11,9 +11,34 @@ type PutBlobResponse = {
 
 export class GoogleDriveStorage implements BlobStorage {
   accessToken: string;
+  rootFolderId: string;
 
-  constructor(accessToken: string) {
+  constructor(accessToken: string, rootFolderId: string) {
     this.accessToken = accessToken;
+    this.rootFolderId = rootFolderId;
+  }
+
+  async initialize(): Promise<string> {
+    const instanceName = process.env.REACT_APP_FIREBASE_PROJECT_ID;
+    return this.createFolder(`DO NOT DELETE - zthost:${instanceName}`);
+  }
+
+  async createFolder(name: string): Promise<string> {
+    const response = await fetch("https://www.googleapis.com/drive/v3/files", {
+      method: "POST",
+      headers: {
+        authorization: `Bearer ${this.accessToken}`,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        name,
+        mimeType: "application/vnd.google-apps.folder",
+      }),
+    });
+    if (!response.ok) {
+      throw new Error(await response.text());
+    }
+    return (await response.json()).id;
   }
 
   async deleteBlob(id: string): Promise<void> {
@@ -87,7 +112,9 @@ export class GoogleDriveStorage implements BlobStorage {
         "content-type",
         `multipart/related; boundary=${boundary}`
       );
-      const body = this.buildMultipartRelatedBody(boundary, blob, {});
+      const body = this.buildMultipartRelatedBody(boundary, blob, {
+        parents: [this.rootFolderId],
+      });
       xhr.send(body);
     });
     return response.id;

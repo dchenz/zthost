@@ -19,11 +19,11 @@ type PasswordRegisterFormProps = {
 const PasswordRegisterForm: React.FC<PasswordRegisterFormProps> = ({
   onAuthComplete,
 }) => {
-  const { user, setUserAuth } = useCurrentUser();
+  const { user, setUserAuth, storageBackend } = useCurrentUser();
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  if (!user) {
+  if (!user || !storageBackend) {
     return null;
   }
 
@@ -34,7 +34,8 @@ const PasswordRegisterForm: React.FC<PasswordRegisterFormProps> = ({
     if (!canSubmit) {
       return;
     }
-    setUserAuth(await createUserAuth(user.uid, password));
+    const bucketId = await storageBackend.initialize();
+    setUserAuth(await createUserAuth(user.uid, password, bucketId));
     onAuthComplete();
   };
 

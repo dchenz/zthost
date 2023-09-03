@@ -1,4 +1,7 @@
 export type AuthProperties = {
+  // ID indicating where file chunk data is stored on the blob storage backend.
+  // For google drive, this is a folder ID.
+  bucketId: string;
   // Used to encrypt keys of file chunks uploaded to blob storage.
   fileKey: ArrayBuffer;
   // Used to encrypt metadata for files and folders.

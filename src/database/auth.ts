@@ -37,12 +37,14 @@ export const getUserAuth = async (
     metadataKey: Buffer.from(metadataKey, "base64"),
     thumbnailKey: Buffer.from(thumbnailKey, "base64"),
     salt: Buffer.from(salt, "base64"),
+    bucketId: userDoc.get("bucketId"),
   };
 };
 
 export const createUserAuth = async (
   userId: string,
-  password: string
+  password: string,
+  bucketId: string
 ): Promise<AuthProperties> => {
   const userDoc = doc(fstore, "userAuth", userId);
   const salt = randomBytes(16);
@@ -55,12 +57,14 @@ export const createUserAuth = async (
     metadataKey: Buffer.from(metadataKey.wrappedKey).toString("base64"),
     thumbnailKey: Buffer.from(thumbnailKey.wrappedKey).toString("base64"),
     salt: Buffer.from(salt).toString("base64"),
+    bucketId,
   });
   return {
     fileKey: fileKey.rawKey,
     metadataKey: metadataKey.rawKey,
     thumbnailKey: thumbnailKey.rawKey,
     salt,
+    bucketId,
   };
 };
 
@@ -98,5 +102,6 @@ export const decryptUserAuth = async (
     metadataKey,
     thumbnailKey,
     salt: encryptedUserAuth.salt,
+    bucketId: encryptedUserAuth.bucketId,
   };
 };

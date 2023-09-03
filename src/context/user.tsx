@@ -12,6 +12,7 @@ import { GoogleDriveStorage } from "../blobstorage/googledrive";
 import { FileHandler } from "../database/files";
 import { auth } from "../firebase";
 import { useChakraToast } from "../utils";
+import type { BlobStorage } from "../blobstorage/model";
 import type { AuthProperties } from "../database/model";
 
 type UserContext = {
@@ -19,11 +20,16 @@ type UserContext = {
   performLogin: () => void;
   performLogout: () => void;
   setUserAuth: (userAuth: AuthProperties) => void;
+  storageBackend: BlobStorage | null;
   user: User | null;
 };
 
-type SignedInUserContext = Omit<UserContext, "fileHandler" | "user"> & {
+type SignedInUserContext = Omit<
+  UserContext,
+  "fileHandler" | "storageBackend" | "user"
+> & {
   fileHandler: FileHandler;
+  storageBackend: BlobStorage;
   user: User;
 };
 
@@ -32,6 +38,7 @@ const Context = createContext<UserContext>({
   performLogin: () => undefined,
   performLogout: () => undefined,
   setUserAuth: () => undefined,
+  storageBackend: null,
   user: null,
 });
 
@@ -100,16 +107,19 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     navigate("/login");
   }, []);
 
-  const fileHandler = useMemo(() => {
-    if (accessToken && userAuth && user) {
-      return new FileHandler(
-        new GoogleDriveStorage(accessToken),
-        userAuth,
-        user
-      );
+  const storageBackend = useMemo(() => {
+    if (accessToken) {
+      return new GoogleDriveStorage(accessToken, userAuth?.bucketId ?? "");
     }
     return null;
-  }, [accessToken, userAuth, user]);
+  }, [accessToken, userAuth?.bucketId]);
+
+  const fileHandler = useMemo(() => {
+    if (storageBackend && userAuth && user) {
+      return new FileHandler(storageBackend, userAuth, user);
+    }
+    return null;
+  }, [storageBackend, userAuth, user]);
 
   return (
     <Context.Provider
@@ -118,6 +128,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
         performLogin,
         performLogout,
         setUserAuth,
+        storageBackend,
         user,
       }}
     >
