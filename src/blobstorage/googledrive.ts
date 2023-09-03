@@ -1,3 +1,5 @@
+import { v4 as uuid } from "uuid";
+import { Buffer } from "buffer";
 import type { BlobStorage } from "./model";
 
 type PutBlobResponse = {
@@ -75,14 +77,37 @@ export class GoogleDriveStorage implements BlobStorage {
       });
       xhr.open(
         "POST",
-        "https://www.googleapis.com/upload/drive/v3/files?uploadType=media",
+        "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart",
         true
       );
+      const boundary = uuid();
       xhr.responseType = "json";
       xhr.setRequestHeader("authorization", `Bearer ${this.accessToken}`);
-      xhr.setRequestHeader("content-type", "application/octet-stream");
-      xhr.send(blob);
+      xhr.setRequestHeader(
+        "content-type",
+        `multipart/related; boundary=${boundary}`
+      );
+      const body = this.buildMultipartRelatedBody(boundary, blob, {});
+      xhr.send(body);
     });
     return response.id;
+  }
+
+  buildMultipartRelatedBody(
+    boundary: string,
+    data: ArrayBuffer,
+    metadata: object
+  ): ArrayBuffer {
+    let body = "--" + boundary + "\r\n";
+    body += 'Content-Disposition: form-data; name="metadata"\r\n';
+    body += "Content-Type: application/json; charset=UTF-8\r\n\r\n";
+    body += JSON.stringify(metadata) + "\r\n";
+    body += "--" + boundary + "\r\n";
+    body += 'Content-Disposition: form-data; name="file"\r\n\r\n';
+    return Buffer.concat([
+      Buffer.from(body, "utf8"),
+      new Uint8Array(data),
+      Buffer.from("\r\n--" + boundary + "--\r\n", "utf8"),
+    ]);
   }
 }
