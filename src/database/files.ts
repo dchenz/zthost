@@ -153,7 +153,7 @@ export class FileHandler {
     );
     const encryptedChunk = await encrypt(await chunk.arrayBuffer(), rawKey);
     const blobId = await this.storageBackend.putBlob(
-      await new Response(encryptedChunk).blob(),
+      encryptedChunk,
       onProgress
     );
     return {
@@ -313,9 +313,10 @@ export class FileHandler {
     if (!key) {
       throw new Error("Unable to decrypt file chunk key");
     }
-    const encryptedChunkData = await (
-      await this.storageBackend.getBlob(chunk.id, onProgress)
-    ).arrayBuffer();
+    const encryptedChunkData = await this.storageBackend.getBlob(
+      chunk.id,
+      onProgress
+    );
     const chunkData = await decrypt(encryptedChunkData, key);
     if (!chunkData) {
       throw new Error("Unable to decrypt file chunk");

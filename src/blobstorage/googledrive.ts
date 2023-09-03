@@ -32,7 +32,7 @@ export class GoogleDriveStorage implements BlobStorage {
   async getBlob(
     id: string,
     onProgress: (loaded: number) => void
-  ): Promise<Blob> {
+  ): Promise<ArrayBuffer> {
     const xhr = new XMLHttpRequest();
     const response = await new Promise<Blob>((resolve) => {
       xhr.addEventListener("progress", (event) => {
@@ -54,11 +54,11 @@ export class GoogleDriveStorage implements BlobStorage {
       xhr.setRequestHeader("authorization", `Bearer ${this.accessToken}`);
       xhr.send();
     });
-    return response;
+    return await response.arrayBuffer();
   }
 
   async putBlob(
-    blob: Blob,
+    blob: ArrayBuffer,
     onProgress: (loaded: number) => void
   ): Promise<string> {
     const xhr = new XMLHttpRequest();
