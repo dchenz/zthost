@@ -1,0 +1,37 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+  	function isRequestUser(userId) {
+    	return request.auth.uid != null && request.auth.uid == userId;
+    }
+  	match /userAuth/{ownerId} {
+    	allow read, write: if isRequestUser(ownerId);
+    }
+    match /folders/{folderID} {
+    	allow create: if isRequestUser(request.resource.data.ownerId);
+    	allow read, write: if isRequestUser(resource.data.ownerId);
+    }
+    match /files/{fileID} {
+    	allow create: if isRequestUser(request.resource.data.ownerId);
+    	allow read, write: if isRequestUser(resource.data.ownerId);
+    }
+    match /fileChunks/{fileID} {
+      function getFile() {
+        return get(/databases/$(database)/documents/files/$(fileID)).data;
+      }
+    	allow create: if isRequestUser(getFile().ownerId);
+      allow read, write: if isRequestUser(getFile().ownerId);
+    }
+    match /thumbnails/{fileID} {
+      function getFile() {
+        return get(/databases/$(database)/documents/files/$(fileID)).data;
+      }
+    	allow create: if isRequestUser(getFile().ownerId);
+      allow read, write: if isRequestUser(getFile().ownerId);
+    }
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
