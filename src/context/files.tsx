@@ -28,12 +28,12 @@ type FilesContextType = {
   addDownloadTask: (file: FileEntity) => string;
   addItem: (item: FolderEntry) => void;
   addUploadTask: (file: File) => string;
+  deleteItems: (items: FolderEntry[]) => Promise<void>;
   isLoading: boolean;
   items: FolderEntry[];
   path: Folder[];
   previewFile: FileEntity | null;
   removeDownloadTask: (id: string) => void;
-  removeItem: (id: string) => void;
   removeUploadTask: (id: string) => void;
   selectedItems: FolderEntry[];
   setPath: (path: Folder[]) => void;
@@ -49,12 +49,12 @@ const FilesContext = createContext<FilesContextType>({
   addDownloadTask: () => "",
   addItem: () => undefined,
   addUploadTask: () => "",
+  deleteItems: async () => undefined,
   isLoading: false,
   items: [],
   path: [],
   previewFile: null,
   removeDownloadTask: () => undefined,
-  removeItem: () => undefined,
   removeUploadTask: () => undefined,
   selectedItems: [],
   setPath: () => undefined,
@@ -186,18 +186,37 @@ export const FilesProvider: React.FC<FilesProviderProps> = ({ children }) => {
     });
   }, []);
 
+  const deleteItems = useCallback(
+    async (items: FolderEntry[]) => {
+      const operations = [];
+      for (const item of items) {
+        if (item.type === "file") {
+          operations.push(fileHandler.deleteFile(item.id));
+        } else {
+          operations.push(fileHandler.deleteFolder(item.id));
+        }
+      }
+      await Promise.all(operations);
+      for (const item of items) {
+        removeItem(item.id);
+      }
+      setSelectedItems([]);
+    },
+    [removeItem, setSelectedItems]
+  );
+
   return (
     <FilesContext.Provider
       value={{
         addDownloadTask,
         addItem,
         addUploadTask,
+        deleteItems,
         isLoading,
         items,
         path,
         previewFile,
         removeDownloadTask: removeTask,
-        removeItem,
         removeUploadTask: removeTask,
         selectedItems,
         setPath,

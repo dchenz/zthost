@@ -347,4 +347,32 @@ export class FileHandler {
     await Promise.all(operations);
     await deleteDoc(doc(fstore, "files", fileId));
   }
+
+  async deleteFolder(folderId: string): Promise<void> {
+    const operations: Promise<void>[] = [];
+    operations.push(deleteDoc(doc(fstore, "folders", folderId)));
+    // Delete files and metadata of files inside the folder.
+    const filesToDelete = await getDocs(
+      query(
+        collection(fstore, "files"),
+        where("ownerId", "==", this.ownerId),
+        where("folderId", "==", folderId)
+      )
+    );
+    for (const file of filesToDelete.docs) {
+      operations.push(this.deleteFile(file.id));
+    }
+    // Recursively delete folders inside folder.
+    const foldersToDelete = await getDocs(
+      query(
+        collection(fstore, "folders"),
+        where("ownerId", "==", this.ownerId),
+        where("folderId", "==", folderId)
+      )
+    );
+    for (const folder of foldersToDelete.docs) {
+      operations.push(this.deleteFolder(folder.id));
+    }
+    await Promise.all(operations);
+  }
 }
