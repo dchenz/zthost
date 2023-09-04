@@ -1,5 +1,6 @@
 import { useMediaQuery, useToast } from "@chakra-ui/react";
 import { useCallback, useMemo, useRef, useState } from "react";
+import { THUMBNAIL_SIZE } from "../config";
 import type { Folder, FolderEntry } from "../database/model";
 import type { ToastId, UseToastOptions } from "@chakra-ui/react";
 
@@ -70,16 +71,13 @@ export function formatRelativeTime(date: Date): string {
   return date.toLocaleString();
 }
 
-export const createImageThumbnail = (
-  file: File,
-  thumbnailSize: number
-): Promise<Blob> => {
+export const createImageThumbnail = (file: File): Promise<Blob> => {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.onload = () => {
       const canvas = document.createElement("canvas");
-      canvas.width = thumbnailSize;
-      canvas.height = thumbnailSize;
+      canvas.width = THUMBNAIL_SIZE;
+      canvas.height = THUMBNAIL_SIZE;
       canvas
         .getContext("2d")
         ?.drawImage(
@@ -90,8 +88,8 @@ export const createImageThumbnail = (
           img.height,
           0,
           0,
-          thumbnailSize,
-          thumbnailSize
+          THUMBNAIL_SIZE,
+          THUMBNAIL_SIZE
         );
       canvas.toBlob((blob) => {
         if (blob) {
@@ -189,15 +187,15 @@ export const createVideoThumbnail = (file: File): Promise<Blob> => {
     video.load();
 
     video.addEventListener("loadedmetadata", () => {
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
+      canvas.width = THUMBNAIL_SIZE;
+      canvas.height = THUMBNAIL_SIZE;
     });
 
     video.addEventListener("loadeddata", () => {
       setTimeout(() => {
         canvas
           .getContext("2d")
-          ?.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+          ?.drawImage(video, 0, 0, THUMBNAIL_SIZE, THUMBNAIL_SIZE);
 
         canvas.toBlob((blob) => {
           if (blob) {

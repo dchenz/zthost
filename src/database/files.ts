@@ -12,7 +12,7 @@ import {
 import streamSaver from "streamsaver";
 import { v4 as uuid } from "uuid";
 import { Buffer } from "buffer";
-import { CHUNK_SIZE, THUMBNAIL_SIZE, fstore } from "../config";
+import { CHUNK_SIZE, fstore } from "../config";
 import {
   blobToDataUri,
   createImageThumbnail,
@@ -72,9 +72,7 @@ export class FileHandler {
   async uploadThumbnail(fileId: string, file: File): Promise<void> {
     let thumbnail;
     if (isImage(file.type)) {
-      thumbnail = await blobToDataUri(
-        await createImageThumbnail(file, THUMBNAIL_SIZE)
-      );
+      thumbnail = await blobToDataUri(await createImageThumbnail(file));
     } else if (isVideo(file.type)) {
       thumbnail = await blobToDataUri(await createVideoThumbnail(file));
     }
