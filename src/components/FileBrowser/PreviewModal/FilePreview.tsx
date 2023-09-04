@@ -1,8 +1,9 @@
 import { Box, Spinner, Text } from "@chakra-ui/react";
 import React, { useEffect, useMemo, useState } from "react";
 import { useSignedInUser } from "../../../context/user";
-import { isImage } from "../../../utils";
+import { isImage, isVideo } from "../../../utils";
 import ImagePreview from "./ImagePreview";
+import VideoPreview from "./VideoPreview";
 import type { FileEntity } from "../../../database/model";
 
 type FilePreviewProps = {
@@ -19,7 +20,8 @@ const FilePreview: React.FC<FilePreviewProps> = ({ file }) => {
   const [isLoading, setLoading] = useState(false);
 
   useEffect(() => {
-    const supportsPreview = isImage(file.metadata.type);
+    const supportsPreview =
+      isImage(file.metadata.type) || isVideo(file.metadata.type);
     if (supportsPreview) {
       setLoading(true);
       fileHandler
@@ -42,6 +44,9 @@ const FilePreview: React.FC<FilePreviewProps> = ({ file }) => {
     }
     if (isImage(file.metadata.type)) {
       return <ImagePreview file={file} fileBytes={fileBytes} />;
+    }
+    if (isVideo(file.metadata.type)) {
+      return <VideoPreview file={file} fileBytes={fileBytes} />;
     }
   }, [file, fileBytes]);
 

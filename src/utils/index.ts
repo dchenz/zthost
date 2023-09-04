@@ -99,6 +99,7 @@ export const createImageThumbnail = (
         } else {
           reject("empty canvas");
         }
+        canvas.remove();
       }, file.type);
     };
     blobToDataUri(file).then((dataUri) => {
@@ -157,6 +158,10 @@ export const isImage = (mimetype: string) => {
   return mimetype.startsWith("image/");
 };
 
+export const isVideo = (mimetype: string) => {
+  return mimetype.startsWith("video/");
+};
+
 // Returns true, if the path is recursively inside or equal to the folder.
 export const folderContains = (folder: Folder, path: FolderEntry[]) => {
   // The folder must appear somewhere in the path,
@@ -167,4 +172,44 @@ export const folderContains = (folder: Folder, path: FolderEntry[]) => {
     }
   }
   return false;
+};
+
+export const createVideoThumbnail = (file: File): Promise<Blob> => {
+  return new Promise<Blob>((resolve, reject) => {
+    const canvas = document.createElement("canvas");
+    const video = document.createElement("video");
+    const source = document.createElement("source");
+    const urlRef = URL.createObjectURL(file);
+    source.setAttribute("src", urlRef);
+    video.setAttribute("preload", "metadata");
+    video.appendChild(source);
+    document.body.appendChild(canvas);
+    document.body.appendChild(video);
+    video.currentTime = 0.5;
+    video.load();
+
+    video.addEventListener("loadedmetadata", () => {
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+    });
+
+    video.addEventListener("loadeddata", () => {
+      setTimeout(() => {
+        canvas
+          .getContext("2d")
+          ?.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+
+        canvas.toBlob((blob) => {
+          if (blob) {
+            resolve(blob);
+          } else {
+            reject("empty canvas");
+          }
+          URL.revokeObjectURL(urlRef);
+          video.remove();
+          canvas.remove();
+        }, "image/png");
+      }, 2000);
+    });
+  });
 };

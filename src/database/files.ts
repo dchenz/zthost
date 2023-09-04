@@ -13,7 +13,13 @@ import streamSaver from "streamsaver";
 import { v4 as uuid } from "uuid";
 import { Buffer } from "buffer";
 import { CHUNK_SIZE, THUMBNAIL_SIZE, fstore } from "../config";
-import { blobToDataUri, createImageThumbnail, isImage } from "../utils";
+import {
+  blobToDataUri,
+  createImageThumbnail,
+  isImage,
+  isVideo,
+  createVideoThumbnail,
+} from "../utils";
 import {
   decrypt,
   encrypt,
@@ -64,9 +70,17 @@ export class FileHandler {
   }
 
   async uploadThumbnail(fileId: string, file: File): Promise<void> {
-    const thumbnail = await blobToDataUri(
-      await createImageThumbnail(file, THUMBNAIL_SIZE)
-    );
+    let thumbnail;
+    if (isImage(file.type)) {
+      thumbnail = await blobToDataUri(
+        await createImageThumbnail(file, THUMBNAIL_SIZE)
+      );
+    } else if (isVideo(file.type)) {
+      thumbnail = await blobToDataUri(await createVideoThumbnail(file));
+    }
+    if (!thumbnail) {
+      return;
+    }
     const encryptedThumbnail = await encrypt(
       Buffer.from(thumbnail, "utf-8"),
       this.userAuth.thumbnailKey
@@ -91,7 +105,7 @@ export class FileHandler {
       Buffer.from(JSON.stringify(metadata), "utf-8"),
       this.userAuth.metadataKey
     );
-    const hasThumbnail = isImage(file.type);
+    const hasThumbnail = isImage(file.type) || isVideo(file.type);
     await setDoc(doc(fstore, "files", fileId), {
       creationTime: creationTime.getTime(),
       folderId: parentFolderId,
