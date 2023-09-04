@@ -9,8 +9,8 @@ import React, {
 } from "react";
 import { useNavigate } from "react-router-dom";
 import { GoogleDriveStorage } from "../blobstorage/googledrive";
+import { auth } from "../config";
 import { FileHandler } from "../database/files";
-import { auth } from "../firebase";
 import { useChakraToast } from "../utils";
 import type { BlobStorage } from "../blobstorage/model";
 import type { AuthProperties } from "../database/model";

@@ -12,7 +12,7 @@ import {
 import streamSaver from "streamsaver";
 import { v4 as uuid } from "uuid";
 import { Buffer } from "buffer";
-import { fstore } from "../firebase";
+import { fstore } from "../config";
 import { blobToDataUri, createImageThumbnail, isImage } from "../utils";
 import {
   decrypt,

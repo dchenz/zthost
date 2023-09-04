@@ -1,6 +1,6 @@
 import { v4 as uuid } from "uuid";
 import { Buffer } from "buffer";
-import { firebaseConfig } from "../firebase";
+import { firebaseConfig } from "../config";
 import type { BlobStorage } from "./model";
 
 type PutBlobResponse = {

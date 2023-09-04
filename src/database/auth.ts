@@ -1,6 +1,6 @@
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { Buffer } from "buffer";
-import { fstore } from "../firebase";
+import { fstore } from "../config";
 import {
   deriveKey,
   generateWrappedKey,
