@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { ROUTES } from "../config";
 import { useCurrentUser } from "../context/user";
 
 type AuthRequiredProps = {
@@ -12,7 +13,7 @@ const AuthRequired: React.FC<AuthRequiredProps> = ({ children }) => {
 
   useEffect(() => {
     if (!user) {
-      navigate("/login");
+      navigate(ROUTES.loginWithProvider);
     }
   }, [user]);
 

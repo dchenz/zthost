@@ -1,6 +1,7 @@
 import { Spinner } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { ROUTES } from "../../config";
 import { useCurrentUser } from "../../context/user";
 import { getUserAuth } from "../../database/auth";
 import AuthRequired from "../AuthRequired";
@@ -30,7 +31,7 @@ const CheckUserAuth: React.FC = () => {
 
   const onAuthComplete = () => {
     setEncryptedUserAuth(null);
-    navigate("/");
+    navigate(ROUTES.index);
   };
 
   if (!encryptedUserAuth) {

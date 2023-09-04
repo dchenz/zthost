@@ -9,7 +9,7 @@ import React, {
 } from "react";
 import { useNavigate } from "react-router-dom";
 import { GoogleDriveStorage } from "../blobstorage/googledrive";
-import { auth } from "../config";
+import { auth, ROUTES } from "../config";
 import { FileHandler } from "../database/files";
 import { useChakraToast } from "../utils";
 import type { BlobStorage } from "../blobstorage/model";
@@ -84,7 +84,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
       const response = await signInWithPopup(auth, provider);
       if (response.user) {
         closeToast();
-        navigate("/login/password");
+        navigate(ROUTES.loginWithPassword);
       }
       const credentials = GoogleAuthProvider.credentialFromResult(response);
       if (credentials?.accessToken) {
@@ -104,7 +104,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     setAccessToken(null);
     setUserAuth(null);
     setUser(null);
-    navigate("/login");
+    navigate(ROUTES.loginWithProvider);
   }, []);
 
   const storageBackend = useMemo(() => {
