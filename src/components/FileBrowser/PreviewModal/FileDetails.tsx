@@ -2,15 +2,17 @@ import {
   Box,
   CloseButton,
   Divider,
+  HStack,
   IconButton,
   Text,
   Tooltip,
   VStack,
 } from "@chakra-ui/react";
 import React from "react";
-import { Download } from "react-bootstrap-icons";
+import { Download, Trash } from "react-bootstrap-icons";
 import { useFiles } from "../../../context/files";
 import { formatBinarySize } from "../../../utils";
+import ConfirmPopup from "../../ConfirmPopup";
 import type { FileEntity } from "../../../database/model";
 
 type FileDetailsProps = {
@@ -18,11 +20,16 @@ type FileDetailsProps = {
 };
 
 const FileDetails: React.FC<FileDetailsProps> = ({ file }) => {
-  const { setPreviewFile, addDownloadTask } = useFiles();
+  const { setPreviewFile, addDownloadTask, deleteItems } = useFiles();
 
   const handleDownload = async () => {
     setPreviewFile(null);
     addDownloadTask(file);
+  };
+
+  const handleDelete = async () => {
+    await deleteItems([file]);
+    setPreviewFile(null);
   };
 
   return (
@@ -34,7 +41,7 @@ const FileDetails: React.FC<FileDetailsProps> = ({ file }) => {
       height={{ md: "auto", lg: "100%" }}
       alignItems="self-start"
     >
-      <Box width="100%" display="flex">
+      <HStack width="100%">
         <CloseButton onClick={() => setPreviewFile(null)} />
         <Box flexGrow={1}></Box>
         <Tooltip label="Download">
@@ -46,7 +53,17 @@ const FileDetails: React.FC<FileDetailsProps> = ({ file }) => {
             size="sm"
           />
         </Tooltip>
-      </Box>
+        <ConfirmPopup onConfirm={handleDelete} prompt="Delete file?">
+          <Tooltip label="Delete">
+            <IconButton
+              icon={<Trash />}
+              aria-label="delete"
+              onFocus={(e) => e.preventDefault()}
+              size="sm"
+            />
+          </Tooltip>
+        </ConfirmPopup>
+      </HStack>
       <Text>{file.metadata.name}</Text>
       <Text fontSize="small" color="#777777">
         {file.creationTime.toLocaleString()}
