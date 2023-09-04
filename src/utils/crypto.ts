@@ -1,11 +1,6 @@
 import ScryptJS from "scrypt-js";
 import { Buffer } from "buffer";
-
-const options = {
-  scrypt_cpu: 2 ** 14,
-  scrypt_memory: 8,
-  scrypt_threads: 1,
-};
+import { SCRYPT_PASSWORD_OPTIONS } from "../config";
 
 const concatArrayBuffer = (...buffers: ArrayBuffer[]): ArrayBuffer => {
   const totalByteLength = buffers.reduce(
@@ -67,9 +62,9 @@ export const deriveKey = (
     ScryptJS.syncScrypt(
       Buffer.from(password),
       Buffer.from(salt),
-      options.scrypt_cpu,
-      options.scrypt_memory,
-      options.scrypt_threads,
+      SCRYPT_PASSWORD_OPTIONS.cpuCost,
+      SCRYPT_PASSWORD_OPTIONS.memoryCost,
+      SCRYPT_PASSWORD_OPTIONS.nThreads,
       32
     )
   );

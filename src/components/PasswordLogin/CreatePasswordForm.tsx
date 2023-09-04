@@ -1,7 +1,6 @@
 import { Button, FormControl, Input, Text, VStack } from "@chakra-ui/react";
 import React, { useState } from "react";
-
-const MINIMUM_LENGTH = 8;
+import { MINIMUM_PASSWORD_LENGTH } from "../../config";
 
 type CreatePasswordFormProps = {
   onSubmit: (password: string) => void;
@@ -13,7 +12,7 @@ const CreatePasswordForm: React.FC<CreatePasswordFormProps> = ({
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const canSubmit =
-    password.length > MINIMUM_LENGTH && password === confirmPassword;
+    password.length > MINIMUM_PASSWORD_LENGTH && password === confirmPassword;
 
   const onFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,7 +32,7 @@ const CreatePasswordForm: React.FC<CreatePasswordFormProps> = ({
             placeholder="Enter new password"
           />
           <Text color="grey" fontSize="14px">
-            Must be at least {MINIMUM_LENGTH} characters.
+            Must be at least {MINIMUM_PASSWORD_LENGTH} characters.
           </Text>
         </FormControl>
         <FormControl>

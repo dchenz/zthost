@@ -2,7 +2,7 @@ import { initializeApp } from "firebase/app";
 import { getAuth, inMemoryPersistence } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
-export const firebaseConfig = {
+const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
   authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
   projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
@@ -23,3 +23,14 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 auth.setPersistence(inMemoryPersistence);
 export const fstore = getFirestore(app);
+
+export const SCRYPT_PASSWORD_OPTIONS = {
+  cpuCost: 2 ** 14,
+  memoryCost: 8,
+  nThreads: 1,
+} as const;
+
+export const MINIMUM_PASSWORD_LENGTH = 8;
+export const THUMBNAIL_SIZE = 32;
+export const CHUNK_SIZE = 1024 * 1024 * 64;
+export const APP_BUCKET_NAME = `DO NOT DELETE - zthost:${firebaseConfig.projectId}`;

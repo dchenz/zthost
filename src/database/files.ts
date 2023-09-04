@@ -12,7 +12,7 @@ import {
 import streamSaver from "streamsaver";
 import { v4 as uuid } from "uuid";
 import { Buffer } from "buffer";
-import { fstore } from "../config";
+import { CHUNK_SIZE, THUMBNAIL_SIZE, fstore } from "../config";
 import { blobToDataUri, createImageThumbnail, isImage } from "../utils";
 import {
   decrypt,
@@ -33,8 +33,6 @@ import type { BlobStorage } from "../blobstorage/model";
 import type { User } from "firebase/auth";
 
 export class FileHandler {
-  chunkSize = 1024 * 1024 * 64;
-  thumbnailSize = 32;
   storageBackend: BlobStorage;
   userAuth: AuthProperties;
   ownerId: string;
@@ -67,7 +65,7 @@ export class FileHandler {
 
   async uploadThumbnail(fileId: string, file: File): Promise<void> {
     const thumbnail = await blobToDataUri(
-      await createImageThumbnail(file, this.thumbnailSize)
+      await createImageThumbnail(file, THUMBNAIL_SIZE)
     );
     const encryptedThumbnail = await encrypt(
       Buffer.from(thumbnail, "utf-8"),
@@ -120,7 +118,7 @@ export class FileHandler {
     file: File,
     onProgress: (progress: number) => void
   ): Promise<void> {
-    const nChunks = Math.ceil(file.size / this.chunkSize);
+    const nChunks = Math.ceil(file.size / CHUNK_SIZE);
     // Aggregate the upload progress across all chunks and pass it to the
     // callback to report overall upload progress.
     const uploadProgress: Record<number, number> = {};
@@ -150,8 +148,8 @@ export class FileHandler {
     onProgress: (loaded: number) => void
   ): Promise<BlobRef> {
     const chunk = file.slice(
-      chunkNumber * this.chunkSize,
-      (chunkNumber + 1) * this.chunkSize
+      chunkNumber * CHUNK_SIZE,
+      (chunkNumber + 1) * CHUNK_SIZE
     );
     const { plainTextKey, wrappedKey } = await generateWrappedKey(
       this.userAuth.fileKey
