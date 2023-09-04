@@ -45,6 +45,7 @@ const ConfirmPopup: React.FC<ConfirmDeleteProps> = ({
                   onConfirm();
                   onClose?.();
                 }}
+                size="sm"
               >
                 OK
               </Button>
@@ -54,6 +55,7 @@ const ConfirmPopup: React.FC<ConfirmDeleteProps> = ({
                   onCancel?.();
                   onClose?.();
                 }}
+                size="sm"
               >
                 Cancel
               </Button>

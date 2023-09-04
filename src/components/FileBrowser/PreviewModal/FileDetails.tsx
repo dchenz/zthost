@@ -60,6 +60,7 @@ const FileDetails: React.FC<FileDetailsProps> = ({ file }) => {
               aria-label="delete"
               onFocus={(e) => e.preventDefault()}
               size="sm"
+              colorScheme="red"
             />
           </Tooltip>
         </ConfirmPopup>

@@ -33,6 +33,7 @@ const Header: React.FC = () => {
                 size="sm"
                 text="Delete"
                 title="Delete selected items"
+                colorScheme="red"
               />
             </ConfirmPopup>
             <ResponsiveIconButton

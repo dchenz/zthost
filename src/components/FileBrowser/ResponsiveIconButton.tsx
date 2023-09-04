@@ -4,6 +4,7 @@ import { useMobileView } from "../../utils";
 
 type ResponsiveIconButtonProps = {
   ariaLabel: string;
+  colorScheme?: string;
   icon: JSX.Element;
   onClick?: () => void;
   size?: string;
@@ -14,7 +15,7 @@ type ResponsiveIconButtonProps = {
 const ResponsiveIconButton = React.forwardRef<
   HTMLButtonElement,
   ResponsiveIconButtonProps
->(({ ariaLabel, icon, text, onClick, size, title }, ref) => {
+>(({ ariaLabel, colorScheme, icon, text, onClick, size, title }, ref) => {
   const isMobileView = useMobileView();
   if (isMobileView) {
     return (
@@ -25,6 +26,7 @@ const ResponsiveIconButton = React.forwardRef<
         icon={icon}
         title={title}
         size={size}
+        colorScheme={colorScheme}
       />
     );
   }
@@ -36,6 +38,7 @@ const ResponsiveIconButton = React.forwardRef<
       leftIcon={icon}
       title={title}
       size={size}
+      colorScheme={colorScheme}
     >
       {text}
     </Button>
