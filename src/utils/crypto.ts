@@ -78,17 +78,31 @@ export const deriveKey = (
 export const generateWrappedKey = async (
   key: ArrayBuffer
 ): Promise<{
-  rawKey: ArrayBuffer;
+  plainTextKey: ArrayBuffer;
   wrappedKey: ArrayBuffer;
 }> => {
-  const rawKey = randomBytes(32);
-  const wrappedKey = await encrypt(rawKey, key);
+  const plainTextKey = randomBytes(32);
+  const wrappedKey = await wrapKey(plainTextKey, key);
   return {
-    rawKey,
+    plainTextKey,
     wrappedKey,
   };
 };
 
 export const randomBytes = (n: number): ArrayBuffer => {
   return Buffer.from(window.crypto.getRandomValues(new Uint8Array(n)));
+};
+
+export const wrapKey = async (
+  plainTextKey: ArrayBuffer,
+  key: ArrayBuffer
+): Promise<ArrayBuffer> => {
+  return await encrypt(plainTextKey, key);
+};
+
+export const unWrapKey = async (
+  wrappedKey: ArrayBuffer,
+  key: ArrayBuffer
+): Promise<ArrayBuffer | null> => {
+  return await decrypt(wrappedKey, key);
 };

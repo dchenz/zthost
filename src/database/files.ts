@@ -14,7 +14,12 @@ import { v4 as uuid } from "uuid";
 import { Buffer } from "buffer";
 import { fstore } from "../firebase";
 import { blobToDataUri, createImageThumbnail, isImage } from "../utils";
-import { decrypt, encrypt, generateWrappedKey } from "../utils/crypto";
+import {
+  decrypt,
+  encrypt,
+  generateWrappedKey,
+  unWrapKey,
+} from "../utils/crypto";
 import type {
   AuthProperties,
   BlobRef,
@@ -148,10 +153,13 @@ export class FileHandler {
       chunkNumber * this.chunkSize,
       (chunkNumber + 1) * this.chunkSize
     );
-    const { rawKey, wrappedKey } = await generateWrappedKey(
+    const { plainTextKey, wrappedKey } = await generateWrappedKey(
       this.userAuth.fileKey
     );
-    const encryptedChunk = await encrypt(await chunk.arrayBuffer(), rawKey);
+    const encryptedChunk = await encrypt(
+      await chunk.arrayBuffer(),
+      plainTextKey
+    );
     const blobId = await this.storageBackend.putBlob(
       encryptedChunk,
       onProgress
@@ -306,12 +314,12 @@ export class FileHandler {
     chunk: BlobRef,
     onProgress: (loaded: number) => void
   ): Promise<ArrayBuffer> {
-    const key = await decrypt(
+    const key = await unWrapKey(
       Buffer.from(chunk.key, "base64"),
       this.userAuth.fileKey
     );
     if (!key) {
-      throw new Error("Unable to decrypt file chunk key");
+      throw new Error("Unable to un-wrap file chunk key");
     }
     const encryptedChunkData = await this.storageBackend.getBlob(
       chunk.id,

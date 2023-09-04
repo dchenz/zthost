@@ -2,11 +2,11 @@ import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { Buffer } from "buffer";
 import { fstore } from "../firebase";
 import {
-  decrypt,
   deriveKey,
-  encrypt,
   generateWrappedKey,
   randomBytes,
+  unWrapKey,
+  wrapKey,
 } from "../utils/crypto";
 import type { AuthProperties } from "./model";
 
@@ -61,9 +61,9 @@ export const createUserAuth = async (
     bucketId,
   });
   return {
-    fileKey: fileKey.rawKey,
-    metadataKey: metadataKey.rawKey,
-    thumbnailKey: thumbnailKey.rawKey,
+    fileKey: fileKey.plainTextKey,
+    metadataKey: metadataKey.plainTextKey,
+    thumbnailKey: thumbnailKey.plainTextKey,
     salt,
     bucketId,
   };
@@ -77,21 +77,21 @@ export const decryptUserAuth = async (
     Buffer.from(password, "utf-8"),
     encryptedUserAuth.salt
   );
-  const fileKey = await decrypt(
+  const fileKey = await unWrapKey(
     Buffer.from(encryptedUserAuth.fileKey),
     passwordKey
   );
   if (!fileKey) {
     return null;
   }
-  const metadataKey = await decrypt(
+  const metadataKey = await unWrapKey(
     Buffer.from(encryptedUserAuth.metadataKey),
     passwordKey
   );
   if (!metadataKey) {
     return null;
   }
-  const thumbnailKey = await decrypt(
+  const thumbnailKey = await unWrapKey(
     Buffer.from(encryptedUserAuth.thumbnailKey),
     passwordKey
   );
@@ -117,9 +117,9 @@ export const updatePassword = async (
     Buffer.from(newPassword, "utf-8"),
     userAuth.salt
   );
-  const fileKey = await encrypt(userAuth.fileKey, newPasswordKey);
-  const metadataKey = await encrypt(userAuth.metadataKey, newPasswordKey);
-  const thumbnailKey = await encrypt(userAuth.thumbnailKey, newPasswordKey);
+  const fileKey = await wrapKey(userAuth.fileKey, newPasswordKey);
+  const metadataKey = await wrapKey(userAuth.metadataKey, newPasswordKey);
+  const thumbnailKey = await wrapKey(userAuth.thumbnailKey, newPasswordKey);
   await updateDoc(userDoc, {
     fileKey: Buffer.from(fileKey).toString("base64"),
     metadataKey: Buffer.from(metadataKey).toString("base64"),
