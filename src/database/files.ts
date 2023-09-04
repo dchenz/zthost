@@ -69,18 +69,24 @@ export class FileHandler {
     return Buffer.from(thumbnail).toString("utf-8");
   }
 
-  async uploadThumbnail(fileId: string, file: File): Promise<void> {
-    let thumbnail;
-    if (isImage(file.type)) {
-      thumbnail = await blobToDataUri(await createImageThumbnail(file));
-    } else if (isVideo(file.type)) {
-      thumbnail = await blobToDataUri(await createVideoThumbnail(file));
+  async createThumbnail(file: File): Promise<Blob | null> {
+    let thumbnail = null;
+    try {
+      if (isImage(file.type)) {
+        thumbnail = await createImageThumbnail(file);
+      } else if (isVideo(file.type)) {
+        thumbnail = await createVideoThumbnail(file);
+      }
+    } catch {
+      return null;
     }
-    if (!thumbnail) {
-      return;
-    }
+    return thumbnail;
+  }
+
+  async uploadThumbnail(fileId: string, thumbnail: Blob): Promise<void> {
+    const dataUri = await blobToDataUri(thumbnail);
     const encryptedThumbnail = await encrypt(
-      Buffer.from(thumbnail, "utf-8"),
+      Buffer.from(dataUri, "utf-8"),
       this.userAuth.thumbnailKey
     );
     await setDoc(doc(fstore, "thumbnails", fileId), {
@@ -103,21 +109,21 @@ export class FileHandler {
       Buffer.from(JSON.stringify(metadata), "utf-8"),
       this.userAuth.metadataKey
     );
-    const hasThumbnail = isImage(file.type) || isVideo(file.type);
+    const thumbnail = await this.createThumbnail(file);
     await setDoc(doc(fstore, "files", fileId), {
       creationTime: creationTime.getTime(),
       folderId: parentFolderId,
-      hasThumbnail,
+      hasThumbnail: thumbnail !== null,
       metadata: Buffer.from(encryptedMetadata).toString("base64"),
       ownerId: this.ownerId,
     });
-    if (hasThumbnail) {
-      await this.uploadThumbnail(fileId, file);
+    if (thumbnail) {
+      await this.uploadThumbnail(fileId, thumbnail);
     }
     return {
       id: fileId,
       creationTime,
-      hasThumbnail,
+      hasThumbnail: thumbnail !== null,
       folderId: parentFolderId,
       metadata,
       ownerId: this.ownerId,
