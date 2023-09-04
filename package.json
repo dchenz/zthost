@@ -20,8 +20,8 @@
     "uuid": "^9.0.0"
   },
   "scripts": {
-    "start": "GENERATE_SOURCEMAP=false react-scripts start",
-    "build": "GENERATE_SOURCEMAP=false react-scripts build",
+    "start": "sh scripts/start.sh",
+    "build": "sh scripts/build.sh",
     "lint": "eslint src",
     "format": "prettier --write src *.{json,js,ts}",
     "eject": "react-scripts eject"
