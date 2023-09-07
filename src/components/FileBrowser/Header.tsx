@@ -1,10 +1,11 @@
 import { Box, HStack } from "@chakra-ui/react";
 import React, { useState } from "react";
-import { ArrowsMove, Folder2, Trash } from "react-bootstrap-icons";
+import { ArrowsMove, Folder2, Sticky, Trash } from "react-bootstrap-icons";
 import { useFiles } from "../../context/files";
 import ConfirmPopup from "../ConfirmPopup";
 import MoveItemsModal from "./MoveItemsModal";
 import NewFolderModal from "./NewFolderModal";
+import NewNoteModal from "./NewNoteModal";
 import ResponsiveIconButton from "./ResponsiveIconButton";
 import UploadButton from "./UploadButton";
 import ViewModeSelector from "./ViewModeSelector";
@@ -13,6 +14,7 @@ const Header: React.FC = () => {
   const { selectedItems, deleteItems, moveItems } = useFiles();
   const [isCreatingFolder, setCreatingFolder] = useState(false);
   const [isMoving, setMoving] = useState(false);
+  const [isCreatingNote, setCreatingNote] = useState(false);
 
   const deleteConfirmationPrompt = `Delete ${selectedItems.length} item${
     selectedItems.length > 1 ? "s" : ""
@@ -56,6 +58,14 @@ const Header: React.FC = () => {
               text="New"
               title="Create folder"
             />
+            <ResponsiveIconButton
+              ariaLabel="create-note"
+              icon={<Sticky />}
+              onClick={() => setCreatingNote(true)}
+              size="sm"
+              text="New"
+              title="Create note"
+            />
           </React.Fragment>
         )}
         <Box flexGrow={1}></Box>
@@ -70,6 +80,10 @@ const Header: React.FC = () => {
         moveItems={moveItems}
         open={isMoving}
         onClose={() => setMoving(false)}
+      />
+      <NewNoteModal
+        open={isCreatingNote}
+        onClose={() => setCreatingNote(false)}
       />
     </Box>
   );
