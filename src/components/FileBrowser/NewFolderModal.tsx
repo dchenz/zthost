@@ -9,8 +9,8 @@ import {
   ModalOverlay,
 } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
+import { useDatabase } from "../../context/database";
 import { useFiles } from "../../context/files";
-import { useSignedInUser } from "../../context/user";
 
 type NewFolderModalProps = {
   onClose: () => void;
@@ -18,7 +18,7 @@ type NewFolderModalProps = {
 };
 
 const NewFolderModal: React.FC<NewFolderModalProps> = ({ onClose, open }) => {
-  const { fileHandler } = useSignedInUser();
+  const database = useDatabase();
   const { addItem, path } = useFiles();
   const [name, setName] = useState("");
 
@@ -33,7 +33,7 @@ const NewFolderModal: React.FC<NewFolderModalProps> = ({ onClose, open }) => {
     if (!name) {
       return;
     }
-    const newFolder = await fileHandler.createFolder(
+    const newFolder = await database.createFolder(
       name,
       path[path.length - 1]?.id ?? null
     );

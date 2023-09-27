@@ -12,10 +12,10 @@ import {
 import React, { useState } from "react";
 import { useCurrentUser } from "../../context/user";
 import { decryptUserAuth } from "../../utils/crypto";
-import type { AuthProperties } from "../../database/model";
+import type { UserAuthDocument } from "../../database/model";
 
 type PasswordLoginFormProps = {
-  encryptedUserAuth: AuthProperties;
+  encryptedUserAuth: UserAuthDocument;
   onAuthComplete: () => void;
 };
 

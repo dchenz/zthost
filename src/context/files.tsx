@@ -7,7 +7,7 @@ import React, {
 } from "react";
 import { v4 as uuid } from "uuid";
 import { usePersistentState } from "../utils";
-import { useSignedInUser } from "./user";
+import { useDatabase } from "./database";
 import type { FileEntity, Folder, FolderEntry } from "../database/model";
 
 type ViewMode = "grid" | "list";
@@ -80,7 +80,7 @@ type FilesProviderProps = {
 };
 
 export const FilesProvider: React.FC<FilesProviderProps> = ({ children }) => {
-  const { fileHandler } = useSignedInUser();
+  const database = useDatabase();
   const [items, setItems] = useState<FolderEntry[]>([]);
   const [path, setPath] = useState<Folder[]>([]);
   const [isLoading, setLoading] = useState(false);
@@ -94,11 +94,11 @@ export const FilesProvider: React.FC<FilesProviderProps> = ({ children }) => {
 
   useEffect(() => {
     setLoading(true);
-    fileHandler
+    database
       .getFolderContents(path[path.length - 1]?.id ?? null)
       .then(setItems)
       .finally(() => setLoading(false));
-  }, [fileHandler, path]);
+  }, [database, path]);
 
   const addItem = useCallback((newItem: FolderEntry) => {
     setItems((currentItems) => [...currentItems, newItem]);
@@ -133,7 +133,7 @@ export const FilesProvider: React.FC<FilesProviderProps> = ({ children }) => {
         type: "download",
       },
     ]);
-    fileHandler
+    database
       .downloadFileToDisk(file, (progress) => {
         updateTask(file.id, {
           progress,
@@ -162,11 +162,11 @@ export const FilesProvider: React.FC<FilesProviderProps> = ({ children }) => {
           type: "upload",
         },
       ]);
-      fileHandler
-        .uploadFileMetadata(fileId, file, path[path.length - 1]?.id ?? null)
+      database
+        .createFileMetadata(fileId, file, path[path.length - 1]?.id ?? null)
         .then(async (f) => {
           updateTask(fileId, { title: `Uploading '${file.name}'` });
-          await fileHandler.uploadFileChunks(fileId, file, (progress) => {
+          await database.createFileChunks(fileId, file, (progress) => {
             updateTask(f.id, { progress });
           });
           updateTask(fileId, {
@@ -196,9 +196,9 @@ export const FilesProvider: React.FC<FilesProviderProps> = ({ children }) => {
       const operations = [];
       for (const item of items) {
         if (item.type === "file") {
-          operations.push(fileHandler.deleteFile(item.id));
+          operations.push(database.deleteFile(item.id));
         } else {
-          operations.push(fileHandler.deleteFolder(item.id));
+          operations.push(database.deleteFolder(item.id));
         }
       }
       await Promise.all(operations);
@@ -214,9 +214,9 @@ export const FilesProvider: React.FC<FilesProviderProps> = ({ children }) => {
     async (items: FolderEntry[], targetFolderId: string | null) => {
       for (const item of items) {
         if (item.type === "file") {
-          await fileHandler.moveFile(item.id, targetFolderId);
+          await database.moveFile(item.id, targetFolderId);
         } else {
-          await fileHandler.moveFolder(item.id, targetFolderId);
+          await database.moveFolder(item.id, targetFolderId);
         }
         removeItem(item.id);
       }

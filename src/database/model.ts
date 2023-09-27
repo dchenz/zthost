@@ -41,32 +41,25 @@ export type FileEntity = {
   type: "file";
 };
 
-export type BlobRef = {
-  id: string;
-  key: string;
-};
-
 export type FolderEntry = Folder | FileEntity;
 
+export type Document = { id: string };
+
 export interface Database {
-  createDocument: <T extends object>(
+  createDocument: <T extends Document>(
     collection: string,
-    id: string,
     doc: T
   ) => Promise<void>;
   deleteDocument: (collection: string, id: string) => Promise<void>;
-  getDocument: <T extends object>(
+  getDocument: <T extends Document>(
     collection: string,
     id: string
   ) => Promise<T | null>;
-  getDocuments: <T extends object>(
+  getDocuments: <T extends Document>(
     collection: string,
-    conditions: {
-      attribute: string;
-      equalsValue: string;
-    }[]
+    conditions: Record<string, string | null>
   ) => Promise<T[]>;
-  updateDocument: <T extends object>(
+  updateDocument: <T extends Document>(
     collection: string,
     id: string,
     updates: Partial<T>
@@ -76,7 +69,38 @@ export interface Database {
 export type UserAuthDocument = {
   bucketId: string;
   fileKey: string;
+  id: string;
   metadataKey: string;
   salt: string;
   thumbnailKey: string;
+};
+
+export type FolderDocument = {
+  creationTime: number;
+  folderId: string | null;
+  id: string;
+  metadata: string;
+  ownerId: string;
+};
+
+export type FileDocument = {
+  creationTime: number;
+  folderId: string | null;
+  hasThumbnail: boolean;
+  id: string;
+  metadata: string;
+  ownerId: string;
+};
+
+export type FileChunksDocument = {
+  chunks: {
+    id: string;
+    key: string;
+  }[];
+  id: string;
+};
+
+export type ThumbnailsDocument = {
+  data: string;
+  id: string;
 };

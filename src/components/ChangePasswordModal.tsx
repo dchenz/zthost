@@ -9,8 +9,10 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import React from "react";
+import { Buffer } from "buffer";
 import { useDatabase } from "../context/database";
 import { useSignedInUser } from "../context/user";
+import { deriveKey, wrapKey } from "../utils/crypto";
 import CreatePasswordForm from "./PasswordLogin/CreatePasswordForm";
 
 type ChangePasswordModalProps = {
@@ -22,11 +24,23 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
   onClose,
   open,
 }) => {
-  const { user, fileHandler } = useSignedInUser();
-  const { updatePassword } = useDatabase();
+  const { user, userAuth } = useSignedInUser();
+  const { updateUserAuth } = useDatabase();
 
-  const onSubmit = async (password: string) => {
-    await updatePassword(user.uid, fileHandler.userAuth, password);
+  const onSubmit = async (newPassword: string) => {
+    const newPasswordKey = deriveKey(
+      Buffer.from(newPassword, "utf-8"),
+      userAuth.salt
+    );
+    const fileKey = await wrapKey(userAuth.fileKey, newPasswordKey);
+    const metadataKey = await wrapKey(userAuth.metadataKey, newPasswordKey);
+    const thumbnailKey = await wrapKey(userAuth.thumbnailKey, newPasswordKey);
+    await updateUserAuth(user.uid, {
+      fileKey: Buffer.from(fileKey).toString("base64"),
+      metadataKey: Buffer.from(metadataKey).toString("base64"),
+      thumbnailKey: Buffer.from(thumbnailKey).toString("base64"),
+    });
+
     onClose();
   };
 

@@ -15,8 +15,8 @@ const firestoreClient = new Firestore();
 const App = () => {
   return (
     <BrowserRouter>
-      <DatabaseProvider database={firestoreClient}>
-        <UserProvider>
+      <UserProvider>
+        <DatabaseProvider database={firestoreClient}>
           <ChakraProvider>
             <Navbar />
             <Routes>
@@ -35,8 +35,8 @@ const App = () => {
               <Route path={ROUTES.storage} element={<FileBrowser />} />
             </Routes>
           </ChakraProvider>
-        </UserProvider>
-      </DatabaseProvider>
+        </DatabaseProvider>
+      </UserProvider>
     </BrowserRouter>
   );
 };

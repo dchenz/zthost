@@ -1,6 +1,6 @@
 import { Image } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
-import { useSignedInUser } from "../../../context/user";
+import { useDatabase } from "../../../context/database";
 import type { FolderEntry } from "../../../database/model";
 import type { ImageProps } from "@chakra-ui/react";
 
@@ -14,12 +14,12 @@ const DEFAULT_ICONS = {
 };
 
 const Thumbnail: React.FC<ThumbnailProps> = ({ item, ...props }) => {
-  const { fileHandler } = useSignedInUser();
+  const database = useDatabase();
   const [dataUri, setDataUri] = useState(DEFAULT_ICONS[item.type]);
 
   useEffect(() => {
     if (item.type === "file" && item.hasThumbnail) {
-      fileHandler.downloadThumbnail(item.id).then((thumbnail) => {
+      database.getThumbnail(item.id).then((thumbnail) => {
         if (thumbnail) {
           setDataUri(thumbnail);
         }

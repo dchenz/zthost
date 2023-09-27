@@ -7,7 +7,7 @@ import { useCurrentUser } from "../../context/user";
 import AuthRequired from "../AuthRequired";
 import PasswordLoginForm from "./PasswordLoginForm";
 import PasswordRegisterForm from "./PasswordRegisterForm";
-import type { AuthProperties } from "../../database/model";
+import type { UserAuthDocument } from "../../database/model";
 
 const CheckUserAuth: React.FC = () => {
   const { user } = useCurrentUser();
@@ -15,7 +15,7 @@ const CheckUserAuth: React.FC = () => {
   const navigate = useNavigate();
   const [isLoading, setLoading] = useState(true);
   const [encryptedUserAuth, setEncryptedUserAuth] =
-    useState<AuthProperties | null>(null);
+    useState<UserAuthDocument | null>(null);
 
   useEffect(() => {
     if (user) {

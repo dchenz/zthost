@@ -211,3 +211,13 @@ export const createVideoThumbnail = (file: File): Promise<Blob> => {
     });
   });
 };
+
+export const generateThumbnail = async (file: File): Promise<Blob | null> => {
+  if (isImage(file.type)) {
+    return await createImageThumbnail(file);
+  }
+  if (isVideo(file.type)) {
+    return await createVideoThumbnail(file);
+  }
+  return null;
+};

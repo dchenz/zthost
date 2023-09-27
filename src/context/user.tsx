@@ -10,36 +10,31 @@ import React, {
 import { useNavigate } from "react-router-dom";
 import { GoogleDriveStorage } from "../blobstorage/googledrive";
 import { auth, ROUTES } from "../config";
-import { FileHandler } from "../database/files";
 import { useChakraToast } from "../utils";
 import type { BlobStorage } from "../blobstorage/model";
 import type { AuthProperties } from "../database/model";
 
 type UserContext = {
-  fileHandler: FileHandler | null;
   performLogin: () => void;
   performLogout: () => void;
   setUserAuth: (userAuth: AuthProperties) => void;
   storageBackend: BlobStorage | null;
   user: User | null;
+  userAuth: AuthProperties | null;
 };
 
-type SignedInUserContext = Omit<
-  UserContext,
-  "fileHandler" | "storageBackend" | "user"
-> & {
-  fileHandler: FileHandler;
-  storageBackend: BlobStorage;
+type SignedInUserContext = Omit<UserContext, "user" | "userAuth"> & {
   user: User;
+  userAuth: AuthProperties;
 };
 
 const Context = createContext<UserContext>({
-  fileHandler: null,
   performLogin: () => undefined,
   performLogout: () => undefined,
   setUserAuth: () => undefined,
   storageBackend: null,
   user: null,
+  userAuth: null,
 });
 
 export const useSignedInUser = (): SignedInUserContext => {
@@ -60,8 +55,8 @@ type UserProviderProps = {
 
 export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
   const navigate = useNavigate();
-  const [userAuth, setUserAuth] = useState<AuthProperties | null>(null);
   const [user, setUser] = useState<User | null>(null);
+  const [userAuth, setUserAuth] = useState<AuthProperties | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const { openToast, updateToast, closeToast } = useChakraToast();
 
@@ -101,35 +96,28 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
 
   const performLogout = useCallback(async () => {
     await auth.signOut();
-    setAccessToken(null);
+    // setAccessToken(null);
     setUserAuth(null);
     setUser(null);
     navigate(ROUTES.loginWithProvider);
   }, []);
 
   const storageBackend = useMemo(() => {
-    if (accessToken) {
-      return new GoogleDriveStorage(accessToken, userAuth?.bucketId ?? "");
+    if (!accessToken || !userAuth) {
+      return null;
     }
-    return null;
-  }, [accessToken, userAuth?.bucketId]);
-
-  const fileHandler = useMemo(() => {
-    if (storageBackend && userAuth && user) {
-      return new FileHandler(storageBackend, userAuth, user);
-    }
-    return null;
-  }, [storageBackend, userAuth, user]);
+    return new GoogleDriveStorage(accessToken, userAuth.bucketId);
+  }, [accessToken, userAuth]);
 
   return (
     <Context.Provider
       value={{
-        fileHandler,
         performLogin,
         performLogout,
         setUserAuth,
         storageBackend,
         user,
+        userAuth,
       }}
     >
       {children}

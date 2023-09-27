@@ -13,7 +13,7 @@ import { useCurrentUser } from "../context/user";
 import ChangePasswordModal from "./ChangePasswordModal";
 
 const UserMenu: React.FC = () => {
-  const { performLogout, user, fileHandler } = useCurrentUser();
+  const { performLogout, user, userAuth } = useCurrentUser();
   const [isChangingPassword, setChangingPassword] = useState(false);
   return (
     <Menu>
@@ -25,7 +25,7 @@ const UserMenu: React.FC = () => {
         />
       </MenuButton>
       <MenuList minW={0} w="200px" padding={0} zIndex={999}>
-        {fileHandler ? (
+        {userAuth ? (
           <MenuItem onClick={() => setChangingPassword(true)}>
             Change password
           </MenuItem>

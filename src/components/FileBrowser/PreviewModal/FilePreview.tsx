@@ -1,6 +1,6 @@
 import { Box, Spinner, Text } from "@chakra-ui/react";
 import React, { useEffect, useMemo, useState } from "react";
-import { useSignedInUser } from "../../../context/user";
+import { useDatabase } from "../../../context/database";
 import { isImage, isVideo } from "../../../utils";
 import ImagePreview from "./ImagePreview";
 import VideoPreview from "./VideoPreview";
@@ -14,7 +14,7 @@ const NOT_SUPPORTED = "No preview available for this file type.";
 const TOO_LARGE = "File is too large to preview.";
 
 const FilePreview: React.FC<FilePreviewProps> = ({ file }) => {
-  const { fileHandler } = useSignedInUser();
+  const database = useDatabase();
   const [fileBytes, setFileBytes] = useState<ArrayBuffer | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [isLoading, setLoading] = useState(false);
@@ -24,7 +24,7 @@ const FilePreview: React.FC<FilePreviewProps> = ({ file }) => {
       isImage(file.metadata.type) || isVideo(file.metadata.type);
     if (supportsPreview) {
       setLoading(true);
-      fileHandler
+      database
         .downloadFileInMemory(file.id)
         .then((data) => {
           if (!data) {
