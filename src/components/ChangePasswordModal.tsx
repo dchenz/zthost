@@ -9,8 +9,8 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import React from "react";
+import { useDatabase } from "../context/database";
 import { useSignedInUser } from "../context/user";
-import { updatePassword } from "../database/auth";
 import CreatePasswordForm from "./PasswordLogin/CreatePasswordForm";
 
 type ChangePasswordModalProps = {
@@ -23,6 +23,7 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
   open,
 }) => {
   const { user, fileHandler } = useSignedInUser();
+  const { updatePassword } = useDatabase();
 
   const onSubmit = async (password: string) => {
     await updatePassword(user.uid, fileHandler.userAuth, password);

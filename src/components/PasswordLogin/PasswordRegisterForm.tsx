@@ -1,7 +1,7 @@
 import { Box, Heading, Text, VStack } from "@chakra-ui/react";
 import React from "react";
+import { useDatabase } from "../../context/database";
 import { useCurrentUser } from "../../context/user";
-import { createUserAuth } from "../../database/auth";
 import CreatePasswordForm from "./CreatePasswordForm";
 
 type PasswordRegisterFormProps = {
@@ -12,6 +12,7 @@ const PasswordRegisterForm: React.FC<PasswordRegisterFormProps> = ({
   onAuthComplete,
 }) => {
   const { user, setUserAuth, storageBackend } = useCurrentUser();
+  const { createUserAuth } = useDatabase();
 
   if (!user || !storageBackend) {
     return null;

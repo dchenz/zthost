@@ -1,6 +1,7 @@
 import ScryptJS from "scrypt-js";
 import { Buffer } from "buffer";
 import { SCRYPT_PASSWORD_OPTIONS } from "../config";
+import type { AuthProperties } from "../database/model";
 
 const concatArrayBuffer = (...buffers: ArrayBuffer[]): ArrayBuffer => {
   const totalByteLength = buffers.reduce(
@@ -100,4 +101,42 @@ export const unWrapKey = async (
   key: ArrayBuffer
 ): Promise<ArrayBuffer | null> => {
   return await decrypt(wrappedKey, key);
+};
+
+export const decryptUserAuth = async (
+  encryptedUserAuth: AuthProperties,
+  password: string
+): Promise<AuthProperties | null> => {
+  const passwordKey = deriveKey(
+    Buffer.from(password, "utf-8"),
+    encryptedUserAuth.salt
+  );
+  const fileKey = await unWrapKey(
+    Buffer.from(encryptedUserAuth.fileKey),
+    passwordKey
+  );
+  if (!fileKey) {
+    return null;
+  }
+  const metadataKey = await unWrapKey(
+    Buffer.from(encryptedUserAuth.metadataKey),
+    passwordKey
+  );
+  if (!metadataKey) {
+    return null;
+  }
+  const thumbnailKey = await unWrapKey(
+    Buffer.from(encryptedUserAuth.thumbnailKey),
+    passwordKey
+  );
+  if (!thumbnailKey) {
+    return null;
+  }
+  return {
+    fileKey,
+    metadataKey,
+    thumbnailKey,
+    salt: encryptedUserAuth.salt,
+    bucketId: encryptedUserAuth.bucketId,
+  };
 };

@@ -11,7 +11,7 @@ import {
 } from "@chakra-ui/react";
 import React, { useState } from "react";
 import { useCurrentUser } from "../../context/user";
-import { decryptUserAuth } from "../../database/auth";
+import { decryptUserAuth } from "../../utils/crypto";
 import type { AuthProperties } from "../../database/model";
 
 type PasswordLoginFormProps = {

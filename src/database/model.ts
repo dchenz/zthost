@@ -47,3 +47,36 @@ export type BlobRef = {
 };
 
 export type FolderEntry = Folder | FileEntity;
+
+export interface Database {
+  createDocument: <T extends object>(
+    collection: string,
+    id: string,
+    doc: T
+  ) => Promise<void>;
+  deleteDocument: (collection: string, id: string) => Promise<void>;
+  getDocument: <T extends object>(
+    collection: string,
+    id: string
+  ) => Promise<T | null>;
+  getDocuments: <T extends object>(
+    collection: string,
+    conditions: {
+      attribute: string;
+      equalsValue: string;
+    }[]
+  ) => Promise<T[]>;
+  updateDocument: <T extends object>(
+    collection: string,
+    id: string,
+    updates: Partial<T>
+  ) => Promise<void>;
+}
+
+export type UserAuthDocument = {
+  bucketId: string;
+  fileKey: string;
+  metadataKey: string;
+  salt: string;
+  thumbnailKey: string;
+};

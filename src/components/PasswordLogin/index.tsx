@@ -2,8 +2,8 @@ import { Spinner } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "../../config";
+import { useDatabase } from "../../context/database";
 import { useCurrentUser } from "../../context/user";
-import { getUserAuth } from "../../database/auth";
 import AuthRequired from "../AuthRequired";
 import PasswordLoginForm from "./PasswordLoginForm";
 import PasswordRegisterForm from "./PasswordRegisterForm";
@@ -11,6 +11,7 @@ import type { AuthProperties } from "../../database/model";
 
 const CheckUserAuth: React.FC = () => {
   const { user } = useCurrentUser();
+  const { getUserAuth } = useDatabase();
   const navigate = useNavigate();
   const [isLoading, setLoading] = useState(true);
   const [encryptedUserAuth, setEncryptedUserAuth] =
