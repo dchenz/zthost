@@ -22,8 +22,8 @@
   "scripts": {
     "start": "sh scripts/start.sh",
     "build": "sh scripts/build.sh",
-    "lint": "tsc --noEmit && eslint src",
-    "format": "prettier --write src *.{json,js,ts}",
+    "lint": "tsc --noEmit && eslint src && prettier --check src",
+    "format": "prettier --write src",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
