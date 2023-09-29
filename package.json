@@ -22,7 +22,7 @@
   "scripts": {
     "start": "sh scripts/start.sh",
     "build": "sh scripts/build.sh",
-    "lint": "eslint src",
+    "lint": "tsc --noEmit && eslint src",
     "format": "prettier --write src *.{json,js,ts}",
     "eject": "react-scripts eject"
   },
