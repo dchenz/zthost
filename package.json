@@ -22,6 +22,7 @@
   "scripts": {
     "start": "sh scripts/start.sh",
     "build": "sh scripts/build.sh",
+    "build:deploy": "sh scripts/deploy.sh",
     "lint": "tsc --noEmit && eslint src && prettier --check src",
     "format": "prettier --write src",
     "eject": "react-scripts eject"
