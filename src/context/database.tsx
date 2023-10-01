@@ -5,10 +5,8 @@ import { Buffer } from "buffer";
 import { CHUNK_SIZE } from "../config";
 import {
   type Database,
-  type FileDocument,
   type FileEntity,
   type Folder,
-  type FolderDocument,
   type FolderEntry,
   type FolderMetadata,
   type UserAuthDocument,
@@ -21,11 +19,7 @@ import {
   unWrapKey,
 } from "../utils/crypto";
 import { useCurrentUser } from "./user";
-import type {
-  FileChunksDocument,
-  FileMetadata,
-  ThumbnailsDocument,
-} from "../database/model";
+import type { AppCollections, FileMetadata } from "../database/model";
 
 type DatabaseContext = {
   createFileChunks: (
@@ -77,7 +71,7 @@ export const useDatabase = () => {
 
 type DatabaseProviderProps = {
   children: React.ReactNode;
-  database: Database;
+  database: Database<AppCollections>;
 };
 
 export const DatabaseProvider: React.FC<DatabaseProviderProps> = ({
@@ -140,7 +134,7 @@ export const DatabaseProvider: React.FC<DatabaseProviderProps> = ({
         uploads.push(encryptAndUploadChunk(file, i, onChunkProgress(i)));
       }
       const results = await Promise.all(uploads);
-      await database.createDocument<FileChunksDocument>("fileChunks", {
+      await database.createDocument("fileChunks", {
         id: fileId,
         chunks: results.map(({ id, key }) => ({ id, key })),
       });
@@ -162,7 +156,7 @@ export const DatabaseProvider: React.FC<DatabaseProviderProps> = ({
         Buffer.from(JSON.stringify(metadata), "utf-8"),
         userAuth.metadataKey
       );
-      await database.createDocument<FolderDocument>("folders", {
+      await database.createDocument("folders", {
         id,
         creationTime: creationTime.getTime(),
         metadata: Buffer.from(encryptedMetadata).toString("base64"),
@@ -190,7 +184,7 @@ export const DatabaseProvider: React.FC<DatabaseProviderProps> = ({
         Buffer.from(dataUri, "utf-8"),
         userAuth.thumbnailKey
       );
-      await database.createDocument<ThumbnailsDocument>("thumbnails", {
+      await database.createDocument("thumbnails", {
         id: fileId,
         data: Buffer.from(encryptedThumbnail).toString("base64"),
       });
@@ -218,7 +212,7 @@ export const DatabaseProvider: React.FC<DatabaseProviderProps> = ({
         userAuth.metadataKey
       );
       const thumbnail = await generateThumbnail(file);
-      await database.createDocument<FileDocument>("files", {
+      await database.createDocument("files", {
         id: fileId,
         creationTime: creationTime.getTime(),
         folderId: parentFolderId,
@@ -255,10 +249,7 @@ export const DatabaseProvider: React.FC<DatabaseProviderProps> = ({
       if (!storageBackend) {
         throw new Error();
       }
-      const fileChunksDoc = await database.getDocument<FileChunksDocument>(
-        "fileChunks",
-        fileId
-      );
+      const fileChunksDoc = await database.getDocument("fileChunks", fileId);
       const operations: Promise<void>[] = [];
       if (fileChunksDoc) {
         for (const chunk of fileChunksDoc.chunks) {
@@ -306,10 +297,7 @@ export const DatabaseProvider: React.FC<DatabaseProviderProps> = ({
       file: FileEntity,
       onProgress: (progress: number) => void
     ): Promise<void> => {
-      const fileChunksDoc = await database.getDocument<FileChunksDocument>(
-        "fileChunks",
-        file.id
-      );
+      const fileChunksDoc = await database.getDocument("fileChunks", file.id);
       if (!fileChunksDoc?.chunks) {
         throw new Error("Unable to find file chunks");
       }
@@ -346,10 +334,7 @@ export const DatabaseProvider: React.FC<DatabaseProviderProps> = ({
   // Downloading files in-memory is only supported for files with one chunk.
   const downloadFileInMemory = useCallback(
     async (fileId: string): Promise<ArrayBuffer | null> => {
-      const fileChunksDoc = await database.getDocument<FileChunksDocument>(
-        "fileChunks",
-        fileId
-      );
+      const fileChunksDoc = await database.getDocument("fileChunks", fileId);
       if (!fileChunksDoc?.chunks) {
         throw new Error("Unable to find file chunks");
       }
@@ -366,7 +351,7 @@ export const DatabaseProvider: React.FC<DatabaseProviderProps> = ({
       if (!user || !userAuth) {
         throw new Error();
       }
-      const filesInFolder = await database.getDocuments<FileDocument>("files", {
+      const filesInFolder = await database.getDocuments("files", {
         ownerId: user.uid,
         folderId: folderId,
       });
@@ -402,13 +387,10 @@ export const DatabaseProvider: React.FC<DatabaseProviderProps> = ({
       if (!user || !userAuth) {
         throw new Error();
       }
-      const foldersInFolder = await database.getDocuments<FolderDocument>(
-        "folders",
-        {
-          ownerId: user.uid,
-          folderId: folderId,
-        }
-      );
+      const foldersInFolder = await database.getDocuments("folders", {
+        ownerId: user.uid,
+        folderId: folderId,
+      });
       const results: Folder[] = [];
       for (const folder of foldersInFolder) {
         const decryptedMetadata = await decrypt(
@@ -470,10 +452,7 @@ export const DatabaseProvider: React.FC<DatabaseProviderProps> = ({
       if (!userAuth) {
         throw new Error();
       }
-      const thumbnailDoc = await database.getDocument<ThumbnailsDocument>(
-        "thumbnails",
-        fileId
-      );
+      const thumbnailDoc = await database.getDocument("thumbnails", fileId);
       if (!thumbnailDoc) {
         return "";
       }
@@ -498,7 +477,7 @@ export const DatabaseProvider: React.FC<DatabaseProviderProps> = ({
 
   const moveFile = useCallback(
     async (fileId: string, targetFolderId: string | null): Promise<void> => {
-      await database.updateDocument<FileDocument>("files", fileId, {
+      await database.updateDocument("files", fileId, {
         folderId: targetFolderId,
       });
     },
@@ -507,7 +486,7 @@ export const DatabaseProvider: React.FC<DatabaseProviderProps> = ({
 
   const moveFolder = useCallback(
     async (folderId: string, targetFolderId: string | null): Promise<void> => {
-      await database.updateDocument<FolderDocument>("folders", folderId, {
+      await database.updateDocument("folders", folderId, {
         folderId: targetFolderId,
       });
     },

@@ -1,65 +1,78 @@
-import type { Database, Document } from "../../src/database/model";
+import type { AppCollections, Database } from "../../src/database/model";
 
-export class MockDatabase implements Database {
-  collections: Record<string, Record<string, Record<string, unknown>>>;
+type DataStore = Record<
+  keyof AppCollections,
+  AppCollections[keyof AppCollections][]
+>;
 
-  constructor(
-    initialData?: Record<string, Record<string, Record<string, unknown>>>
-  ) {
-    this.collections = initialData ?? {};
+export class MockDatabase implements Database<AppCollections> {
+  collections: DataStore;
+
+  constructor(initialData?: Partial<DataStore>) {
+    this.collections = (initialData ?? {}) as DataStore;
   }
 
-  createDocument = async <T extends Document>(
-    collection: string,
-    doc: T
+  createDocument = async <T extends keyof AppCollections>(
+    collection: T,
+    doc: AppCollections[T]
   ): Promise<void> => {
-    this.collections[collection] ??= {};
-    this.collections[collection][doc.id] = doc;
+    this.collections[collection] ??= [];
+    this.collections[collection].push(doc);
   };
 
-  deleteDocument = async (collection: string, id: string): Promise<void> => {
-    delete this.collections[collection][id];
-    if (!Object.keys(this.collections).length) {
+  deleteDocument = async <T extends keyof AppCollections>(
+    collection: T,
+    id: string
+  ): Promise<void> => {
+    this.collections[collection] = this.collections[collection].filter(
+      (doc) => doc.id !== id
+    );
+    if (!this.collections[collection].length) {
       delete this.collections[collection];
     }
   };
 
-  getDocument = async <T extends Document>(
-    collection: string,
+  getDocument = async <T extends keyof AppCollections>(
+    collection: T,
     id: string
-  ): Promise<T | null> => {
-    return (this.collections[collection]?.[id] as T | undefined) ?? null;
+  ): Promise<AppCollections[T] | null> => {
+    const foundDoc = this.collections[collection].find(
+      (doc) => doc.id === id
+    ) as AppCollections[T];
+    return foundDoc ?? null;
   };
 
-  getDocuments = async <T extends Document>(
-    collection: string,
-    conditions: Record<string, string | null>
-  ): Promise<T[]> => {
-    const results: T[] = [];
-    for (const id of Object.keys(this.collections[collection] ?? [])) {
-      const doc = this.collections[collection][id];
+  getDocuments = async <T extends keyof AppCollections>(
+    collection: T,
+    conditions: Partial<AppCollections[T]>
+  ): Promise<AppCollections[T][]> => {
+    const results: AppCollections[T][] = [];
+    for (const doc of (this.collections[collection] as AppCollections[T][]) ??
+      []) {
       let matched = true;
       for (const attribute of Object.keys(conditions)) {
-        if (doc[attribute] !== conditions[attribute]) {
+        if (
+          doc[attribute as keyof AppCollections[T]] !==
+          conditions[attribute as keyof AppCollections[T]]
+        ) {
           matched = false;
           break;
         }
       }
       if (matched) {
-        results.push(doc as T);
+        results.push(doc as AppCollections[T]);
       }
     }
     return results;
   };
 
-  updateDocument = async <T extends Document>(
-    collection: string,
+  updateDocument = async <T extends keyof AppCollections>(
+    collection: T,
     id: string,
-    updates: Partial<T>
+    updates: Partial<AppCollections[T]>
   ): Promise<void> => {
-    this.collections[collection][id] = {
-      ...this.collections[collection][id],
-      ...updates,
-    };
+    this.collections[collection] = this.collections[collection].map((doc) =>
+      doc.id === id ? { ...doc, ...updates } : doc
+    );
   };
 }

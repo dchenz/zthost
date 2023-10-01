@@ -50,26 +50,37 @@ export type FolderEntry = Folder | FileEntity;
 
 export type Document = { id: string };
 
-export interface Database {
-  createDocument: <T extends Document>(
-    collection: string,
-    doc: T
+export interface Database<Collections extends Record<string, Document>> {
+  createDocument: <T extends keyof Collections>(
+    collection: T,
+    doc: Collections[T]
   ) => Promise<void>;
-  deleteDocument: (collection: string, id: string) => Promise<void>;
-  getDocument: <T extends Document>(
-    collection: string,
+  deleteDocument: <T extends keyof Collections>(
+    collection: T,
     id: string
-  ) => Promise<T | null>;
-  getDocuments: <T extends Document>(
-    collection: string,
-    conditions: Record<string, string | null>
-  ) => Promise<T[]>;
-  updateDocument: <T extends Document>(
-    collection: string,
+  ) => Promise<void>;
+  getDocument: <T extends keyof Collections>(
+    collection: T,
+    id: string
+  ) => Promise<Collections[T] | null>;
+  getDocuments: <T extends keyof Collections>(
+    collection: T,
+    conditions: Partial<Collections[T]>
+  ) => Promise<Collections[T][]>;
+  updateDocument: <T extends keyof Collections>(
+    collection: T,
     id: string,
-    updates: Partial<T>
+    updates: Partial<Collections[T]>
   ) => Promise<void>;
 }
+
+export type AppCollections = {
+  fileChunks: FileChunksDocument;
+  files: FileDocument;
+  folders: FolderDocument;
+  thumbnails: ThumbnailsDocument;
+  userAuth: UserAuthDocument;
+};
 
 export type UserAuthDocument = {
   bucketId: string;

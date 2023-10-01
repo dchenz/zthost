@@ -10,24 +10,27 @@ import {
   where,
 } from "firebase/firestore";
 import { fstore } from "../firebase";
-import type { Database, Document } from "./model";
+import type { AppCollections, Database } from "./model";
 
-export class Firestore implements Database {
-  async createDocument<T extends Document>(
-    collectionName: string,
-    data: T
+export class Firestore implements Database<AppCollections> {
+  async createDocument<T extends keyof AppCollections>(
+    collectionName: T,
+    data: AppCollections[T]
   ): Promise<void> {
     await setDoc(doc(fstore, collectionName, data.id), data);
   }
 
-  async deleteDocument(collectionName: string, id: string): Promise<void> {
+  async deleteDocument<T extends keyof AppCollections>(
+    collectionName: T,
+    id: string
+  ): Promise<void> {
     await deleteDoc(doc(fstore, collectionName, id));
   }
 
-  async getDocuments<T extends Document>(
-    collectionName: string,
-    conditions: Record<string, string | null>
-  ): Promise<T[]> {
+  async getDocuments<T extends keyof AppCollections>(
+    collectionName: T,
+    conditions: Partial<AppCollections[T]>
+  ): Promise<AppCollections[T][]> {
     const q = query(
       collection(fstore, collectionName),
       ...Object.entries(conditions).map(([attribute, equalsValue]) =>
@@ -35,21 +38,23 @@ export class Firestore implements Database {
       )
     );
     const results = (await getDocs(q)).docs;
-    return results.map((data) => ({ ...data.data(), id: data.id }) as T);
+    return results.map(
+      (data) => ({ ...data.data(), id: data.id }) as AppCollections[T]
+    );
   }
 
-  async getDocument<T extends Document>(
-    collectionName: string,
+  async getDocument<T extends keyof AppCollections>(
+    collectionName: T,
     id: string
-  ): Promise<T | null> {
+  ): Promise<AppCollections[T] | null> {
     const result = await getDoc(doc(fstore, collectionName, id));
-    return ({ ...result.data(), id } as T) ?? null;
+    return ({ ...result.data(), id } as AppCollections[T]) ?? null;
   }
 
-  async updateDocument<T extends Document>(
-    collectionName: string,
+  async updateDocument<T extends keyof AppCollections>(
+    collectionName: T,
     id: string,
-    updates: Partial<T>
+    updates: Partial<AppCollections[T]>
   ): Promise<void> {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore

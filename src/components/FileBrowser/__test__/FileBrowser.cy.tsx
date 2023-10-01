@@ -35,8 +35,9 @@ describe("<FileBrowser>", () => {
 
   before(async () => {
     database = new MockDatabase({
-      folders: {
-        folder1: {
+      folders: [
+        {
+          id: "folder1",
           creationTime: 1234567,
           folderId: null,
           metadata: Buffer.from(
@@ -47,9 +48,10 @@ describe("<FileBrowser>", () => {
           ).toString("base64"),
           ownerId: user.uid,
         },
-      },
-      files: {
-        file1: {
+      ],
+      files: [
+        {
+          id: "file1",
           creationTime: 1234567,
           folderId: null,
           hasThumbnail: false,
@@ -69,7 +71,7 @@ describe("<FileBrowser>", () => {
           ).toString("base64"),
           ownerId: user.uid,
         },
-      },
+      ],
     });
   });
 
