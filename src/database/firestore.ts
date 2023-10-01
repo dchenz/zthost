@@ -15,16 +15,16 @@ import type { AppCollections, Database } from "./model";
 export class Firestore implements Database<AppCollections> {
   async createDocument<T extends keyof AppCollections>(
     collectionName: T,
-    data: AppCollections[T]
+    document: AppCollections[T]
   ): Promise<void> {
-    await setDoc(doc(fstore, collectionName, data.id), data);
+    await setDoc(doc(fstore, collectionName, document.id), document);
   }
 
   async deleteDocument<T extends keyof AppCollections>(
     collectionName: T,
-    id: string
+    documentId: string
   ): Promise<void> {
-    await deleteDoc(doc(fstore, collectionName, id));
+    await deleteDoc(doc(fstore, collectionName, documentId));
   }
 
   async getDocuments<T extends keyof AppCollections>(
@@ -45,19 +45,19 @@ export class Firestore implements Database<AppCollections> {
 
   async getDocument<T extends keyof AppCollections>(
     collectionName: T,
-    id: string
+    documentId: string
   ): Promise<AppCollections[T] | null> {
-    const result = await getDoc(doc(fstore, collectionName, id));
-    return ({ ...result.data(), id } as AppCollections[T]) ?? null;
+    const result = await getDoc(doc(fstore, collectionName, documentId));
+    return ({ ...result.data(), id: documentId } as AppCollections[T]) ?? null;
   }
 
   async updateDocument<T extends keyof AppCollections>(
     collectionName: T,
-    id: string,
+    documentId: string,
     updates: Partial<AppCollections[T]>
   ): Promise<void> {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
-    await updateDoc(doc(fstore, collectionName, id), updates);
+    await updateDoc(doc(fstore, collectionName, documentId), updates);
   }
 }

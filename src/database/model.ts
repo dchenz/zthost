@@ -52,24 +52,24 @@ export type Document = { id: string };
 
 export interface Database<Collections extends Record<string, Document>> {
   createDocument: <T extends keyof Collections>(
-    collection: T,
-    doc: Collections[T]
+    collectionName: T,
+    document: Collections[T]
   ) => Promise<void>;
   deleteDocument: <T extends keyof Collections>(
-    collection: T,
-    id: string
+    collectionName: T,
+    documentId: string
   ) => Promise<void>;
   getDocument: <T extends keyof Collections>(
-    collection: T,
-    id: string
+    collectionName: T,
+    documentId: string
   ) => Promise<Collections[T] | null>;
   getDocuments: <T extends keyof Collections>(
-    collection: T,
+    collectionName: T,
     conditions: Partial<Collections[T]>
   ) => Promise<Collections[T][]>;
   updateDocument: <T extends keyof Collections>(
-    collection: T,
-    id: string,
+    collectionName: T,
+    documentId: string,
     updates: Partial<Collections[T]>
   ) => Promise<void>;
 }

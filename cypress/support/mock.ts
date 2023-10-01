@@ -13,42 +13,43 @@ export class MockDatabase implements Database<AppCollections> {
   }
 
   createDocument = async <T extends keyof AppCollections>(
-    collection: T,
-    doc: AppCollections[T]
+    collectionName: T,
+    document: AppCollections[T]
   ): Promise<void> => {
-    this.collections[collection] ??= [];
-    this.collections[collection].push(doc);
+    this.collections[collectionName] ??= [];
+    this.collections[collectionName].push(document);
   };
 
   deleteDocument = async <T extends keyof AppCollections>(
-    collection: T,
-    id: string
+    collectionName: T,
+    documentId: string
   ): Promise<void> => {
-    this.collections[collection] = this.collections[collection].filter(
-      (doc) => doc.id !== id
+    this.collections[collectionName] = this.collections[collectionName].filter(
+      (doc) => doc.id !== documentId
     );
-    if (!this.collections[collection].length) {
-      delete this.collections[collection];
+    if (!this.collections[collectionName].length) {
+      delete this.collections[collectionName];
     }
   };
 
   getDocument = async <T extends keyof AppCollections>(
-    collection: T,
-    id: string
+    collectionName: T,
+    documentId: string
   ): Promise<AppCollections[T] | null> => {
-    const foundDoc = this.collections[collection].find(
-      (doc) => doc.id === id
+    const foundDoc = this.collections[collectionName].find(
+      (doc) => doc.id === documentId
     ) as AppCollections[T];
     return foundDoc ?? null;
   };
 
   getDocuments = async <T extends keyof AppCollections>(
-    collection: T,
+    collectionName: T,
     conditions: Partial<AppCollections[T]>
   ): Promise<AppCollections[T][]> => {
     const results: AppCollections[T][] = [];
-    for (const doc of (this.collections[collection] as AppCollections[T][]) ??
-      []) {
+    for (const doc of (this.collections[
+      collectionName
+    ] as AppCollections[T][]) ?? []) {
       let matched = true;
       for (const attribute of Object.keys(conditions)) {
         if (
@@ -67,12 +68,12 @@ export class MockDatabase implements Database<AppCollections> {
   };
 
   updateDocument = async <T extends keyof AppCollections>(
-    collection: T,
-    id: string,
+    collectionName: T,
+    documentId: string,
     updates: Partial<AppCollections[T]>
   ): Promise<void> => {
-    this.collections[collection] = this.collections[collection].map((doc) =>
-      doc.id === id ? { ...doc, ...updates } : doc
+    this.collections[collectionName] = this.collections[collectionName].map(
+      (doc) => (doc.id === documentId ? { ...doc, ...updates } : doc)
     );
   };
 }
