@@ -1,10 +1,10 @@
 import { Box, Heading, VStack } from "@chakra-ui/react";
 import React from "react";
 import ReactGoogleButton from "react-google-button";
-import { useCurrentUser } from "../context/user";
+import { useFirebaseAuth } from "../context/firebaseAuth";
 
 const ProviderLogin: React.FC = () => {
-  const { performLogin } = useCurrentUser();
+  const { performLogin } = useFirebaseAuth();
   return (
     <Box p={5}>
       <VStack gap={5}>

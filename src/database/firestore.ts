@@ -9,7 +9,7 @@ import {
   updateDoc,
   where,
 } from "firebase/firestore";
-import { fstore } from "../config";
+import { fstore } from "../firebase";
 import type { Database, Document } from "./model";
 
 export class Firestore implements Database {

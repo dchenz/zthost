@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import { ROUTES } from "../../config";
 import { useDatabase } from "../../context/database";
 import { useCurrentUser } from "../../context/user";
-import AuthRequired from "../AuthRequired";
 import PasswordLoginForm from "./PasswordLoginForm";
 import PasswordRegisterForm from "./PasswordRegisterForm";
 import type { UserAuthDocument } from "../../database/model";
@@ -48,11 +47,7 @@ const CheckUserAuth: React.FC = () => {
 };
 
 const PasswordLogin: React.FC = () => {
-  return (
-    <AuthRequired>
-      <CheckUserAuth />
-    </AuthRequired>
-  );
+  return <CheckUserAuth />;
 };
 
 export default PasswordLogin;

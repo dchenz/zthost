@@ -1,3 +1,8 @@
+export type User = {
+  photoURL?: string;
+  uid: string;
+};
+
 export type AuthProperties = {
   // ID indicating where file chunk data is stored on the blob storage backend.
   // For google drive, this is a folder ID.

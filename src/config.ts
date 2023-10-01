@@ -1,29 +1,3 @@
-import { initializeApp } from "firebase/app";
-import { getAuth, inMemoryPersistence } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
-
-const firebaseConfig = {
-  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
-  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.REACT_APP_FIREBASE_APP_ID,
-} as const;
-
-for (const [name, value] of Object.entries(firebaseConfig)) {
-  if (value === undefined) {
-    throw new Error(
-      `No environment variable set for '${name}'. Please check your configuration.`
-    );
-  }
-}
-
-const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
-auth.setPersistence(inMemoryPersistence);
-export const fstore = getFirestore(app);
-
 export const SCRYPT_PASSWORD_OPTIONS = {
   cpuCost: 2 ** 14,
   memoryCost: 8,
@@ -33,8 +7,8 @@ export const SCRYPT_PASSWORD_OPTIONS = {
 export const MINIMUM_PASSWORD_LENGTH = 8;
 export const THUMBNAIL_SIZE = 32;
 export const CHUNK_SIZE = 1024 * 1024 * 64;
-export const APP_BUCKET_NAME = `DO NOT DELETE - zthost:${firebaseConfig.projectId}`;
 export const GIT_COMMIT_HASH = process.env.REACT_APP_GIT_COMMIT_HASH;
+export const APP_BUCKET_NAME = "DO NOT DELETE - zthost:";
 
 export const ROUTES = {
   index: "/",

@@ -9,11 +9,13 @@ import {
 } from "@chakra-ui/react";
 import React, { useState } from "react";
 import { GIT_COMMIT_HASH } from "../config";
+import { useFirebaseAuth } from "../context/firebaseAuth";
 import { useCurrentUser } from "../context/user";
 import ChangePasswordModal from "./ChangePasswordModal";
 
 const UserMenu: React.FC = () => {
-  const { performLogout, user, userAuth } = useCurrentUser();
+  const { user, userAuth } = useCurrentUser();
+  const { performLogout } = useFirebaseAuth();
   const [isChangingPassword, setChangingPassword] = useState(false);
   return (
     <Menu>
