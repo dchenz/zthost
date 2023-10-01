@@ -27,7 +27,7 @@ import type {
   ThumbnailsDocument,
 } from "../database/model";
 
-type DatabaseContextType = {
+type DatabaseContext = {
   createFileChunks: (
     fileId: string,
     file: File,
@@ -65,16 +65,14 @@ type DatabaseContextType = {
   ) => Promise<void>;
 };
 
-const DatabaseContext = createContext<DatabaseContextType | undefined>(
-  undefined
-);
+const Context = createContext<DatabaseContext | undefined>(undefined);
 
 export const useDatabase = () => {
-  const context = useContext(DatabaseContext);
-  if (context === undefined) {
+  const ctx = useContext(Context);
+  if (ctx === undefined) {
     throw new Error("Context not found");
   }
-  return context;
+  return ctx;
 };
 
 type DatabaseProviderProps = {
@@ -527,7 +525,7 @@ export const DatabaseProvider: React.FC<DatabaseProviderProps> = ({
   );
 
   return (
-    <DatabaseContext.Provider
+    <Context.Provider
       value={{
         createFileChunks,
         createFileMetadata,
@@ -547,6 +545,6 @@ export const DatabaseProvider: React.FC<DatabaseProviderProps> = ({
       }}
     >
       {children}
-    </DatabaseContext.Provider>
+    </Context.Provider>
   );
 };

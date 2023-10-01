@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState } from "react";
 import type { BlobStorage } from "../blobstorage/model";
 import type { AuthProperties, User } from "../database/model";
 
-type UserContextType = {
+type UserContext = {
   setStorageBackend: (storageBackend: BlobStorage | null) => void;
   setUser: (user: User | null) => void;
   setUserAuth: (userAuth: AuthProperties | null) => void;
@@ -11,30 +11,31 @@ type UserContextType = {
   userAuth: AuthProperties | null;
 };
 
-type SignedInUserContext = Omit<UserContextType, "user" | "userAuth"> & {
+type SignedInUserContext = Omit<
+  UserContext,
+  "storageBackend" | "user" | "userAuth"
+> & {
+  storageBackend: BlobStorage;
   user: User;
   userAuth: AuthProperties;
 };
 
-const UserContext = createContext<UserContextType>({
-  setStorageBackend: () => undefined,
-  setUser: () => undefined,
-  setUserAuth: () => undefined,
-  storageBackend: null,
-  user: null,
-  userAuth: null,
-});
+const Context = createContext<UserContext | undefined>(undefined);
+
+export const useCurrentUser = (): UserContext => {
+  const ctx = useContext(Context);
+  if (ctx === undefined) {
+    throw new Error("Context not found");
+  }
+  return ctx;
+};
 
 export const useSignedInUser = (): SignedInUserContext => {
-  const ctx = useContext(UserContext);
+  const ctx = useCurrentUser();
   if (!ctx.user) {
     throw new Error("User is not signed-in as expected");
   }
   return ctx as SignedInUserContext;
-};
-
-export const useCurrentUser = (): UserContextType => {
-  return useContext(UserContext);
 };
 
 type UserProviderProps = {
@@ -59,7 +60,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({
   );
 
   return (
-    <UserContext.Provider
+    <Context.Provider
       value={{
         setStorageBackend,
         setUser,
@@ -70,6 +71,6 @@ export const UserProvider: React.FC<UserProviderProps> = ({
       }}
     >
       {children}
-    </UserContext.Provider>
+    </Context.Provider>
   );
 };

@@ -24,7 +24,7 @@ export type PendingTask = {
   type: TaskType;
 };
 
-type FilesContextType = {
+type FilesContext = {
   addDownloadTask: (file: FileEntity) => string;
   addItem: (item: FolderEntry) => void;
   addUploadTask: (file: File) => string;
@@ -49,30 +49,14 @@ type FilesContextType = {
   viewMode: ViewMode;
 };
 
-const FilesContext = createContext<FilesContextType>({
-  addDownloadTask: () => "",
-  addItem: () => undefined,
-  addUploadTask: () => "",
-  deleteItems: async () => undefined,
-  isLoading: false,
-  items: [],
-  moveItems: async () => undefined,
-  path: [],
-  previewFile: null,
-  removeDownloadTask: () => undefined,
-  removeUploadTask: () => undefined,
-  selectedItems: [],
-  setPath: () => undefined,
-  setPreviewFile: () => undefined,
-  setSelectedItems: () => undefined,
-  setViewMode: () => undefined,
-  tasks: [],
-  toggleSelectedItem: () => undefined,
-  viewMode: "grid",
-});
+const Context = createContext<FilesContext | undefined>(undefined);
 
-export const useFiles = () => {
-  return useContext(FilesContext);
+export const useFiles = (): FilesContext => {
+  const ctx = useContext(Context);
+  if (ctx === undefined) {
+    throw new Error("Context not found");
+  }
+  return ctx;
 };
 
 type FilesProviderProps = {
@@ -226,7 +210,7 @@ export const FilesProvider: React.FC<FilesProviderProps> = ({ children }) => {
   );
 
   return (
-    <FilesContext.Provider
+    <Context.Provider
       value={{
         addDownloadTask,
         addItem,
@@ -250,6 +234,6 @@ export const FilesProvider: React.FC<FilesProviderProps> = ({ children }) => {
       }}
     >
       {children}
-    </FilesContext.Provider>
+    </Context.Provider>
   );
 };

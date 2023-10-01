@@ -13,18 +13,19 @@ import { auth } from "../firebase";
 import { useChakraToast } from "../utils";
 import { useCurrentUser } from "./user";
 
-type FirebaseAuthContextType = {
+type FirebaseAuthContext = {
   performLogin: () => void;
   performLogout: () => void;
 };
 
-const FirebaseAuthContext = createContext<FirebaseAuthContextType>({
-  performLogin: () => undefined,
-  performLogout: () => undefined,
-});
+const Context = createContext<FirebaseAuthContext | undefined>(undefined);
 
-export const useFirebaseAuth = () => {
-  return useContext(FirebaseAuthContext);
+export const useFirebaseAuth = (): FirebaseAuthContext => {
+  const ctx = useContext(Context);
+  if (ctx === undefined) {
+    throw new Error("Context not found");
+  }
+  return ctx;
 };
 
 type FirebaseAuthProviderProps = {
@@ -92,13 +93,13 @@ export const FirebaseAuthProvider: React.FC<FirebaseAuthProviderProps> = ({
   }, []);
 
   return (
-    <FirebaseAuthContext.Provider
+    <Context.Provider
       value={{
         performLogin,
         performLogout,
       }}
     >
       {children}
-    </FirebaseAuthContext.Provider>
+    </Context.Provider>
   );
 };
