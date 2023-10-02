@@ -71,6 +71,24 @@ describe("FileBrowser: Grid mode", () => {
     cy.contains("100 B").should("be.visible");
     cy.contains("120.56 KB").should("be.visible");
   });
+
+  it("can change folders", () => {
+    mountFileBrowser(database);
+
+    cy.contains('div[role="group"]', "Cat Pictures").click();
+    cy.contains('div[role="group"]', "Cat Pictures").should("not.exist");
+    cy.contains('div[role="group"]', "cat-with-yarn-ball.png").should(
+      "be.visible"
+    );
+
+    cy.get('[id="path-viewer"]').contains("Cat Pictures").should("be.visible");
+    cy.get('[id="path-viewer"]').contains("My Files").click();
+
+    cy.contains('div[role="group"]', "Cat Pictures").should("be.visible");
+    cy.contains('div[role="group"]', "cat-with-yarn-ball.png").should(
+      "not.exist"
+    );
+  });
 });
 
 describe("FileBrowser: List mode", () => {
@@ -119,5 +137,19 @@ describe("FileBrowser: List mode", () => {
     cy.contains("th", "Name").should("not.exist");
     cy.contains("th", "Created").should("not.exist");
     cy.contains("th", "Size").should("not.exist");
+  });
+
+  it("can change folders", () => {
+    mountFileBrowser(database);
+
+    cy.contains("tr", "Cat Pictures").click();
+    cy.contains("tr", "Cat Pictures").should("not.exist");
+    cy.contains("tr", "cat-with-yarn-ball.png").should("be.visible");
+
+    cy.get('[id="path-viewer"]').contains("Cat Pictures").should("be.visible");
+    cy.get('[id="path-viewer"]').contains("My Files").click();
+
+    cy.contains("tr", "cat-with-yarn-ball.png").should("not.exist");
+    cy.contains("tr", "Cat Pictures").should("be.visible");
   });
 });

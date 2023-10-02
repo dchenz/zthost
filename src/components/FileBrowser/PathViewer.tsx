@@ -65,7 +65,13 @@ const PathViewer: React.FC = () => {
   };
 
   return (
-    <HStack height="40px" px={3} py={2} boxShadow="0px 1.5px 1px 1px #f5f5f5">
+    <HStack
+      height="40px"
+      px={3}
+      py={2}
+      boxShadow="0px 1.5px 1px 1px #f5f5f5"
+      id="path-viewer"
+    >
       {renderPathItem(null, path.length > 0)}
       {parents.map((folder, index) => (
         <React.Fragment key={index}>
