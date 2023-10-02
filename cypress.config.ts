@@ -8,5 +8,6 @@ export default defineConfig({
     },
     viewportWidth: 1000,
     viewportHeight: 1000,
+    fileServerFolder: "./public",
   },
 });

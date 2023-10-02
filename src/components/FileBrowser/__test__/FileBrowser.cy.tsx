@@ -38,7 +38,7 @@ describe("<FileBrowser>", () => {
       folders: [
         {
           id: "folder1",
-          creationTime: 1234567,
+          creationTime: 1672531200,
           folderId: null,
           metadata: Buffer.from(
             await encrypt(
@@ -52,7 +52,7 @@ describe("<FileBrowser>", () => {
       files: [
         {
           id: "file1",
-          creationTime: 1234567,
+          creationTime: 1682922600,
           folderId: null,
           hasThumbnail: false,
           metadata: Buffer.from(
@@ -79,5 +79,23 @@ describe("<FileBrowser>", () => {
     mountFileBrowser(database);
     cy.contains("test folder 1").should("be.visible");
     cy.contains("test file 1").should("be.visible");
+  });
+
+  it("can switch views", () => {
+    mountFileBrowser(database);
+    cy.get('button[aria-label="select-view"]').click();
+    cy.get('button[aria-label="list-mode"]').click();
+
+    cy.contains("th", "Name").should("be.visible");
+    cy.contains("test folder 1").should("be.visible");
+    cy.contains("test file 1").should("be.visible");
+
+    cy.contains("th", "Created").should("be.visible");
+    cy.contains(/^\d{1,2}\/\d{1,2}\/\d{4}, \d{1,2}:\d{2}:\d{2} AM$/).should(
+      "be.visible"
+    );
+
+    cy.contains("th", "Size").should("be.visible");
+    cy.contains("100.00 B").should("be.visible");
   });
 });
