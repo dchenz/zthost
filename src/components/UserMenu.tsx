@@ -1,6 +1,5 @@
 import {
   Avatar,
-  Box,
   Button,
   Menu,
   MenuButton,
@@ -8,7 +7,6 @@ import {
   MenuList,
 } from "@chakra-ui/react";
 import React, { useState } from "react";
-import { GIT_COMMIT_HASH } from "../config";
 import { useFirebaseAuth } from "../context/firebaseAuth";
 import { useCurrentUser } from "../context/user";
 import ChangePasswordModal from "./ChangePasswordModal";
@@ -33,11 +31,6 @@ const UserMenu: React.FC = () => {
           </MenuItem>
         ) : null}
         <MenuItem onClick={performLogout}>Logout</MenuItem>
-        {GIT_COMMIT_HASH ? (
-          <Box px={3} py={1} color="grey">
-            version: {GIT_COMMIT_HASH}
-          </Box>
-        ) : null}
       </MenuList>
     </Menu>
   );

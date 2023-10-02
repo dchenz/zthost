@@ -7,7 +7,6 @@ export const SCRYPT_PASSWORD_OPTIONS = {
 export const MINIMUM_PASSWORD_LENGTH = 8;
 export const THUMBNAIL_SIZE = 32;
 export const CHUNK_SIZE = 1024 * 1024 * 64;
-export const GIT_COMMIT_HASH = process.env.REACT_APP_GIT_COMMIT_HASH;
 export const APP_BUCKET_NAME = "DO NOT DELETE - zthost:";
 
 export const ROUTES = {
