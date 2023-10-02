@@ -30,7 +30,7 @@ const mountFileBrowser = (database: MockDatabase) => {
   );
 };
 
-describe("<FileBrowser>", () => {
+describe("FileBrowser: Grid mode", () => {
   let database: MockDatabase;
 
   before(() => {
@@ -41,13 +41,19 @@ describe("<FileBrowser>", () => {
 
   it("mounts", () => {
     mountFileBrowser(database);
+
     cy.contains("Cat Pictures").should("be.visible");
     cy.contains("README.md").should("be.visible");
     cy.contains("github logo").should("be.visible");
+
+    cy.contains("th", "Name").should("not.exist");
+    cy.contains("th", "Created").should("not.exist");
+    cy.contains("th", "Size").should("not.exist");
   });
 
   it("can switch views", () => {
     mountFileBrowser(database);
+
     cy.get('button[aria-label="select-view"]').click();
     cy.get('button[aria-label="list-mode"]').click();
 
@@ -64,5 +70,54 @@ describe("<FileBrowser>", () => {
     cy.contains("th", "Size").should("be.visible");
     cy.contains("100 B").should("be.visible");
     cy.contains("120.56 KB").should("be.visible");
+  });
+});
+
+describe("FileBrowser: List mode", () => {
+  let database: MockDatabase;
+
+  before(() => {
+    cy.fixture("FileBrowser_database").then((data) => {
+      database = new MockDatabase(data);
+    });
+  });
+
+  beforeEach(() => {
+    cy.window().then((window) =>
+      window.localStorage.setItem("view-mode", '"list"')
+    );
+  });
+
+  it("mounts", () => {
+    mountFileBrowser(database);
+
+    cy.contains("th", "Name").should("be.visible");
+    cy.contains("Cat Pictures").should("be.visible");
+    cy.contains("README.md").should("be.visible");
+    cy.contains("github logo").should("be.visible");
+
+    cy.contains("th", "Created").should("be.visible");
+    cy.contains(/^\d{1,2}\/\d{1,2}\/\d{4}, \d{1,2}:\d{2}:\d{2} AM$/).should(
+      "be.visible"
+    );
+
+    cy.contains("th", "Size").should("be.visible");
+    cy.contains("100 B").should("be.visible");
+    cy.contains("120.56 KB").should("be.visible");
+  });
+
+  it("can switch views", () => {
+    mountFileBrowser(database);
+
+    cy.get('button[aria-label="select-view"]').click();
+    cy.get('button[aria-label="grid-mode"]').click();
+
+    cy.contains("Cat Pictures").should("be.visible");
+    cy.contains("README.md").should("be.visible");
+    cy.contains("github logo").should("be.visible");
+
+    cy.contains("th", "Name").should("not.exist");
+    cy.contains("th", "Created").should("not.exist");
+    cy.contains("th", "Size").should("not.exist");
   });
 });
