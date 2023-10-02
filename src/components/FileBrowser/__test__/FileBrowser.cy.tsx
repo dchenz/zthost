@@ -96,6 +96,6 @@ describe("<FileBrowser>", () => {
     );
 
     cy.contains("th", "Size").should("be.visible");
-    cy.contains("100.00 B").should("be.visible");
+    cy.contains("100 B").should("be.visible");
   });
 });

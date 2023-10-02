@@ -41,7 +41,7 @@ export function usePersistentState<T>(
 
 export function formatBinarySize(n: number): string {
   if (n < 1024) {
-    return `${n.toFixed(2)} B`;
+    return `${n} B`;
   }
   n /= 1024;
   if (n < 1024) {
