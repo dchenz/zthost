@@ -75,19 +75,15 @@ describe("FileBrowser: Grid mode", () => {
   it("can change folders", () => {
     mountFileBrowser(database);
 
-    cy.contains('div[role="group"]', "Cat Pictures").click();
-    cy.contains('div[role="group"]', "Cat Pictures").should("not.exist");
-    cy.contains('div[role="group"]', "cat-with-yarn-ball.png").should(
-      "be.visible"
-    );
+    cy.getGridViewItem("Cat Pictures").click();
+    cy.getGridViewItem("Cat Pictures").should("not.exist");
+    cy.getGridViewItem("cat-with-yarn-ball.png").should("be.visible");
 
-    cy.get('[id="path-viewer"]').contains("Cat Pictures").should("be.visible");
-    cy.get('[id="path-viewer"]').contains("My Files").click();
+    cy.getPathLink("Cat Pictures").should("be.visible");
+    cy.getPathLink("My Files").click();
 
-    cy.contains('div[role="group"]', "Cat Pictures").should("be.visible");
-    cy.contains('div[role="group"]', "cat-with-yarn-ball.png").should(
-      "not.exist"
-    );
+    cy.getGridViewItem("Cat Pictures").should("be.visible");
+    cy.getGridViewItem("cat-with-yarn-ball.png").should("not.exist");
   });
 });
 
@@ -142,14 +138,14 @@ describe("FileBrowser: List mode", () => {
   it("can change folders", () => {
     mountFileBrowser(database);
 
-    cy.contains("tr", "Cat Pictures").click();
-    cy.contains("tr", "Cat Pictures").should("not.exist");
-    cy.contains("tr", "cat-with-yarn-ball.png").should("be.visible");
+    cy.getListViewItem("Cat Pictures").click();
+    cy.getListViewItem("Cat Pictures").should("not.exist");
+    cy.getListViewItem("cat-with-yarn-ball.png").should("be.visible");
 
-    cy.get('[id="path-viewer"]').contains("Cat Pictures").should("be.visible");
-    cy.get('[id="path-viewer"]').contains("My Files").click();
+    cy.getPathLink("Cat Pictures").should("be.visible");
+    cy.getPathLink("My Files").click();
 
-    cy.contains("tr", "cat-with-yarn-ball.png").should("not.exist");
-    cy.contains("tr", "Cat Pictures").should("be.visible");
+    cy.getListViewItem("cat-with-yarn-ball.png").should("not.exist");
+    cy.getListViewItem("Cat Pictures").should("be.visible");
   });
 });
