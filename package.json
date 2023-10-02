@@ -23,8 +23,8 @@
     "start": "sh scripts/start.sh",
     "build": "sh scripts/build.sh",
     "build:deploy": "sh scripts/deploy.sh",
-    "lint": "tsc --noEmit && eslint src && prettier --check src",
-    "format": "prettier --write src",
+    "lint": "tsc --noEmit && eslint src cypress && prettier --check src cypress",
+    "format": "prettier --write src cypress",
     "test:cypress": "NODE_ENV=test cypress run",
     "eject": "react-scripts eject"
   },
