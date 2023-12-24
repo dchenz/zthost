@@ -52,8 +52,10 @@ export const FirebaseAuthProvider: React.FC<FirebaseAuthProviderProps> = ({
   }, []);
 
   useEffect(() => {
-    if (accessToken && userAuth) {
-      setStorageBackend(new GoogleDriveStorage(accessToken, userAuth.bucketId));
+    if (accessToken) {
+      setStorageBackend(
+        new GoogleDriveStorage(accessToken, userAuth?.bucketId)
+      );
     }
   }, [accessToken, userAuth]);
 

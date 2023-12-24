@@ -13,15 +13,15 @@ type PasswordRegisterFormProps = {
 const PasswordRegisterForm: React.FC<PasswordRegisterFormProps> = ({
   onAuthComplete,
 }) => {
-  const { user, setUserAuth } = useCurrentUser();
+  const { user, setUserAuth, storageBackend } = useCurrentUser();
   const { createUserAuth } = useDatabase();
 
-  if (!user) {
+  if (!user || !storageBackend) {
     return null;
   }
 
   const onSubmit = async (password: string) => {
-    const bucketId = "";
+    const bucketId = await storageBackend.initialize();
     const salt = randomBytes(16);
     const passwordKey = deriveKey(Buffer.from(password, "utf-8"), salt);
     const fileKey = await generateWrappedKey(passwordKey);

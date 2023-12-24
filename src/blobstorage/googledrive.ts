@@ -14,9 +14,9 @@ export class GoogleDriveStorage implements BlobStorage {
   accessToken: string;
   rootFolderId: string;
 
-  constructor(accessToken: string, rootFolderId: string) {
+  constructor(accessToken: string, rootFolderId?: string) {
     this.accessToken = accessToken;
-    this.rootFolderId = rootFolderId;
+    this.rootFolderId = rootFolderId ?? "";
   }
 
   async initialize(): Promise<string> {
