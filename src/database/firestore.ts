@@ -48,7 +48,11 @@ export class Firestore implements Database<AppCollections> {
     documentId: string
   ): Promise<AppCollections[T] | null> {
     const result = await getDoc(doc(fstore, collectionName, documentId));
-    return ({ ...result.data(), id: documentId } as AppCollections[T]) ?? null;
+    const data = result.data();
+    if (!data) {
+      return null;
+    }
+    return { ...data, id: documentId } as AppCollections[T];
   }
 
   async updateDocument<T extends keyof AppCollections>(
