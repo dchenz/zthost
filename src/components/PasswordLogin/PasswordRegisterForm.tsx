@@ -1,5 +1,6 @@
 import { Box, Heading, Text, VStack } from "@chakra-ui/react";
 import React from "react";
+import { Buffer } from "buffer";
 import { useDatabase } from "../../context/database";
 import { useCurrentUser } from "../../context/user";
 import { deriveKey, generateWrappedKey, randomBytes } from "../../utils/crypto";
