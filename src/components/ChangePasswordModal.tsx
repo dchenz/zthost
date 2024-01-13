@@ -9,9 +9,10 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import React from "react";
+import { useSelector } from "react-redux";
 import { Buffer } from "buffer";
 import { useDatabase } from "../context/database";
-import { useSignedInUser } from "../context/user";
+import { getSignedInUser } from "../redux/userSlice";
 import { deriveKey, wrapKey } from "../utils/crypto";
 import CreatePasswordForm from "./PasswordLogin/CreatePasswordForm";
 
@@ -24,7 +25,7 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
   onClose,
   open,
 }) => {
-  const { user, userAuth } = useSignedInUser();
+  const { user, userAuth } = useSelector(getSignedInUser);
   const { updateUserAuth } = useDatabase();
 
   const onSubmit = async (newPassword: string) => {

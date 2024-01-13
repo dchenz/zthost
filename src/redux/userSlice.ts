@@ -7,11 +7,7 @@ import { ROUTES } from "../config";
 import { GoogleDriveStorage } from "../database/googledrive";
 import { auth } from "../firebase";
 import { useChakraToast } from "../utils";
-import type {
-  AuthProperties,
-  BlobStorage,
-  User,
-} from "../database/model";
+import type { AuthProperties, BlobStorage, User } from "../database/model";
 import type { RootState } from "../store";
 import type { PayloadAction } from "@reduxjs/toolkit";
 
@@ -55,7 +51,7 @@ export const userSlice = createSlice({
   },
 });
 
-export const { setUserAuth, initializeStorage } = userSlice.actions;
+export const { setUser, setUserAuth, initializeStorage } = userSlice.actions;
 
 export const useLogout = () => {
   const dispatch = useDispatch();
@@ -101,4 +97,10 @@ export const useLogin = () => {
   }, []);
 };
 
-export const getStorage = (s: RootState) => s.user.storage!;
+export const getSignedInUser = (s: RootState) => ({
+  ...s.user,
+  user: s.user.user!,
+  userAuth: s.user.userAuth!,
+});
+
+export const getCurrentUser = (s: RootState) => s.user;

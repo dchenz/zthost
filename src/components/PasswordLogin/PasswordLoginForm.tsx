@@ -10,7 +10,8 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import React, { useState } from "react";
-import { useCurrentUser } from "../../context/user";
+import { useDispatch } from "react-redux";
+import { setUserAuth } from "../../redux/userSlice";
 import { decryptUserAuth } from "../../utils/crypto";
 import type { UserAuthDocument } from "../../database/model";
 
@@ -23,7 +24,7 @@ const PasswordLoginForm: React.FC<PasswordLoginFormProps> = ({
   encryptedUserAuth,
   onAuthComplete,
 }) => {
-  const { setUserAuth } = useCurrentUser();
+  const dispatch = useDispatch();
   const [password, setPassword] = useState("");
   const [loginFailed, setLoginFailed] = useState(false);
 
@@ -34,7 +35,7 @@ const PasswordLoginForm: React.FC<PasswordLoginFormProps> = ({
     }
     const userAuth = await decryptUserAuth(encryptedUserAuth, password);
     if (userAuth) {
-      setUserAuth(userAuth);
+      dispatch(setUserAuth(userAuth));
       onAuthComplete();
     } else {
       setLoginFailed(true);

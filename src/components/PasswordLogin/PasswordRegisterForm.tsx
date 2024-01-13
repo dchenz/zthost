@@ -1,8 +1,9 @@
 import { Box, Heading, Text, VStack } from "@chakra-ui/react";
 import React from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { Buffer } from "buffer";
 import { useDatabase } from "../../context/database";
-import { useCurrentUser } from "../../context/user";
+import { getSignedInUser, setUserAuth } from "../../redux/userSlice";
 import { deriveKey, generateWrappedKey, randomBytes } from "../../utils/crypto";
 import CreatePasswordForm from "./CreatePasswordForm";
 
@@ -13,15 +14,16 @@ type PasswordRegisterFormProps = {
 const PasswordRegisterForm: React.FC<PasswordRegisterFormProps> = ({
   onAuthComplete,
 }) => {
-  const { user, setUserAuth, storageBackend } = useCurrentUser();
+  const dispatch = useDispatch();
+  const { user, storage } = useSelector(getSignedInUser);
   const { createUserAuth } = useDatabase();
 
-  if (!user || !storageBackend) {
+  if (!user || !storage) {
     return null;
   }
 
   const onSubmit = async (password: string) => {
-    const bucketId = await storageBackend.initialize();
+    const bucketId = await storage.initialize();
     const salt = randomBytes(16);
     const passwordKey = deriveKey(Buffer.from(password, "utf-8"), salt);
     const fileKey = await generateWrappedKey(passwordKey);
@@ -35,13 +37,15 @@ const PasswordRegisterForm: React.FC<PasswordRegisterFormProps> = ({
       salt: Buffer.from(salt).toString("base64"),
       bucketId,
     });
-    setUserAuth({
-      fileKey: fileKey.plainTextKey,
-      metadataKey: metadataKey.plainTextKey,
-      thumbnailKey: thumbnailKey.plainTextKey,
-      salt,
-      bucketId,
-    });
+    dispatch(
+      setUserAuth({
+        fileKey: fileKey.plainTextKey,
+        metadataKey: metadataKey.plainTextKey,
+        thumbnailKey: thumbnailKey.plainTextKey,
+        salt,
+        bucketId,
+      })
+    );
     onAuthComplete();
   };
 

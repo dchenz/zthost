@@ -7,13 +7,13 @@ import {
   MenuList,
 } from "@chakra-ui/react";
 import React, { useState } from "react";
-import { useFirebaseAuth } from "../context/firebaseAuth";
-import { useCurrentUser } from "../context/user";
+import { useSelector } from "react-redux";
+import { getCurrentUser, useLogout } from "../redux/userSlice";
 import ChangePasswordModal from "./ChangePasswordModal";
 
 const UserMenu: React.FC = () => {
-  const { user, userAuth } = useCurrentUser();
-  const { performLogout } = useFirebaseAuth();
+  const { user, userAuth } = useSelector(getCurrentUser);
+  const performLogout = useLogout();
   const [isChangingPassword, setChangingPassword] = useState(false);
   return (
     <Menu>

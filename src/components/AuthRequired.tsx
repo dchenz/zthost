@@ -1,14 +1,15 @@
 import React, { useEffect } from "react";
+import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "../config";
-import { useCurrentUser } from "../context/user";
+import { getCurrentUser } from "../redux/userSlice";
 
 type AuthRequiredProps = {
   children: React.ReactNode;
 };
 
 const AuthRequired: React.FC<AuthRequiredProps> = ({ children }) => {
-  const { user } = useCurrentUser();
+  const { user } = useSelector(getCurrentUser);
   const navigate = useNavigate();
 
   useEffect(() => {

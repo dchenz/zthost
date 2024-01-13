@@ -1,4 +1,5 @@
 import React, { createContext, useCallback, useContext } from "react";
+import { useSelector } from "react-redux";
 import streamSaver from "streamsaver";
 import { v4 as uuid } from "uuid";
 import { Buffer } from "buffer";
@@ -11,6 +12,7 @@ import {
   type FolderMetadata,
   type UserAuthDocument,
 } from "../database/model";
+import { getCurrentUser } from "../redux/userSlice";
 import { blobToDataUri, generateThumbnail } from "../utils";
 import {
   decrypt,
@@ -18,7 +20,6 @@ import {
   generateWrappedKey,
   unWrapKey,
 } from "../utils/crypto";
-import { useCurrentUser } from "./user";
 import type { AppCollections, FileMetadata } from "../database/model";
 
 type DatabaseContext = {
@@ -78,7 +79,7 @@ export const DatabaseProvider: React.FC<DatabaseProviderProps> = ({
   children,
   database,
 }) => {
-  const { user, userAuth, storageBackend } = useCurrentUser();
+  const { user, userAuth, storage } = useSelector(getCurrentUser);
 
   const encryptAndUploadChunk = useCallback(
     async (
@@ -86,7 +87,7 @@ export const DatabaseProvider: React.FC<DatabaseProviderProps> = ({
       chunkNumber: number,
       onProgress: (loaded: number) => void
     ): Promise<{ id: string; key: string }> => {
-      if (!userAuth || !storageBackend) {
+      if (!userAuth || !storage) {
         throw new Error();
       }
       const chunk = file.slice(
@@ -100,13 +101,13 @@ export const DatabaseProvider: React.FC<DatabaseProviderProps> = ({
         await chunk.arrayBuffer(),
         plainTextKey
       );
-      const blobId = await storageBackend.putBlob(encryptedChunk, onProgress);
+      const blobId = await storage.putBlob(encryptedChunk, onProgress);
       return {
         id: blobId,
         key: Buffer.from(wrappedKey).toString("base64"),
       };
     },
-    [userAuth, storageBackend]
+    [userAuth, storage]
   );
 
   const createFileChunks = useCallback(
@@ -246,14 +247,14 @@ export const DatabaseProvider: React.FC<DatabaseProviderProps> = ({
 
   const deleteFile = useCallback(
     async (fileId: string): Promise<void> => {
-      if (!storageBackend) {
+      if (!storage) {
         throw new Error();
       }
       const fileChunksDoc = await database.getDocument("fileChunks", fileId);
       const operations: Promise<void>[] = [];
       if (fileChunksDoc) {
         for (const chunk of fileChunksDoc.chunks) {
-          storageBackend.deleteBlob(chunk.id);
+          storage.deleteBlob(chunk.id);
         }
       }
       operations.push(database.deleteDocument("fileChunks", fileId));
@@ -261,7 +262,7 @@ export const DatabaseProvider: React.FC<DatabaseProviderProps> = ({
       await Promise.all(operations);
       await database.deleteDocument("files", fileId);
     },
-    [database, storageBackend]
+    [database, storage]
   );
 
   const getFileChunk = useCallback(
@@ -269,7 +270,7 @@ export const DatabaseProvider: React.FC<DatabaseProviderProps> = ({
       chunk: { id: string; key: string },
       onProgress: (loaded: number) => void
     ): Promise<ArrayBuffer> => {
-      if (!userAuth || !storageBackend) {
+      if (!userAuth || !storage) {
         throw new Error();
       }
       const key = await unWrapKey(
@@ -279,17 +280,14 @@ export const DatabaseProvider: React.FC<DatabaseProviderProps> = ({
       if (!key) {
         throw new Error("Unable to un-wrap file chunk key");
       }
-      const encryptedChunkData = await storageBackend.getBlob(
-        chunk.id,
-        onProgress
-      );
+      const encryptedChunkData = await storage.getBlob(chunk.id, onProgress);
       const chunkData = await decrypt(encryptedChunkData, key);
       if (!chunkData) {
         throw new Error("Unable to decrypt file chunk");
       }
       return chunkData;
     },
-    [userAuth, storageBackend]
+    [userAuth, storage]
   );
 
   const downloadFileToDisk = useCallback(
