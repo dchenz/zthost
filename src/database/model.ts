@@ -108,11 +108,13 @@ export type FileDocument = {
   ownerId: string;
 };
 
+export type FileChunkKey = {
+  id: string;
+  key: string;
+};
+
 export type FileChunksDocument = {
-  chunks: {
-    id: string;
-    key: string;
-  }[];
+  chunks: FileChunkKey[];
   id: string;
 };
 

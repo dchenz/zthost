@@ -4,15 +4,12 @@ import { useCallback } from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "../config";
-import { Firestore } from "../database/firestore";
 import { GoogleDriveStorage } from "../database/googledrive";
 import { auth } from "../firebase";
 import { useChakraToast } from "../utils";
 import type {
-  AppCollections,
   AuthProperties,
   BlobStorage,
-  Database,
   User,
 } from "../database/model";
 import type { RootState } from "../store";
@@ -20,7 +17,6 @@ import type { PayloadAction } from "@reduxjs/toolkit";
 
 type UserState = {
   accessToken: string | null;
-  database: Database<AppCollections> | null;
   storage: BlobStorage | null;
   user: User | null;
   userAuth: AuthProperties | null;
@@ -28,7 +24,6 @@ type UserState = {
 
 const initialState: UserState = {
   accessToken: null,
-  database: new Firestore(),
   storage: null,
   user: null,
   userAuth: null,
@@ -105,7 +100,5 @@ export const useLogin = () => {
     }
   }, []);
 };
-
-export const getDatabase = (s: RootState) => s.user.database!;
 
 export const getStorage = (s: RootState) => s.user.storage!;
