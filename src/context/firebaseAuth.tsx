@@ -7,8 +7,8 @@ import React, {
   useState,
 } from "react";
 import { useNavigate } from "react-router-dom";
-import { GoogleDriveStorage } from "../blobstorage/googledrive";
 import { ROUTES } from "../config";
+import { GoogleDriveStorage } from "../database/googledrive";
 import { auth } from "../firebase";
 import { useChakraToast } from "../utils";
 import { useCurrentUser } from "./user";

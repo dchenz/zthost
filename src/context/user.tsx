@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState } from "react";
-import type { BlobStorage } from "../blobstorage/model";
+import type { BlobStorage } from "../database/model";
 import type { AuthProperties, User } from "../database/model";
 
 type UserContext = {

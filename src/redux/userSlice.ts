@@ -4,49 +4,72 @@ import { useCallback } from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "../config";
+import { Firestore } from "../database/firestore";
+import { GoogleDriveStorage } from "../database/googledrive";
 import { auth } from "../firebase";
 import { useChakraToast } from "../utils";
-import type { AuthProperties, User } from "../database/model";
+import type {
+  AppCollections,
+  AuthProperties,
+  BlobStorage,
+  Database,
+  User,
+} from "../database/model";
+import type { RootState } from "../store";
 import type { PayloadAction } from "@reduxjs/toolkit";
 
 type UserState = {
   accessToken: string | null;
+  database: Database<AppCollections> | null;
+  storage: BlobStorage | null;
   user: User | null;
   userAuth: AuthProperties | null;
 };
 
 const initialState: UserState = {
+  accessToken: null,
+  database: new Firestore(),
+  storage: null,
   user: null,
   userAuth: null,
-  accessToken: null,
 };
 
 export const userSlice = createSlice({
   name: "user",
   initialState,
   reducers: {
+    setAccessToken: (state, action: PayloadAction<string | null>) => {
+      state.accessToken = action.payload;
+    },
     setUser: (state, action: PayloadAction<User | null>) => {
       state.user = action.payload;
     },
     setUserAuth: (state, action: PayloadAction<AuthProperties | null>) => {
       state.userAuth = action.payload;
     },
-    setAccessToken: (state, action: PayloadAction<string | null>) => {
-      state.accessToken = action.payload;
+    initializeStorage: (state) => {
+      if (state.accessToken && state.userAuth) {
+        state.storage = new GoogleDriveStorage(
+          state.accessToken,
+          state.userAuth.bucketId
+        );
+      } else {
+        state.storage = null;
+      }
     },
   },
 });
 
-export const { setUser, setUserAuth, setAccessToken } = userSlice.actions;
+export const { setUserAuth, initializeStorage } = userSlice.actions;
 
 export const useLogout = () => {
   const dispatch = useDispatch();
 
   return useCallback(async () => {
     await auth.signOut();
-    dispatch(setAccessToken(null));
+    dispatch(userSlice.actions.setAccessToken(null));
     dispatch(setUserAuth(null));
-    dispatch(setUser(null));
+    dispatch(userSlice.actions.setUser(null));
   }, []);
 };
 
@@ -71,7 +94,7 @@ export const useLogin = () => {
       }
       const credentials = GoogleAuthProvider.credentialFromResult(response);
       if (credentials?.accessToken) {
-        dispatch(setAccessToken(credentials.accessToken));
+        dispatch(userSlice.actions.setAccessToken(credentials.accessToken));
       }
     } catch (e) {
       updateToast({
@@ -82,3 +105,7 @@ export const useLogin = () => {
     }
   }, []);
 };
+
+export const getDatabase = (s: RootState) => s.user.database!;
+
+export const getStorage = (s: RootState) => s.user.storage!;
