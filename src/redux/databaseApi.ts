@@ -16,8 +16,14 @@ import type { RootState } from "../store";
 
 const database = new Firestore();
 
+const TAGS = {
+  contentsFiles: "contents/files",
+  contentsFolders: "contents/folders",
+};
+
 export const databaseApi = createApi({
   baseQuery: fakeBaseQuery(),
+  tagTypes: Object.values(TAGS),
   endpoints: (builder) => ({
     getFiles: builder.query<
       FileEntity[],
@@ -49,6 +55,9 @@ export const databaseApi = createApi({
         }
         return { data: results };
       },
+      providesTags: (result, error, { folderId }) => [
+        { type: TAGS.contentsFiles, id: folderId ?? "" },
+      ],
     }),
 
     getFolders: builder.query<
@@ -81,6 +90,9 @@ export const databaseApi = createApi({
         }
         return { data: results };
       },
+      providesTags: (result, error, { folderId }) => [
+        { type: TAGS.contentsFolders, id: folderId ?? "" },
+      ],
     }),
 
     createFile: builder.mutation<void, FileDocument>({
