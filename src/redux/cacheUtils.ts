@@ -1,5 +1,5 @@
 import { databaseApi } from "./databaseApi";
-import type { Folder } from "../database/model";
+import type { FileEntity, Folder } from "../database/model";
 
 export const addFolderToCache = (folder: Folder) => {
   return databaseApi.util.updateQueryData(
@@ -23,4 +23,12 @@ export const removeFolderFromCache = (
 
 export const addThumbnailToCache = (fileId: string, dataUri: string) => {
   return databaseApi.util.upsertQueryData("getThumbnail", { fileId }, dataUri);
+};
+
+export const addFileToCache = (file: FileEntity) => {
+  return databaseApi.util.updateQueryData(
+    "getFiles",
+    { folderId: file.folderId, ownerId: file.ownerId },
+    (existingData: FileEntity[]) => [...existingData, file]
+  );
 };

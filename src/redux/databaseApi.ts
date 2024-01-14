@@ -10,7 +10,11 @@ import {
   type UserAuthDocument,
 } from "../database/model";
 import { decrypt, encrypt } from "../utils/crypto";
-import { addFolderToCache, addThumbnailToCache } from "./cacheUtils";
+import {
+  addFileToCache,
+  addFolderToCache,
+  addThumbnailToCache,
+} from "./cacheUtils";
 import { getSignedInUser } from "./userSlice";
 import type {
   AuthProperties,
@@ -106,9 +110,23 @@ export const databaseApi = createApi({
       ],
     }),
 
-    createFile: builder.mutation<void, FileDocument>({
-      queryFn: async (file) => {
-        return { data: await database.createDocument("files", file) };
+    createFile: builder.mutation<void, FileEntity>({
+      queryFn: async (file, api) => {
+        const state = api.getState() as UserState;
+        const encryptedMetadata = await encrypt(
+          Buffer.from(JSON.stringify(file.metadata), "utf-8"),
+          state.user.userAuth!.metadataKey
+        );
+        await database.createDocument("files", {
+          ...file,
+          creationTime: file.creationTime.getTime(),
+          metadata: Buffer.from(encryptedMetadata).toString("base64"),
+        });
+        return { data: undefined };
+      },
+      onQueryStarted: async (args, { queryFulfilled, dispatch }) => {
+        await queryFulfilled;
+        dispatch(addFileToCache(args));
       },
     }),
 
