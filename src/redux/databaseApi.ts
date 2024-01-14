@@ -33,6 +33,7 @@ const TAGS = {
 };
 
 export const databaseApi = createApi({
+  reducerPath: "databaseApi",
   baseQuery: fakeBaseQuery(),
   tagTypes: Object.values(TAGS),
   endpoints: (builder) => ({
