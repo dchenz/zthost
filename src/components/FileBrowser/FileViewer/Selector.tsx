@@ -2,8 +2,8 @@ import { Button } from "@chakra-ui/button";
 import React, { useMemo } from "react";
 import { Check } from "react-bootstrap-icons";
 import { useDispatch, useSelector } from "react-redux";
-import { useFiles } from "../../../context/files";
 import {
+  getPath,
   getSelectedItems,
   setSelectedItems,
   toggleSelectedItem,
@@ -79,9 +79,9 @@ export const ItemSelector: React.FC<ItemSelectorProps> = ({
 };
 
 export const AllSelector: React.FC = () => {
-  const { path } = useFiles();
   const dispatch = useDispatch<AppDispatch>();
   const selectedItems = useSelector(getSelectedItems);
+  const path = useSelector(getPath);
 
   const { data: items = [] } = useFolderContents(
     path[path.length - 1]?.id ?? null

@@ -8,9 +8,9 @@ import {
   ModalOverlay,
 } from "@chakra-ui/react";
 import React, { useCallback } from "react";
-import { useSelector } from "react-redux";
-import { FilesProvider, useFiles } from "../../context/files";
-import { getSelectedItems } from "../../redux/browserSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { FilesProvider } from "../../context/files";
+import { getPath, getSelectedItems, setPath } from "../../redux/browserSlice";
 import { useFolderContents } from "../../redux/databaseApi";
 import { folderContains } from "../../utils";
 import ListView from "./FileViewer/ListView";
@@ -32,8 +32,9 @@ const _MoveItemsModal: React.FC<MoveItemsModalProps> = ({
   moveItems,
   onClose,
 }) => {
+  const dispatch = useDispatch();
   const selectedItems = useSelector(getSelectedItems);
-  const { path, setPath } = useFiles();
+  const path = useSelector(getPath);
 
   const { data: items = [] } = useFolderContents(
     path[path.length - 1]?.id ?? null
@@ -53,10 +54,10 @@ const _MoveItemsModal: React.FC<MoveItemsModalProps> = ({
   const onItemOpen = useCallback(
     (item: FolderEntry) => {
       if (item.type === "folder") {
-        setPath([...path, item]);
+        dispatch(setPath([...path, item]));
       }
     },
-    [path, setPath]
+    [path]
   );
 
   const cannotMoveInto = useCallback(

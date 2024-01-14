@@ -65,3 +65,5 @@ export const toggleSelectedItem = (item: FolderEntry) => {
 export const getViewMode = (s: RootState) => s.browser.viewMode;
 
 export const getSelectedItems = (s: RootState) => s.browser.selectedItems;
+
+export const getPath = (s: RootState) => s.browser.path;

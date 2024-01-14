@@ -1,9 +1,9 @@
 import React, { createContext, useCallback, useContext, useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { v4 as uuid } from "uuid";
-import { setSelectedItems } from "../redux/browserSlice";
+import { getPath, setSelectedItems } from "../redux/browserSlice";
 import { useDatabase } from "./database";
-import type { FileEntity, Folder, FolderEntry } from "../database/model";
+import type { FileEntity, FolderEntry } from "../database/model";
 
 type TaskType = "download" | "upload";
 
@@ -26,11 +26,9 @@ type FilesContext = {
     items: FolderEntry[],
     targetFolderId: string | null
   ) => Promise<void>;
-  path: Folder[];
   previewFile: FileEntity | null;
   removeDownloadTask: (id: string) => void;
   removeUploadTask: (id: string) => void;
-  setPath: (path: Folder[]) => void;
   setPreviewFile: (selectedFile: FileEntity | null) => void;
   tasks: PendingTask[];
 };
@@ -51,10 +49,10 @@ type FilesProviderProps = {
 
 export const FilesProvider: React.FC<FilesProviderProps> = ({ children }) => {
   const dispatch = useDispatch();
+  const path = useSelector(getPath);
 
   const database = useDatabase();
   const [, setItems] = useState<FolderEntry[]>([]);
-  const [path, setPath] = useState<Folder[]>([]);
   const [previewFile, setPreviewFile] = useState<FileEntity | null>(null);
   const [tasks, setTasks] = useState<PendingTask[]>([]);
 
@@ -181,11 +179,9 @@ export const FilesProvider: React.FC<FilesProviderProps> = ({ children }) => {
         addUploadTask,
         deleteItems,
         moveItems,
-        path,
         previewFile,
         removeDownloadTask: removeTask,
         removeUploadTask: removeTask,
-        setPath,
         setPreviewFile,
         tasks,
       }}

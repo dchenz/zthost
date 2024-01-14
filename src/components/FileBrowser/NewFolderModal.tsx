@@ -9,7 +9,8 @@ import {
   ModalOverlay,
 } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
-import { useFiles } from "../../context/files";
+import { useSelector } from "react-redux";
+import { getPath } from "../../redux/browserSlice";
 import { useCreateFolderMutation } from "../../redux/databaseApi";
 
 type NewFolderModalProps = {
@@ -19,7 +20,7 @@ type NewFolderModalProps = {
 
 const NewFolderModal: React.FC<NewFolderModalProps> = ({ onClose, open }) => {
   const [createFolder] = useCreateFolderMutation();
-  const { path } = useFiles();
+  const path = useSelector(getPath);
   const [name, setName] = useState("");
 
   useEffect(() => {

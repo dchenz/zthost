@@ -3,8 +3,10 @@ import React, { useCallback, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useFiles } from "../../../context/files";
 import {
+  getPath,
   getSelectedItems,
   getViewMode,
+  setPath,
   toggleSelectedItem,
 } from "../../../redux/browserSlice";
 import { useFolderContents } from "../../../redux/databaseApi";
@@ -16,10 +18,11 @@ import type { AppDispatch } from "../../../store";
 const FileViewer: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
 
-  const { setPath, path, setPreviewFile } = useFiles();
+  const { setPreviewFile } = useFiles();
 
   const viewMode = useSelector(getViewMode);
   const selectedItems = useSelector(getSelectedItems);
+  const path = useSelector(getPath);
 
   const { data: items = [] } = useFolderContents(
     path[path.length - 1]?.id ?? null
@@ -46,7 +49,7 @@ const FileViewer: React.FC = () => {
       if (selectedItems.length) {
         dispatch(toggleSelectedItem(item));
       } else if (item.type === "folder") {
-        setPath([...path, item]);
+        dispatch(setPath([...path, item]));
       } else {
         setPreviewFile(item);
       }
