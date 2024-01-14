@@ -1,15 +1,16 @@
 import { Spinner } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "../../config";
 import { useDatabase } from "../../context/database";
-import { getCurrentUser } from "../../redux/userSlice";
+import { getCurrentUser, initializeStorage } from "../../redux/userSlice";
 import PasswordLoginForm from "./PasswordLoginForm";
 import PasswordRegisterForm from "./PasswordRegisterForm";
 import type { UserAuthDocument } from "../../database/model";
 
 const CheckUserAuth: React.FC = () => {
+  const dispatch = useDispatch();
   const { user } = useSelector(getCurrentUser);
   const { getUserAuth } = useDatabase();
   const navigate = useNavigate();
@@ -32,6 +33,7 @@ const CheckUserAuth: React.FC = () => {
 
   const onAuthComplete = () => {
     setEncryptedUserAuth(null);
+    dispatch(initializeStorage());
     navigate(ROUTES.index);
   };
 

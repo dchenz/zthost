@@ -1,4 +1,5 @@
 import { createApi, fakeBaseQuery } from "@reduxjs/toolkit/query/react";
+import { Buffer } from "buffer";
 import { encrypt, generateWrappedKey } from "../utils/crypto";
 import type {
   AuthProperties,

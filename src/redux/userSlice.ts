@@ -60,6 +60,7 @@ export const useLogout = () => {
     await auth.signOut();
     dispatch(userSlice.actions.setAccessToken(null));
     dispatch(setUserAuth(null));
+    dispatch(initializeStorage());
     dispatch(userSlice.actions.setUser(null));
   }, []);
 };

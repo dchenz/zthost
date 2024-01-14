@@ -2,6 +2,7 @@ import { createApi, fakeBaseQuery } from "@reduxjs/toolkit/query/react";
 import { useSelector } from "react-redux";
 import { v4 as uuid } from "uuid";
 import { Buffer } from "buffer";
+import { CHUNK_SIZE } from "../config";
 import { Firestore } from "../database/firestore";
 import {
   type FileDocument,
@@ -9,19 +10,25 @@ import {
   type FolderDocument,
   type UserAuthDocument,
 } from "../database/model";
+import { blobToDataUri, generateThumbnail } from "../utils";
 import { decrypt, encrypt } from "../utils/crypto";
+import { blobApi } from "./blobApi";
 import {
   addFileToCache,
   addFolderToCache,
   addThumbnailToCache,
 } from "./cacheUtils";
+import { addUploadTask, updateTask } from "./taskSlice";
 import { getSignedInUser } from "./userSlice";
 import type {
   AuthProperties,
+  FileChunkKey,
+  FileChunksDocument,
   Folder,
   FolderMetadata,
   User,
 } from "../database/model";
+import type { AppDispatch, RootState } from "../store";
 
 type UserState = {
   user: { user: User | null; userAuth: AuthProperties | null };
@@ -271,6 +278,13 @@ export const databaseApi = createApi({
         };
       },
     }),
+
+    createFileChunks: builder.mutation<void, FileChunksDocument>({
+      queryFn: async (chunks) => {
+        await database.createDocument("fileChunks", chunks);
+        return { data: undefined };
+      },
+    }),
   }),
 });
 
@@ -286,5 +300,94 @@ export const useFolderContents = (folderId: string | null) => {
   return {
     data: [...files, ...folders],
     isLoading: isLoadingFiles || isLoadingFolders,
+  };
+};
+
+export const uploadFile = (
+  fileToUpload: File,
+  parentFolderId: string | null
+) => {
+  return async (dispatch: AppDispatch, getState: () => RootState) => {
+    const state = getState();
+    const fileId = uuid();
+    await dispatch(addUploadTask(fileId, fileToUpload.name));
+
+    // Create a thumbnail for the file if its mimetype is supported.
+    const thumbnail = await generateThumbnail(fileToUpload);
+
+    // Store the file metadata in the database.
+    await dispatch(
+      databaseApi.endpoints.createFile.initiate({
+        id: fileId,
+        creationTime: new Date(),
+        hasThumbnail: thumbnail !== null,
+        folderId: parentFolderId,
+        metadata: {
+          name: fileToUpload.name,
+          size: fileToUpload.size,
+          type: fileToUpload.type,
+        },
+        ownerId: state.user.user!.uid,
+        type: "file",
+      })
+    );
+
+    if (thumbnail) {
+      const dataUri = await blobToDataUri(thumbnail);
+      await dispatch(
+        databaseApi.endpoints.createThumbnail.initiate({ dataUri, fileId })
+      );
+    }
+
+    // Create chunks for the file's binary data, especially if it's large.
+    // Upload each chunk and its metadata to both blob storage and the database.
+    const nChunks = Math.ceil(fileToUpload.size / CHUNK_SIZE);
+    // Combine the upload progress from all chunks and provide it to the
+    // callback to report the overall upload progress.
+    const uploadProgress: Record<number, number> = {};
+    const onProgress = (chunkNumber: number) => async (loaded: number) => {
+      uploadProgress[chunkNumber] = loaded;
+      let loadedAllChunks = 0;
+      for (const progress of Object.values(uploadProgress)) {
+        loadedAllChunks += progress;
+      }
+      // Uploaded chunks have a 12 byte header and 16 byte trailer.
+      const realUploadSize = fileToUpload.size + nChunks * 28;
+      await dispatch(
+        updateTask({
+          id: fileId,
+          updates: { progress: loadedAllChunks / realUploadSize },
+        })
+      );
+    };
+    const uploads: Promise<FileChunkKey>[] = [];
+    for (let i = 0; i < nChunks; i++) {
+      const blob = fileToUpload.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE);
+      uploads.push(
+        dispatch(
+          blobApi.endpoints.createChunk.initiate({ blob, onProgress })
+        ).unwrap()
+      );
+    }
+
+    // After the chunks have been uploaded, store the encryption keys in the database
+    // and link them to the corresponding file record.
+    const results = await Promise.all(uploads);
+    await dispatch(
+      databaseApi.endpoints.createFileChunks.initiate({
+        id: fileId,
+        chunks: results.map(({ id, key }) => ({ id, key })),
+      })
+    );
+    await dispatch(
+      updateTask({
+        id: fileId,
+        updates: {
+          progress: 1,
+          ok: true,
+          title: fileToUpload.name,
+        },
+      })
+    );
   };
 };

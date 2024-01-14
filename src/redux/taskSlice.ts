@@ -1,5 +1,4 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { v4 as uuid } from "uuid";
 import type { FileEntity } from "../database/model";
 import type { Dispatch, PayloadAction } from "@reduxjs/toolkit";
 
@@ -61,15 +60,14 @@ export const addDownloadTask =
     return file.id;
   };
 
-export const addUploadTask = (file: File) => async (dispatch: Dispatch) => {
-  const fileId = uuid();
-  dispatch(
-    taskSlice.actions.addTask({
-      id: fileId,
-      title: `Preparing to upload '${file.name}'`,
-      progress: 0,
-      type: "upload",
-    })
-  );
-  return fileId;
-};
+export const addUploadTask =
+  (id: string, name: string) => async (dispatch: Dispatch) => {
+    dispatch(
+      taskSlice.actions.addTask({
+        id,
+        title: `Preparing to upload '${name}'`,
+        progress: 0,
+        type: "upload",
+      })
+    );
+  };

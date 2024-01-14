@@ -1,10 +1,14 @@
 import { Button, Menu, MenuButton, MenuItem, MenuList } from "@chakra-ui/react";
 import React from "react";
 import { ChevronDown } from "react-bootstrap-icons";
-import { useFiles } from "../../context/files";
+import { useDispatch, useSelector } from "react-redux";
+import { getPath } from "../../redux/browserSlice";
+import { uploadFile } from "../../redux/databaseApi";
+import type { AppDispatch } from "../../store";
 
 const UploadButton: React.FC = () => {
-  const { addUploadTask } = useFiles();
+  const dispatch = useDispatch<AppDispatch>();
+  const path = useSelector(getPath);
 
   const handleFileUpload = () => {
     const fileForm = document.createElement("input");
@@ -17,7 +21,7 @@ const UploadButton: React.FC = () => {
         return;
       }
       for (const file of files) {
-        addUploadTask(file);
+        dispatch(uploadFile(file, path[path.length - 1]?.id ?? null));
       }
     };
   };
