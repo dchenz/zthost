@@ -7,11 +7,10 @@ import {
   type FileDocument,
   type FileEntity,
   type FolderDocument,
-  type ThumbnailsDocument,
   type UserAuthDocument,
 } from "../database/model";
 import { decrypt, encrypt } from "../utils/crypto";
-import { addFolderToCache } from "./cacheUtils";
+import { addFolderToCache, addThumbnailToCache } from "./cacheUtils";
 import { getSignedInUser } from "./userSlice";
 import type {
   AuthProperties,
@@ -173,9 +172,28 @@ export const databaseApi = createApi({
       ],
     }),
 
-    createThumbnail: builder.mutation<void, ThumbnailsDocument>({
-      queryFn: async (thumbnail) => {
-        return { data: await database.createDocument("thumbnails", thumbnail) };
+    createThumbnail: builder.mutation<
+      void,
+      { dataUri: string; fileId: string }
+    >({
+      queryFn: async ({ dataUri, fileId }, api) => {
+        const state = api.getState() as UserState;
+        const encryptedThumbnail = await encrypt(
+          Buffer.from(dataUri, "utf-8"),
+          state.user.userAuth!.thumbnailKey
+        );
+        await database.createDocument("thumbnails", {
+          id: fileId,
+          data: Buffer.from(encryptedThumbnail).toString("base64"),
+        });
+        return { data: undefined };
+      },
+      onQueryStarted: async (
+        { dataUri, fileId },
+        { queryFulfilled, dispatch }
+      ) => {
+        await queryFulfilled;
+        dispatch(addThumbnailToCache(fileId, dataUri));
       },
     }),
 

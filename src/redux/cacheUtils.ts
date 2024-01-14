@@ -20,3 +20,7 @@ export const removeFolderFromCache = (
     (existingData: Folder[]) => existingData.filter((f) => f.id !== folderId)
   );
 };
+
+export const addThumbnailToCache = (fileId: string, dataUri: string) => {
+  return databaseApi.util.upsertQueryData("getThumbnail", { fileId }, dataUri);
+};
