@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type { FileEntity } from "../database/model";
+import type { RootState } from "../store";
 import type { Dispatch, PayloadAction } from "@reduxjs/toolkit";
 
 export type PendingTask = {
@@ -71,3 +72,5 @@ export const addUploadTask =
       })
     );
   };
+
+export const getTasks = (s: RootState) => s.tasks.tasks;

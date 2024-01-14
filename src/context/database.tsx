@@ -2,7 +2,6 @@ import React, { createContext, useCallback, useContext } from "react";
 import { useSelector } from "react-redux";
 import streamSaver from "streamsaver";
 import { Buffer } from "buffer";
-import { CHUNK_SIZE } from "../config";
 import {
   type Database,
   type FileEntity,
@@ -10,27 +9,10 @@ import {
   type UserAuthDocument,
 } from "../database/model";
 import { getCurrentUser } from "../redux/userSlice";
-import { blobToDataUri, generateThumbnail } from "../utils";
-import {
-  decrypt,
-  encrypt,
-  generateWrappedKey,
-  unWrapKey,
-} from "../utils/crypto";
-import type { AppCollections, FileMetadata } from "../database/model";
+import { decrypt, unWrapKey } from "../utils/crypto";
+import type { AppCollections } from "../database/model";
 
 type DatabaseContext = {
-  createFileChunks: (
-    fileId: string,
-    file: File,
-    onProgress: (progress: number) => void
-  ) => Promise<void>;
-  createFileMetadata: (
-    fileId: string,
-    file: File,
-    parentFolderId: string
-  ) => Promise<FileEntity>;
-  createThumbnail: (fileId: string, dataUri: string) => Promise<void>;
   createUserAuth: (userAuth: UserAuthDocument) => Promise<void>;
   deleteFile: (fileId: string) => Promise<void>;
   deleteFolder: (folderId: string) => Promise<void>;
@@ -39,7 +21,6 @@ type DatabaseContext = {
     file: FileEntity,
     onProgress: (progress: number) => void
   ) => Promise<void>;
-  getThumbnail: (fileId: string) => Promise<string>;
   getUserAuth: (userId: string) => Promise<UserAuthDocument | null>;
   moveFile: (fileId: string, targetFolderId: string | null) => Promise<void>;
   moveFolder: (
@@ -72,130 +53,6 @@ export const DatabaseProvider: React.FC<DatabaseProviderProps> = ({
   database,
 }) => {
   const { user, userAuth, storage } = useSelector(getCurrentUser);
-
-  const encryptAndUploadChunk = useCallback(
-    async (
-      file: File,
-      chunkNumber: number,
-      onProgress: (loaded: number) => void
-    ): Promise<{ id: string; key: string }> => {
-      if (!userAuth || !storage) {
-        throw new Error();
-      }
-      const chunk = file.slice(
-        chunkNumber * CHUNK_SIZE,
-        (chunkNumber + 1) * CHUNK_SIZE
-      );
-      const { plainTextKey, wrappedKey } = await generateWrappedKey(
-        userAuth.fileKey
-      );
-      const encryptedChunk = await encrypt(
-        await chunk.arrayBuffer(),
-        plainTextKey
-      );
-      const blobId = await storage.putBlob(encryptedChunk, onProgress);
-      return {
-        id: blobId,
-        key: Buffer.from(wrappedKey).toString("base64"),
-      };
-    },
-    [userAuth, storage]
-  );
-
-  const createFileChunks = useCallback(
-    async (
-      fileId: string,
-      file: File,
-      onProgress: (progress: number) => void
-    ): Promise<void> => {
-      const nChunks = Math.ceil(file.size / CHUNK_SIZE);
-      // Aggregate the upload progress across all chunks and pass it to the
-      // callback to report overall upload progress.
-      const uploadProgress: Record<number, number> = {};
-      const onChunkProgress = (chunkNumber: number) => (loaded: number) => {
-        uploadProgress[chunkNumber] = loaded;
-        let loadedAllChunks = 0;
-        for (const progress of Object.values(uploadProgress)) {
-          loadedAllChunks += progress;
-        }
-        // Uploaded chunks have a 12 byte header and 16 byte trailer.
-        const realUploadSize = file.size + nChunks * 28;
-        onProgress(loadedAllChunks / realUploadSize);
-      };
-      const uploads: Promise<{ id: string; key: string }>[] = [];
-      for (let i = 0; i < nChunks; i++) {
-        uploads.push(encryptAndUploadChunk(file, i, onChunkProgress(i)));
-      }
-      const results = await Promise.all(uploads);
-      await database.createDocument("fileChunks", {
-        id: fileId,
-        chunks: results.map(({ id, key }) => ({ id, key })),
-      });
-    },
-    [database, encryptAndUploadChunk]
-  );
-
-  const createThumbnail = useCallback(
-    async (fileId: string, dataUri: string): Promise<void> => {
-      if (!userAuth) {
-        throw new Error();
-      }
-      const encryptedThumbnail = await encrypt(
-        Buffer.from(dataUri, "utf-8"),
-        userAuth.thumbnailKey
-      );
-      await database.createDocument("thumbnails", {
-        id: fileId,
-        data: Buffer.from(encryptedThumbnail).toString("base64"),
-      });
-    },
-    [database, userAuth]
-  );
-
-  const createFileMetadata = useCallback(
-    async (
-      fileId: string,
-      file: File,
-      parentFolderId: string
-    ): Promise<FileEntity> => {
-      if (!user || !userAuth) {
-        throw new Error();
-      }
-      const creationTime = new Date();
-      const metadata: FileMetadata = {
-        name: file.name,
-        size: file.size,
-        type: file.type,
-      };
-      const encryptedMetadata = await encrypt(
-        Buffer.from(JSON.stringify(metadata), "utf-8"),
-        userAuth.metadataKey
-      );
-      const thumbnail = await generateThumbnail(file);
-      await database.createDocument("files", {
-        id: fileId,
-        creationTime: creationTime.getTime(),
-        folderId: parentFolderId,
-        hasThumbnail: thumbnail !== null,
-        metadata: Buffer.from(encryptedMetadata).toString("base64"),
-        ownerId: user.uid,
-      });
-      if (thumbnail) {
-        const dataUri = await blobToDataUri(thumbnail);
-        await createThumbnail(fileId, dataUri);
-      }
-      return {
-        id: fileId,
-        creationTime,
-        hasThumbnail: thumbnail !== null,
-        folderId: parentFolderId,
-        metadata,
-        ownerId: user.uid,
-        type: "file",
-      };
-    },
-    [database, user, userAuth, createThumbnail]
-  );
 
   const createUserAuth = useCallback(
     async (userAuth: UserAuthDocument): Promise<void> => {
@@ -393,27 +250,6 @@ export const DatabaseProvider: React.FC<DatabaseProviderProps> = ({
     [database, getFilesInFolder, getFoldersInFolder]
   );
 
-  const getThumbnail = useCallback(
-    async (fileId: string): Promise<string> => {
-      if (!userAuth) {
-        throw new Error();
-      }
-      const thumbnailDoc = await database.getDocument("thumbnails", fileId);
-      if (!thumbnailDoc) {
-        return "";
-      }
-      const dataUri = await decrypt(
-        Buffer.from(thumbnailDoc.data, "base64"),
-        userAuth.thumbnailKey
-      );
-      if (!dataUri) {
-        throw new Error("Unable to decrypt thumbnail");
-      }
-      return Buffer.from(dataUri).toString("utf-8");
-    },
-    [database, userAuth]
-  );
-
   const getUserAuth = useCallback(
     async (userId: string): Promise<UserAuthDocument | null> => {
       return await database.getDocument("userAuth", userId);
@@ -452,15 +288,11 @@ export const DatabaseProvider: React.FC<DatabaseProviderProps> = ({
   return (
     <Context.Provider
       value={{
-        createFileChunks,
-        createFileMetadata,
-        createThumbnail,
         createUserAuth,
         deleteFile,
         deleteFolder,
         downloadFileInMemory,
         downloadFileToDisk,
-        getThumbnail,
         getUserAuth,
         moveFile,
         moveFolder,

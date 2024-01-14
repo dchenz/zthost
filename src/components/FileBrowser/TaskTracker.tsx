@@ -1,10 +1,12 @@
 import { Box, CircularProgress, IconButton } from "@chakra-ui/react";
 import React from "react";
 import { CheckCircleFill } from "react-bootstrap-icons";
-import { useFiles } from "../../context/files";
+import { useDispatch, useSelector } from "react-redux";
+import { getTasks, removeTask } from "../../redux/taskSlice";
 
 const TaskTracker: React.FC = () => {
-  const { tasks, removeDownloadTask, removeUploadTask } = useFiles();
+  const dispatch = useDispatch();
+  const tasks = useSelector(getTasks);
 
   if (tasks.length === 0) {
     return null;
@@ -30,11 +32,7 @@ const TaskTracker: React.FC = () => {
             <IconButton
               variant="ghost"
               aria-label="close"
-              onClick={() =>
-                task.type === "download"
-                  ? removeDownloadTask(task.id)
-                  : removeUploadTask(task.id)
-              }
+              onClick={() => dispatch(removeTask(task.id))}
               borderRadius="50%"
             >
               <CheckCircleFill color="#3db535" size="24px" />

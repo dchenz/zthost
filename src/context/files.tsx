@@ -1,7 +1,6 @@
 import React, { createContext, useCallback, useContext, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { v4 as uuid } from "uuid";
-import { getPath, setSelectedItems } from "../redux/browserSlice";
+import { useDispatch } from "react-redux";
+import { setSelectedItems } from "../redux/browserSlice";
 import { useDatabase } from "./database";
 import type { FileEntity, FolderEntry } from "../database/model";
 
@@ -19,16 +18,11 @@ export type PendingTask = {
 
 type FilesContext = {
   addDownloadTask: (file: FileEntity) => string;
-  addItem: (item: FolderEntry) => void;
-  addUploadTask: (file: File) => string;
   deleteItems: (items: FolderEntry[]) => Promise<void>;
   moveItems: (
     items: FolderEntry[],
     targetFolderId: string | null
   ) => Promise<void>;
-  removeDownloadTask: (id: string) => void;
-  removeUploadTask: (id: string) => void;
-  tasks: PendingTask[];
 };
 
 const Context = createContext<FilesContext | undefined>(undefined);
@@ -47,15 +41,10 @@ type FilesProviderProps = {
 
 export const FilesProvider: React.FC<FilesProviderProps> = ({ children }) => {
   const dispatch = useDispatch();
-  const path = useSelector(getPath);
 
   const database = useDatabase();
   const [, setItems] = useState<FolderEntry[]>([]);
-  const [tasks, setTasks] = useState<PendingTask[]>([]);
-
-  const addItem = useCallback((newItem: FolderEntry) => {
-    setItems((currentItems) => [...currentItems, newItem]);
-  }, []);
+  const [, setTasks] = useState<PendingTask[]>([]);
 
   const removeItem = useCallback((id: string) => {
     setItems((currentItems) => currentItems.filter((item) => item.id !== id));
@@ -71,10 +60,6 @@ export const FilesProvider: React.FC<FilesProviderProps> = ({ children }) => {
     },
     []
   );
-
-  const removeTask = useCallback((id: string) => {
-    setTasks((currentTasks) => currentTasks.filter((u) => u.id !== id));
-  }, []);
 
   const addDownloadTask = useCallback((file: FileEntity) => {
     setTasks((currentTasks) => [
@@ -102,37 +87,6 @@ export const FilesProvider: React.FC<FilesProviderProps> = ({ children }) => {
       });
     return file.id;
   }, []);
-
-  const addUploadTask = useCallback(
-    (file: File) => {
-      const fileId = uuid();
-      setTasks((currentTasks) => [
-        ...currentTasks,
-        {
-          id: fileId,
-          title: `Preparing to upload '${file.name}'`,
-          progress: 0,
-          type: "upload",
-        },
-      ]);
-      database
-        .createFileMetadata(fileId, file, path[path.length - 1]?.id ?? null)
-        .then(async (f) => {
-          updateTask(fileId, { title: `Uploading '${file.name}'` });
-          await database.createFileChunks(fileId, file, (progress) => {
-            updateTask(f.id, { progress });
-          });
-          updateTask(fileId, {
-            progress: 1,
-            ok: true,
-            title: file.name,
-          });
-          addItem(f);
-        });
-      return fileId;
-    },
-    [path]
-  );
 
   const deleteItems = useCallback(
     async (items: FolderEntry[]) => {
@@ -172,13 +126,8 @@ export const FilesProvider: React.FC<FilesProviderProps> = ({ children }) => {
     <Context.Provider
       value={{
         addDownloadTask,
-        addItem,
-        addUploadTask,
         deleteItems,
         moveItems,
-        removeDownloadTask: removeTask,
-        removeUploadTask: removeTask,
-        tasks,
       }}
     >
       {children}
