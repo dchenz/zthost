@@ -6,7 +6,6 @@ type ViewMode = "grid" | "list";
 
 type BrowserState = {
   isLoading: boolean;
-  items: FolderEntry[];
   path: Folder[];
   previewFile: FileEntity | null;
   selectedItems: FolderEntry[];
@@ -17,7 +16,6 @@ const initialState: BrowserState = {
   previewFile: null,
   selectedItems: [],
   viewMode: "grid",
-  items: [],
   path: [],
   isLoading: false,
 };
@@ -35,9 +33,6 @@ export const browserSlice = createSlice({
     setViewMode: (state, action: PayloadAction<ViewMode>) => {
       state.viewMode = action.payload;
     },
-    setItems: (state, action: PayloadAction<FolderEntry[]>) => {
-      state.items = action.payload;
-    },
     setPath: (state, action: PayloadAction<Folder[]>) => {
       state.path = action.payload;
     },
@@ -51,7 +46,6 @@ export const {
   setPreviewFile,
   setSelectedItems,
   setViewMode,
-  setItems,
   setPath,
   setLoading,
 } = browserSlice.actions;

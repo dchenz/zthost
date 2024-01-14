@@ -1,6 +1,7 @@
 import { Box } from "@chakra-ui/react";
 import React, { useCallback, useMemo } from "react";
 import { useFiles } from "../../../context/files";
+import { useFolderContents } from "../../../redux/databaseApi";
 import GridView from "./GridView";
 import ListView from "./ListView";
 import type { FolderEntry } from "../../../database/model";
@@ -10,11 +11,14 @@ const FileViewer: React.FC = () => {
     viewMode,
     setPath,
     path,
-    items,
     setPreviewFile,
     selectedItems,
     toggleSelectedItem,
   } = useFiles();
+
+  const { data: items = [] } = useFolderContents(
+    path[path.length - 1]?.id ?? null
+  );
 
   const sortedItems = useMemo(
     () =>

@@ -1,17 +1,88 @@
 import { createApi, fakeBaseQuery } from "@reduxjs/toolkit/query/react";
+import { useSelector } from "react-redux";
+import { Buffer } from "buffer";
 import { Firestore } from "../database/firestore";
-import type {
-  FileDocument,
-  FolderDocument,
-  ThumbnailsDocument,
-  UserAuthDocument,
+import {
+  type FileDocument,
+  type FileEntity,
+  type FolderDocument,
+  type ThumbnailsDocument,
+  type UserAuthDocument,
 } from "../database/model";
+import { decrypt } from "../utils/crypto";
+import { getSignedInUser } from "./userSlice";
+import type { Folder } from "../database/model";
+import type { RootState } from "../store";
 
 const database = new Firestore();
 
 export const databaseApi = createApi({
   baseQuery: fakeBaseQuery(),
   endpoints: (builder) => ({
+    getFiles: builder.query<
+      FileEntity[],
+      Pick<FileDocument, "ownerId" | "folderId">
+    >({
+      queryFn: async (filter, api) => {
+        const state = api.getState() as RootState;
+        const results: FileEntity[] = [];
+        for (const file of await database.getDocuments("files", filter)) {
+          const decryptedMetadata = await decrypt(
+            Buffer.from(file.metadata, "base64"),
+            state.user.userAuth!.metadataKey
+          );
+          if (!decryptedMetadata) {
+            throw new Error(`Unable to decrypt file ${file.id}`);
+          }
+          const metadata = JSON.parse(
+            Buffer.from(decryptedMetadata).toString("utf-8")
+          );
+          results.push({
+            id: file.id,
+            creationTime: new Date(file.creationTime),
+            folderId: file.folderId,
+            hasThumbnail: file.hasThumbnail,
+            ownerId: file.ownerId,
+            metadata,
+            type: "file",
+          } as FileEntity);
+        }
+        return { data: results };
+      },
+    }),
+
+    getFolders: builder.query<
+      Folder[],
+      Pick<FolderDocument, "ownerId" | "folderId">
+    >({
+      queryFn: async (filter, api) => {
+        const state = api.getState() as RootState;
+        const foldersInFolder = await database.getDocuments("folders", filter);
+        const results: Folder[] = [];
+        for (const folder of foldersInFolder) {
+          const decryptedMetadata = await decrypt(
+            Buffer.from(folder.metadata, "base64"),
+            state.user.userAuth!.metadataKey
+          );
+          if (!decryptedMetadata) {
+            throw new Error(`Unable to decrypt folder ${folder.id}`);
+          }
+          const metadata = JSON.parse(
+            Buffer.from(decryptedMetadata).toString("utf-8")
+          );
+          results.push({
+            id: folder.id,
+            creationTime: new Date(folder.creationTime),
+            folderId: folder.folderId,
+            ownerId: folder.ownerId,
+            metadata,
+            type: "folder",
+          });
+        }
+        return { data: results };
+      },
+    }),
+
     createFile: builder.mutation<void, FileDocument>({
       queryFn: async (file) => {
         return { data: await database.createDocument("files", file) };
@@ -94,3 +165,16 @@ export const databaseApi = createApi({
     }),
   }),
 });
+
+export const useFolderContents = (folderId: string | null) => {
+  const { user } = useSelector(getSignedInUser);
+  const { data: files = [], isLoading: isLoadingFiles } =
+    databaseApi.useGetFilesQuery({ ownerId: user.uid, folderId });
+  const { data: folders = [], isLoading: isLoadingFolders } =
+    databaseApi.useGetFoldersQuery({ ownerId: user.uid, folderId });
+
+  return {
+    data: [...files, ...folders],
+    isLoading: isLoadingFiles || isLoadingFolders,
+  };
+};

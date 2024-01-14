@@ -7,11 +7,12 @@ import { userSlice } from "./redux/userSlice";
 export const store = configureStore({
   reducer: combineReducers({
     browser: browserSlice.reducer,
-    databaseApi: databaseApi.reducer,
+    api: databaseApi.reducer,
     tasks: taskSlice.reducer,
     user: userSlice.reducer,
   }),
-  middleware: (getDefaultMiddleware) => getDefaultMiddleware(),
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware().concat(databaseApi.middleware),
 });
 
 export type RootState = ReturnType<typeof store.getState>;
