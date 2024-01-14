@@ -26,10 +26,8 @@ type FilesContext = {
     items: FolderEntry[],
     targetFolderId: string | null
   ) => Promise<void>;
-  previewFile: FileEntity | null;
   removeDownloadTask: (id: string) => void;
   removeUploadTask: (id: string) => void;
-  setPreviewFile: (selectedFile: FileEntity | null) => void;
   tasks: PendingTask[];
 };
 
@@ -53,7 +51,6 @@ export const FilesProvider: React.FC<FilesProviderProps> = ({ children }) => {
 
   const database = useDatabase();
   const [, setItems] = useState<FolderEntry[]>([]);
-  const [previewFile, setPreviewFile] = useState<FileEntity | null>(null);
   const [tasks, setTasks] = useState<PendingTask[]>([]);
 
   const addItem = useCallback((newItem: FolderEntry) => {
@@ -179,10 +176,8 @@ export const FilesProvider: React.FC<FilesProviderProps> = ({ children }) => {
         addUploadTask,
         deleteItems,
         moveItems,
-        previewFile,
         removeDownloadTask: removeTask,
         removeUploadTask: removeTask,
-        setPreviewFile,
         tasks,
       }}
     >

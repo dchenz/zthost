@@ -1,15 +1,17 @@
 import { Box, Modal, ModalContent, ModalOverlay } from "@chakra-ui/react";
 import React from "react";
-import { useFiles } from "../../../context/files";
+import { useDispatch, useSelector } from "react-redux";
+import { getPreviewFile, setPreviewFile } from "../../../redux/browserSlice";
 import FileDetails from "./FileDetails";
 import FilePreview from "./FilePreview";
 
 const PreviewModal: React.FC = () => {
-  const { previewFile, setPreviewFile } = useFiles();
+  const dispatch = useDispatch();
+  const previewFile = useSelector(getPreviewFile);
   return (
     <Modal
       isOpen={previewFile !== null}
-      onClose={() => setPreviewFile(null)}
+      onClose={() => dispatch(setPreviewFile(null))}
       blockScrollOnMount={false}
       size="full"
     >

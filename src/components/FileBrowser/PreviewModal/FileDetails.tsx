@@ -10,7 +10,9 @@ import {
 } from "@chakra-ui/react";
 import React from "react";
 import { Download, Trash } from "react-bootstrap-icons";
+import { useDispatch } from "react-redux";
 import { useFiles } from "../../../context/files";
+import { setPreviewFile } from "../../../redux/browserSlice";
 import { formatBinarySize } from "../../../utils";
 import ConfirmPopup from "../../ConfirmPopup";
 import type { FileEntity } from "../../../database/model";
@@ -20,16 +22,17 @@ type FileDetailsProps = {
 };
 
 const FileDetails: React.FC<FileDetailsProps> = ({ file }) => {
-  const { setPreviewFile, addDownloadTask, deleteItems } = useFiles();
+  const dispatch = useDispatch();
+  const { addDownloadTask, deleteItems } = useFiles();
 
   const handleDownload = async () => {
-    setPreviewFile(null);
+    dispatch(setPreviewFile(null));
     addDownloadTask(file);
   };
 
   const handleDelete = async () => {
     await deleteItems([file]);
-    setPreviewFile(null);
+    dispatch(setPreviewFile(null));
   };
 
   return (
@@ -42,7 +45,7 @@ const FileDetails: React.FC<FileDetailsProps> = ({ file }) => {
       alignItems="self-start"
     >
       <HStack width="100%">
-        <CloseButton onClick={() => setPreviewFile(null)} />
+        <CloseButton onClick={() => dispatch(setPreviewFile(null))} />
         <Box flexGrow={1}></Box>
         <Tooltip label="Download">
           <IconButton

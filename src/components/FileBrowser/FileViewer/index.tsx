@@ -1,12 +1,12 @@
 import { Box } from "@chakra-ui/react";
 import React, { useCallback, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useFiles } from "../../../context/files";
 import {
   getPath,
   getSelectedItems,
   getViewMode,
   setPath,
+  setPreviewFile,
   toggleSelectedItem,
 } from "../../../redux/browserSlice";
 import { useFolderContents } from "../../../redux/databaseApi";
@@ -17,8 +17,6 @@ import type { AppDispatch } from "../../../store";
 
 const FileViewer: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-
-  const { setPreviewFile } = useFiles();
 
   const viewMode = useSelector(getViewMode);
   const selectedItems = useSelector(getSelectedItems);
@@ -51,7 +49,7 @@ const FileViewer: React.FC = () => {
       } else if (item.type === "folder") {
         dispatch(setPath([...path, item]));
       } else {
-        setPreviewFile(item);
+        dispatch(setPreviewFile(item));
       }
     },
     [path, selectedItems]

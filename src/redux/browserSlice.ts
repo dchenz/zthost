@@ -67,3 +67,5 @@ export const getViewMode = (s: RootState) => s.browser.viewMode;
 export const getSelectedItems = (s: RootState) => s.browser.selectedItems;
 
 export const getPath = (s: RootState) => s.browser.path;
+
+export const getPreviewFile = (s: RootState) => s.browser.previewFile;
