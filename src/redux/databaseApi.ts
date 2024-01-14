@@ -18,7 +18,10 @@ import type {
   FolderMetadata,
   User,
 } from "../database/model";
-import type { RootState } from "../store";
+
+type UserState = {
+  user: { user: User | null; userAuth: AuthProperties | null };
+};
 
 const database = new Firestore();
 
@@ -36,7 +39,7 @@ export const databaseApi = createApi({
       Pick<FileDocument, "ownerId" | "folderId">
     >({
       queryFn: async (filter, api) => {
-        const state = api.getState() as RootState;
+        const state = api.getState() as UserState;
         const results: FileEntity[] = [];
         for (const file of await database.getDocuments("files", filter)) {
           const decryptedMetadata = await decrypt(
@@ -71,7 +74,7 @@ export const databaseApi = createApi({
       Pick<FolderDocument, "ownerId" | "folderId">
     >({
       queryFn: async (filter, api) => {
-        const state = api.getState() as RootState;
+        const state = api.getState() as UserState;
         const foldersInFolder = await database.getDocuments("folders", filter);
         const results: Folder[] = [];
         for (const folder of foldersInFolder) {
@@ -112,9 +115,7 @@ export const databaseApi = createApi({
       { name: string; parentFolderId: string }
     >({
       queryFn: async ({ name, parentFolderId }, api) => {
-        const state = api.getState() as {
-          user: { user: User; userAuth: AuthProperties };
-        };
+        const state = api.getState() as UserState;
         const id = uuid();
         const creationTime = new Date();
         const metadata: FolderMetadata = {
