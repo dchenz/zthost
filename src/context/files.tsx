@@ -1,10 +1,7 @@
 import React, { createContext, useCallback, useContext, useState } from "react";
 import { v4 as uuid } from "uuid";
-import { usePersistentState } from "../utils";
 import { useDatabase } from "./database";
 import type { FileEntity, Folder, FolderEntry } from "../database/model";
-
-type ViewMode = "grid" | "list";
 
 type TaskType = "download" | "upload";
 
@@ -35,10 +32,8 @@ type FilesContext = {
   setPath: (path: Folder[]) => void;
   setPreviewFile: (selectedFile: FileEntity | null) => void;
   setSelectedItems: (items: FolderEntry[]) => void;
-  setViewMode: (viewMode: ViewMode) => void;
   tasks: PendingTask[];
   toggleSelectedItem: (item: FolderEntry) => void;
-  viewMode: ViewMode;
 };
 
 const Context = createContext<FilesContext | undefined>(undefined);
@@ -62,10 +57,6 @@ export const FilesProvider: React.FC<FilesProviderProps> = ({ children }) => {
   const [previewFile, setPreviewFile] = useState<FileEntity | null>(null);
   const [selectedItems, setSelectedItems] = useState<FolderEntry[]>([]);
   const [tasks, setTasks] = useState<PendingTask[]>([]);
-  const [viewMode, setViewMode] = usePersistentState<ViewMode>(
-    "view-mode",
-    "grid"
-  );
 
   const addItem = useCallback((newItem: FolderEntry) => {
     setItems((currentItems) => [...currentItems, newItem]);
@@ -208,10 +199,8 @@ export const FilesProvider: React.FC<FilesProviderProps> = ({ children }) => {
         setPath,
         setPreviewFile,
         setSelectedItems,
-        setViewMode,
         tasks,
         toggleSelectedItem,
-        viewMode,
       }}
     >
       {children}

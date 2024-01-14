@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type { FileEntity, Folder, FolderEntry } from "../database/model";
+import type { RootState } from "../store";
 import type { PayloadAction } from "@reduxjs/toolkit";
 
 type ViewMode = "grid" | "list";
@@ -49,3 +50,5 @@ export const {
   setPath,
   setLoading,
 } = browserSlice.actions;
+
+export const getViewMode = (s: RootState) => s.browser.viewMode;

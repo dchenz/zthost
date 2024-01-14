@@ -7,11 +7,14 @@ import {
 } from "@chakra-ui/react";
 import React from "react";
 import { Grid, ListUl } from "react-bootstrap-icons";
-import { useFiles } from "../../context/files";
+import { useDispatch, useSelector } from "react-redux";
+import { getViewMode, setViewMode } from "../../redux/browserSlice";
 import type { PopoverProps } from "@chakra-ui/react";
 
 const ViewModeSelector = () => {
-  const { setViewMode, viewMode } = useFiles();
+  const dispatch = useDispatch();
+  const viewMode = useSelector(getViewMode);
+
   return (
     <Popover placement="bottom-end">
       {({ onClose }: PopoverProps) => (
@@ -33,7 +36,7 @@ const ViewModeSelector = () => {
                 aria-label="grid-mode"
                 title="Grid"
                 onClick={() => {
-                  setViewMode("grid");
+                  dispatch(setViewMode("grid"));
                   onClose?.();
                 }}
                 size="sm"
@@ -44,7 +47,7 @@ const ViewModeSelector = () => {
                 aria-label="list-mode"
                 title="List"
                 onClick={() => {
-                  setViewMode("list");
+                  dispatch(setViewMode("list"));
                   onClose?.();
                 }}
                 size="sm"

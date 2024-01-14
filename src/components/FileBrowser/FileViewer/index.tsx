@@ -1,20 +1,18 @@
 import { Box } from "@chakra-ui/react";
 import React, { useCallback, useMemo } from "react";
+import { useSelector } from "react-redux";
 import { useFiles } from "../../../context/files";
+import { getViewMode } from "../../../redux/browserSlice";
 import { useFolderContents } from "../../../redux/databaseApi";
 import GridView from "./GridView";
 import ListView from "./ListView";
 import type { FolderEntry } from "../../../database/model";
 
 const FileViewer: React.FC = () => {
-  const {
-    viewMode,
-    setPath,
-    path,
-    setPreviewFile,
-    selectedItems,
-    toggleSelectedItem,
-  } = useFiles();
+  const { setPath, path, setPreviewFile, selectedItems, toggleSelectedItem } =
+    useFiles();
+
+  const viewMode = useSelector(getViewMode);
 
   const { data: items = [] } = useFolderContents(
     path[path.length - 1]?.id ?? null
