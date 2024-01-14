@@ -8,7 +8,6 @@ import {
   type Database,
   type FileEntity,
   type Folder,
-  type FolderEntry,
   type FolderMetadata,
   type UserAuthDocument,
 } from "../database/model";
@@ -46,7 +45,6 @@ type DatabaseContext = {
     file: FileEntity,
     onProgress: (progress: number) => void
   ) => Promise<void>;
-  getFolderContents: (folderId: string | null) => Promise<FolderEntry[]>;
   getThumbnail: (fileId: string) => Promise<string>;
   getUserAuth: (userId: string) => Promise<UserAuthDocument | null>;
   moveFile: (fileId: string, targetFolderId: string | null) => Promise<void>;
@@ -415,17 +413,6 @@ export const DatabaseProvider: React.FC<DatabaseProviderProps> = ({
     [database, user, userAuth]
   );
 
-  const getFolderContents = useCallback(
-    async (folderId: string | null) => {
-      const [folders, files] = await Promise.all([
-        getFoldersInFolder(folderId),
-        getFilesInFolder(folderId),
-      ]);
-      return [...folders, ...files];
-    },
-    [getFilesInFolder, getFoldersInFolder]
-  );
-
   const deleteFolder = useCallback(
     async (folderId: string): Promise<void> => {
       const operations: Promise<void>[] = [];
@@ -513,7 +500,6 @@ export const DatabaseProvider: React.FC<DatabaseProviderProps> = ({
         deleteFolder,
         downloadFileInMemory,
         downloadFileToDisk,
-        getFolderContents,
         getThumbnail,
         getUserAuth,
         moveFile,

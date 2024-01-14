@@ -1,10 +1,4 @@
-import React, {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
+import React, { createContext, useCallback, useContext, useState } from "react";
 import { v4 as uuid } from "uuid";
 import { usePersistentState } from "../utils";
 import { useDatabase } from "./database";
@@ -29,8 +23,6 @@ type FilesContext = {
   addItem: (item: FolderEntry) => void;
   addUploadTask: (file: File) => string;
   deleteItems: (items: FolderEntry[]) => Promise<void>;
-  isLoading: boolean;
-  items: FolderEntry[];
   moveItems: (
     items: FolderEntry[],
     targetFolderId: string | null
@@ -65,9 +57,8 @@ type FilesProviderProps = {
 
 export const FilesProvider: React.FC<FilesProviderProps> = ({ children }) => {
   const database = useDatabase();
-  const [items, setItems] = useState<FolderEntry[]>([]);
+  const [, setItems] = useState<FolderEntry[]>([]);
   const [path, setPath] = useState<Folder[]>([]);
-  const [isLoading, setLoading] = useState(false);
   const [previewFile, setPreviewFile] = useState<FileEntity | null>(null);
   const [selectedItems, setSelectedItems] = useState<FolderEntry[]>([]);
   const [tasks, setTasks] = useState<PendingTask[]>([]);
@@ -75,14 +66,6 @@ export const FilesProvider: React.FC<FilesProviderProps> = ({ children }) => {
     "view-mode",
     "grid"
   );
-
-  useEffect(() => {
-    setLoading(true);
-    database
-      .getFolderContents(path[path.length - 1]?.id ?? null)
-      .then(setItems)
-      .finally(() => setLoading(false));
-  }, [database, path]);
 
   const addItem = useCallback((newItem: FolderEntry) => {
     setItems((currentItems) => [...currentItems, newItem]);
@@ -216,8 +199,6 @@ export const FilesProvider: React.FC<FilesProviderProps> = ({ children }) => {
         addItem,
         addUploadTask,
         deleteItems,
-        isLoading,
-        items,
         moveItems,
         path,
         previewFile,

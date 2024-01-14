@@ -9,6 +9,7 @@ import {
 } from "@chakra-ui/react";
 import React, { useCallback } from "react";
 import { FilesProvider, useFiles } from "../../context/files";
+import { useFolderContents } from "../../redux/databaseApi";
 import { folderContains } from "../../utils";
 import ListView from "./FileViewer/ListView";
 import PathViewer from "./PathViewer";
@@ -29,7 +30,11 @@ const _MoveItemsModal: React.FC<MoveItemsModalProps> = ({
   moveItems,
   onClose,
 }) => {
-  const { selectedItems, path, setPath, items } = useFiles();
+  const { selectedItems, path, setPath } = useFiles();
+
+  const { data: items = [] } = useFolderContents(
+    path[path.length - 1]?.id ?? null
+  );
 
   // Users are only allowed to select one folder at a time.
   // If nothing is selected, it will move into the current folder.

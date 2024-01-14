@@ -2,6 +2,7 @@ import { Button } from "@chakra-ui/button";
 import React, { useMemo } from "react";
 import { Check } from "react-bootstrap-icons";
 import { useFiles } from "../../../context/files";
+import { useFolderContents } from "../../../redux/databaseApi";
 import type { FolderEntry } from "../../../database/model";
 
 type SelectorProps = {
@@ -70,7 +71,11 @@ export const ItemSelector: React.FC<ItemSelectorProps> = ({
 };
 
 export const AllSelector: React.FC = () => {
-  const { selectedItems, setSelectedItems, items } = useFiles();
+  const { selectedItems, setSelectedItems, path } = useFiles();
+
+  const { data: items = [] } = useFolderContents(
+    path[path.length - 1]?.id ?? null
+  );
 
   const isSelected = items.length > 0 && items.length === selectedItems.length;
 
