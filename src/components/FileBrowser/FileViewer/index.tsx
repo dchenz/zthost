@@ -1,18 +1,25 @@
 import { Box } from "@chakra-ui/react";
 import React, { useCallback, useMemo } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useFiles } from "../../../context/files";
-import { getViewMode } from "../../../redux/browserSlice";
+import {
+  getSelectedItems,
+  getViewMode,
+  toggleSelectedItem,
+} from "../../../redux/browserSlice";
 import { useFolderContents } from "../../../redux/databaseApi";
 import GridView from "./GridView";
 import ListView from "./ListView";
 import type { FolderEntry } from "../../../database/model";
+import type { AppDispatch } from "../../../store";
 
 const FileViewer: React.FC = () => {
-  const { setPath, path, setPreviewFile, selectedItems, toggleSelectedItem } =
-    useFiles();
+  const dispatch = useDispatch<AppDispatch>();
+
+  const { setPath, path, setPreviewFile } = useFiles();
 
   const viewMode = useSelector(getViewMode);
+  const selectedItems = useSelector(getSelectedItems);
 
   const { data: items = [] } = useFolderContents(
     path[path.length - 1]?.id ?? null
@@ -37,7 +44,7 @@ const FileViewer: React.FC = () => {
   const onItemClick = useCallback(
     (item: FolderEntry) => {
       if (selectedItems.length) {
-        toggleSelectedItem(item);
+        dispatch(toggleSelectedItem(item));
       } else if (item.type === "folder") {
         setPath([...path, item]);
       } else {

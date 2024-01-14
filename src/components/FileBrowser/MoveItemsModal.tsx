@@ -8,7 +8,9 @@ import {
   ModalOverlay,
 } from "@chakra-ui/react";
 import React, { useCallback } from "react";
+import { useSelector } from "react-redux";
 import { FilesProvider, useFiles } from "../../context/files";
+import { getSelectedItems } from "../../redux/browserSlice";
 import { useFolderContents } from "../../redux/databaseApi";
 import { folderContains } from "../../utils";
 import ListView from "./FileViewer/ListView";
@@ -30,7 +32,8 @@ const _MoveItemsModal: React.FC<MoveItemsModalProps> = ({
   moveItems,
   onClose,
 }) => {
-  const { selectedItems, path, setPath } = useFiles();
+  const selectedItems = useSelector(getSelectedItems);
+  const { path, setPath } = useFiles();
 
   const { data: items = [] } = useFolderContents(
     path[path.length - 1]?.id ?? null

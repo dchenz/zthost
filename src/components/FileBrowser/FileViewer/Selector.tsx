@@ -1,9 +1,16 @@
 import { Button } from "@chakra-ui/button";
 import React, { useMemo } from "react";
 import { Check } from "react-bootstrap-icons";
+import { useDispatch, useSelector } from "react-redux";
 import { useFiles } from "../../../context/files";
+import {
+  getSelectedItems,
+  setSelectedItems,
+  toggleSelectedItem,
+} from "../../../redux/browserSlice";
 import { useFolderContents } from "../../../redux/databaseApi";
 import type { FolderEntry } from "../../../database/model";
+import type { AppDispatch } from "../../../store";
 
 type SelectorProps = {
   isSelected: boolean;
@@ -43,7 +50,8 @@ export const ItemSelector: React.FC<ItemSelectorProps> = ({
   allowMultiSelect = true,
   item,
 }) => {
-  const { selectedItems, setSelectedItems, toggleSelectedItem } = useFiles();
+  const dispatch = useDispatch<AppDispatch>();
+  const selectedItems = useSelector(getSelectedItems);
 
   const isSelected = useMemo(() => {
     return selectedItems.find((f) => f.id === item.id) !== undefined;
@@ -51,12 +59,12 @@ export const ItemSelector: React.FC<ItemSelectorProps> = ({
 
   const onSelect = () => {
     if (allowMultiSelect) {
-      toggleSelectedItem(item);
+      dispatch(toggleSelectedItem(item));
     } else {
       if (selectedItems.length > 0 && selectedItems[0].id === item.id) {
-        setSelectedItems([]);
+        dispatch(setSelectedItems([]));
       } else {
-        setSelectedItems([item]);
+        dispatch(setSelectedItems([item]));
       }
     }
   };
@@ -71,7 +79,9 @@ export const ItemSelector: React.FC<ItemSelectorProps> = ({
 };
 
 export const AllSelector: React.FC = () => {
-  const { selectedItems, setSelectedItems, path } = useFiles();
+  const { path } = useFiles();
+  const dispatch = useDispatch<AppDispatch>();
+  const selectedItems = useSelector(getSelectedItems);
 
   const { data: items = [] } = useFolderContents(
     path[path.length - 1]?.id ?? null
@@ -81,9 +91,9 @@ export const AllSelector: React.FC = () => {
 
   const onSelect = () => {
     if (isSelected) {
-      setSelectedItems([]);
+      dispatch(setSelectedItems([]));
     } else {
-      setSelectedItems(items);
+      dispatch(setSelectedItems(items));
     }
   };
 

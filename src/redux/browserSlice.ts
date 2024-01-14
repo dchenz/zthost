@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type { FileEntity, Folder, FolderEntry } from "../database/model";
 import type { RootState } from "../store";
-import type { PayloadAction } from "@reduxjs/toolkit";
+import type { Dispatch, PayloadAction } from "@reduxjs/toolkit";
 
 type ViewMode = "grid" | "list";
 
@@ -51,4 +51,17 @@ export const {
   setLoading,
 } = browserSlice.actions;
 
+export const toggleSelectedItem = (item: FolderEntry) => {
+  return (dispatch: Dispatch, getState: () => RootState) => {
+    const { selectedItems } = getState().browser;
+    const newItems = selectedItems.filter((f) => f.id !== item.id);
+    if (newItems.length === selectedItems.length) {
+      newItems.push(item);
+    }
+    dispatch(setSelectedItems(newItems));
+  };
+};
+
 export const getViewMode = (s: RootState) => s.browser.viewMode;
+
+export const getSelectedItems = (s: RootState) => s.browser.selectedItems;

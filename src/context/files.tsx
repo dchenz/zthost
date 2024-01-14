@@ -1,5 +1,7 @@
 import React, { createContext, useCallback, useContext, useState } from "react";
+import { useDispatch } from "react-redux";
 import { v4 as uuid } from "uuid";
+import { setSelectedItems } from "../redux/browserSlice";
 import { useDatabase } from "./database";
 import type { FileEntity, Folder, FolderEntry } from "../database/model";
 
@@ -28,12 +30,9 @@ type FilesContext = {
   previewFile: FileEntity | null;
   removeDownloadTask: (id: string) => void;
   removeUploadTask: (id: string) => void;
-  selectedItems: FolderEntry[];
   setPath: (path: Folder[]) => void;
   setPreviewFile: (selectedFile: FileEntity | null) => void;
-  setSelectedItems: (items: FolderEntry[]) => void;
   tasks: PendingTask[];
-  toggleSelectedItem: (item: FolderEntry) => void;
 };
 
 const Context = createContext<FilesContext | undefined>(undefined);
@@ -51,11 +50,12 @@ type FilesProviderProps = {
 };
 
 export const FilesProvider: React.FC<FilesProviderProps> = ({ children }) => {
+  const dispatch = useDispatch();
+
   const database = useDatabase();
   const [, setItems] = useState<FolderEntry[]>([]);
   const [path, setPath] = useState<Folder[]>([]);
   const [previewFile, setPreviewFile] = useState<FileEntity | null>(null);
-  const [selectedItems, setSelectedItems] = useState<FolderEntry[]>([]);
   const [tasks, setTasks] = useState<PendingTask[]>([]);
 
   const addItem = useCallback((newItem: FolderEntry) => {
@@ -139,16 +139,6 @@ export const FilesProvider: React.FC<FilesProviderProps> = ({ children }) => {
     [path]
   );
 
-  const toggleSelectedItem = useCallback((item: FolderEntry) => {
-    setSelectedItems((currentItems) => {
-      const newItems = currentItems.filter((f) => f.id !== item.id);
-      if (newItems.length === currentItems.length) {
-        newItems.push(item);
-      }
-      return newItems;
-    });
-  }, []);
-
   const deleteItems = useCallback(
     async (items: FolderEntry[]) => {
       const operations = [];
@@ -163,9 +153,9 @@ export const FilesProvider: React.FC<FilesProviderProps> = ({ children }) => {
       for (const item of items) {
         removeItem(item.id);
       }
-      setSelectedItems([]);
+      dispatch(setSelectedItems([]));
     },
-    [removeItem, setSelectedItems]
+    [removeItem]
   );
 
   const moveItems = useCallback(
@@ -178,9 +168,9 @@ export const FilesProvider: React.FC<FilesProviderProps> = ({ children }) => {
         }
         removeItem(item.id);
       }
-      setSelectedItems([]);
+      dispatch(setSelectedItems([]));
     },
-    [removeItem, setSelectedItems]
+    [removeItem]
   );
 
   return (
@@ -195,12 +185,9 @@ export const FilesProvider: React.FC<FilesProviderProps> = ({ children }) => {
         previewFile,
         removeDownloadTask: removeTask,
         removeUploadTask: removeTask,
-        selectedItems,
         setPath,
         setPreviewFile,
-        setSelectedItems,
         tasks,
-        toggleSelectedItem,
       }}
     >
       {children}

@@ -1,7 +1,9 @@
 import { Box, HStack } from "@chakra-ui/react";
 import React, { useState } from "react";
 import { ArrowsMove, Folder2, Sticky, Trash } from "react-bootstrap-icons";
+import { useSelector } from "react-redux";
 import { useFiles } from "../../context/files";
+import { getSelectedItems } from "../../redux/browserSlice";
 import ConfirmPopup from "../ConfirmPopup";
 import MoveItemsModal from "./MoveItemsModal";
 import NewFolderModal from "./NewFolderModal";
@@ -11,7 +13,8 @@ import UploadButton from "./UploadButton";
 import ViewModeSelector from "./ViewModeSelector";
 
 const Header: React.FC = () => {
-  const { selectedItems, deleteItems, moveItems } = useFiles();
+  const selectedItems = useSelector(getSelectedItems);
+  const { deleteItems, moveItems } = useFiles();
   const [isCreatingFolder, setCreatingFolder] = useState(false);
   const [isMoving, setMoving] = useState(false);
   const [isCreatingNote, setCreatingNote] = useState(false);

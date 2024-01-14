@@ -1,11 +1,14 @@
 import { Box, Button, HStack } from "@chakra-ui/react";
 import React, { useMemo } from "react";
 import { ChevronRight } from "react-bootstrap-icons";
+import { useDispatch } from "react-redux";
 import { useFiles } from "../../context/files";
+import { setSelectedItems } from "../../redux/browserSlice";
 import type { Folder } from "../../database/model";
 
 const PathViewer: React.FC = () => {
-  const { path, setPath, setSelectedItems } = useFiles();
+  const dispatch = useDispatch();
+  const { path, setPath } = useFiles();
 
   const { parents, pwd } = useMemo(
     () => ({
@@ -26,7 +29,7 @@ const PathViewer: React.FC = () => {
       }
     }
     setPath(newPath);
-    setSelectedItems([]);
+    dispatch(setSelectedItems([]));
   };
 
   const renderPathItem = (folder: Folder | null, link: boolean) => {
