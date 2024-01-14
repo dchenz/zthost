@@ -1,5 +1,6 @@
 import { createApi, fakeBaseQuery } from "@reduxjs/toolkit/query/react";
 import { useSelector } from "react-redux";
+import { v4 as uuid } from "uuid";
 import { Buffer } from "buffer";
 import { Firestore } from "../database/firestore";
 import {
@@ -9,9 +10,14 @@ import {
   type ThumbnailsDocument,
   type UserAuthDocument,
 } from "../database/model";
-import { decrypt } from "../utils/crypto";
+import { decrypt, encrypt } from "../utils/crypto";
 import { getSignedInUser } from "./userSlice";
-import type { Folder } from "../database/model";
+import type {
+  AuthProperties,
+  Folder,
+  FolderMetadata,
+  User,
+} from "../database/model";
 import type { RootState } from "../store";
 
 const database = new Firestore();
@@ -101,9 +107,50 @@ export const databaseApi = createApi({
       },
     }),
 
-    createFolder: builder.mutation<void, FolderDocument>({
-      queryFn: async (folder) => {
-        return { data: await database.createDocument("folders", folder) };
+    createFolder: builder.mutation<
+      Folder,
+      { name: string; parentFolderId: string }
+    >({
+      queryFn: async ({ name, parentFolderId }, api) => {
+        const state = api.getState() as {
+          user: { user: User; userAuth: AuthProperties };
+        };
+        const id = uuid();
+        const creationTime = new Date();
+        const metadata: FolderMetadata = {
+          name,
+        };
+        const encryptedMetadata = await encrypt(
+          Buffer.from(JSON.stringify(metadata), "utf-8"),
+          state.user.userAuth!.metadataKey
+        );
+        await database.createDocument("folders", {
+          id,
+          creationTime: creationTime.getTime(),
+          metadata: Buffer.from(encryptedMetadata).toString("base64"),
+          ownerId: state.user.user!.uid,
+          folderId: parentFolderId,
+        });
+        return {
+          data: {
+            id,
+            creationTime,
+            folderId: parentFolderId,
+            metadata,
+            ownerId: state.user.user!.uid,
+            type: "folder",
+          },
+        };
+      },
+      onQueryStarted: async (args, { queryFulfilled, dispatch }) => {
+        const { data: newFolder } = await queryFulfilled;
+        dispatch(
+          databaseApi.util.updateQueryData(
+            "getFolders",
+            { folderId: newFolder.folderId, ownerId: newFolder.ownerId },
+            (existingData: Folder[]) => [...existingData, newFolder]
+          )
+        );
       },
     }),
 
@@ -177,6 +224,8 @@ export const databaseApi = createApi({
     }),
   }),
 });
+
+export const { useCreateFolderMutation } = databaseApi;
 
 export const useFolderContents = (folderId: string | null) => {
   const { user } = useSelector(getSignedInUser);

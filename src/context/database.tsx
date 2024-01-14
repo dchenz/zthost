@@ -1,14 +1,12 @@
 import React, { createContext, useCallback, useContext } from "react";
 import { useSelector } from "react-redux";
 import streamSaver from "streamsaver";
-import { v4 as uuid } from "uuid";
 import { Buffer } from "buffer";
 import { CHUNK_SIZE } from "../config";
 import {
   type Database,
   type FileEntity,
   type Folder,
-  type FolderMetadata,
   type UserAuthDocument,
 } from "../database/model";
 import { getCurrentUser } from "../redux/userSlice";
@@ -32,10 +30,6 @@ type DatabaseContext = {
     file: File,
     parentFolderId: string
   ) => Promise<FileEntity>;
-  createFolder: (
-    name: string,
-    parentFolderId: string | null
-  ) => Promise<Folder>;
   createThumbnail: (fileId: string, dataUri: string) => Promise<void>;
   createUserAuth: (userAuth: UserAuthDocument) => Promise<void>;
   deleteFile: (fileId: string) => Promise<void>;
@@ -139,39 +133,6 @@ export const DatabaseProvider: React.FC<DatabaseProviderProps> = ({
       });
     },
     [database, encryptAndUploadChunk]
-  );
-
-  const createFolder = useCallback(
-    async (name: string, parentFolderId: string | null): Promise<Folder> => {
-      if (!user || !userAuth) {
-        throw new Error();
-      }
-      const id = uuid();
-      const creationTime = new Date();
-      const metadata: FolderMetadata = {
-        name,
-      };
-      const encryptedMetadata = await encrypt(
-        Buffer.from(JSON.stringify(metadata), "utf-8"),
-        userAuth.metadataKey
-      );
-      await database.createDocument("folders", {
-        id,
-        creationTime: creationTime.getTime(),
-        metadata: Buffer.from(encryptedMetadata).toString("base64"),
-        ownerId: user.uid,
-        folderId: parentFolderId,
-      });
-      return {
-        id,
-        creationTime,
-        folderId: parentFolderId,
-        metadata,
-        ownerId: user.uid,
-        type: "folder",
-      };
-    },
-    [database, user, userAuth]
   );
 
   const createThumbnail = useCallback(
@@ -493,7 +454,6 @@ export const DatabaseProvider: React.FC<DatabaseProviderProps> = ({
       value={{
         createFileChunks,
         createFileMetadata,
-        createFolder,
         createThumbnail,
         createUserAuth,
         deleteFile,

@@ -9,8 +9,8 @@ import {
   ModalOverlay,
 } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
-import { useDatabase } from "../../context/database";
 import { useFiles } from "../../context/files";
+import { useCreateFolderMutation } from "../../redux/databaseApi";
 
 type NewFolderModalProps = {
   onClose: () => void;
@@ -18,8 +18,8 @@ type NewFolderModalProps = {
 };
 
 const NewFolderModal: React.FC<NewFolderModalProps> = ({ onClose, open }) => {
-  const database = useDatabase();
-  const { addItem, path } = useFiles();
+  const [createFolder] = useCreateFolderMutation();
+  const { path } = useFiles();
   const [name, setName] = useState("");
 
   useEffect(() => {
@@ -33,11 +33,10 @@ const NewFolderModal: React.FC<NewFolderModalProps> = ({ onClose, open }) => {
     if (!name) {
       return;
     }
-    const newFolder = await database.createFolder(
+    await createFolder({
       name,
-      path[path.length - 1]?.id ?? null
-    );
-    addItem(newFolder);
+      parentFolderId: path[path.length - 1]?.id ?? null,
+    });
     onClose();
   };
 
