@@ -1,6 +1,6 @@
 import { Image } from "@chakra-ui/react";
-import React, { useEffect, useState } from "react";
-import { useDatabase } from "../../../context/database";
+import React from "react";
+import { useGetThumbnailQuery } from "../../../redux/databaseApi";
 import type { FolderEntry } from "../../../database/model";
 import type { ImageProps } from "@chakra-ui/react";
 
@@ -14,20 +14,12 @@ const DEFAULT_ICONS = {
 };
 
 const Thumbnail: React.FC<ThumbnailProps> = ({ item, ...props }) => {
-  const database = useDatabase();
-  const [dataUri, setDataUri] = useState(DEFAULT_ICONS[item.type]);
+  const { data: dataUri } = useGetThumbnailQuery(
+    { fileId: item.id },
+    { skip: item.type !== "file" }
+  );
 
-  useEffect(() => {
-    if (item.type === "file" && item.hasThumbnail) {
-      database.getThumbnail(item.id).then((thumbnail) => {
-        if (thumbnail) {
-          setDataUri(thumbnail);
-        }
-      });
-    }
-  }, [item]);
-
-  return <Image {...props} src={dataUri} />;
+  return <Image {...props} src={dataUri || DEFAULT_ICONS[item.type]} />;
 };
 
 export default Thumbnail;

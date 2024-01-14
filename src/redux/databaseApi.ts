@@ -28,6 +28,7 @@ const database = new Firestore();
 const TAGS = {
   contentsFiles: "contents/files",
   contentsFolders: "contents/folders",
+  thumbnails: "thumbnails",
 };
 
 export const databaseApi = createApi({
@@ -155,10 +156,25 @@ export const databaseApi = createApi({
       },
     }),
 
-    getThumbnail: builder.query<ThumbnailsDocument | null, { fileId: string }>({
-      queryFn: async ({ fileId }) => {
-        return { data: await database.getDocument("thumbnails", fileId) };
+    getThumbnail: builder.query<string, { fileId: string }>({
+      queryFn: async ({ fileId }, api) => {
+        const state = api.getState() as UserState;
+        const thumbnailDoc = await database.getDocument("thumbnails", fileId);
+        if (!thumbnailDoc) {
+          return { data: "" };
+        }
+        const dataUri = await decrypt(
+          Buffer.from(thumbnailDoc.data, "base64"),
+          state.user.userAuth!.thumbnailKey
+        );
+        if (!dataUri) {
+          throw new Error("Unable to decrypt thumbnail");
+        }
+        return { data: Buffer.from(dataUri).toString("utf-8") };
       },
+      providesTags: (result, error, { fileId }) => [
+        { type: TAGS.thumbnails, id: fileId },
+      ],
     }),
 
     createThumbnail: builder.mutation<void, ThumbnailsDocument>({
@@ -226,7 +242,7 @@ export const databaseApi = createApi({
   }),
 });
 
-export const { useCreateFolderMutation } = databaseApi;
+export const { useCreateFolderMutation, useGetThumbnailQuery } = databaseApi;
 
 export const useFolderContents = (folderId: string | null) => {
   const { user } = useSelector(getSignedInUser);
