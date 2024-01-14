@@ -11,6 +11,7 @@ import {
   type UserAuthDocument,
 } from "../database/model";
 import { decrypt, encrypt } from "../utils/crypto";
+import { addFolderToCache } from "./cacheUtils";
 import { getSignedInUser } from "./userSlice";
 import type {
   AuthProperties,
@@ -146,13 +147,7 @@ export const databaseApi = createApi({
       },
       onQueryStarted: async (args, { queryFulfilled, dispatch }) => {
         const { data: newFolder } = await queryFulfilled;
-        dispatch(
-          databaseApi.util.updateQueryData(
-            "getFolders",
-            { folderId: newFolder.folderId, ownerId: newFolder.ownerId },
-            (existingData: Folder[]) => [...existingData, newFolder]
-          )
-        );
+        dispatch(addFolderToCache(newFolder));
       },
     }),
 
