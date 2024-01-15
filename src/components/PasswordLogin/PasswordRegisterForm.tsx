@@ -22,7 +22,8 @@ const PasswordRegisterForm: React.FC<PasswordRegisterFormProps> = ({
     if (!user || !storage) {
       return;
     }
-    const bucketId = await storage.initialize();
+    const bucketId = await storage.createBucket();
+    storage.setBucket(bucketId);
     const salt = randomBytes(16);
     const passwordKey = deriveKey(Buffer.from(password, "utf-8"), salt);
     const fileKey = await generateWrappedKey(passwordKey);

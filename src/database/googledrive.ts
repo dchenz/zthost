@@ -19,11 +19,7 @@ export class GoogleDriveStorage implements BlobStorage {
     this.rootFolderId = rootFolderId ?? "";
   }
 
-  async initialize(): Promise<string> {
-    return this.createFolder(APP_BUCKET_NAME);
-  }
-
-  async createFolder(name: string): Promise<string> {
+  async createBucket(): Promise<string> {
     const response = await fetch("https://www.googleapis.com/drive/v3/files", {
       method: "POST",
       headers: {
@@ -31,7 +27,7 @@ export class GoogleDriveStorage implements BlobStorage {
         "content-type": "application/json",
       },
       body: JSON.stringify({
-        name,
+        name: APP_BUCKET_NAME,
         mimeType: "application/vnd.google-apps.folder",
       }),
     });
@@ -39,6 +35,10 @@ export class GoogleDriveStorage implements BlobStorage {
       throw new Error(await response.text());
     }
     return (await response.json()).id;
+  }
+
+  setBucket(id: string) {
+    this.rootFolderId = id;
   }
 
   async deleteBlob(id: string): Promise<void> {

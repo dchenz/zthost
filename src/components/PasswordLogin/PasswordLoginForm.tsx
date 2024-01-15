@@ -10,8 +10,8 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import React, { useState } from "react";
-import { useDispatch } from "react-redux";
-import { setUserAuth } from "../../redux/userSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { getCurrentUser, setUserAuth } from "../../redux/userSlice";
 import { decryptUserAuth } from "../../utils/crypto";
 import type { UserAuthDocument } from "../../database/model";
 
@@ -25,17 +25,19 @@ const PasswordLoginForm: React.FC<PasswordLoginFormProps> = ({
   onAuthComplete,
 }) => {
   const dispatch = useDispatch();
+  const { storage } = useSelector(getCurrentUser);
   const [password, setPassword] = useState("");
   const [loginFailed, setLoginFailed] = useState(false);
 
   const onFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!password) {
+    if (!password || !storage) {
       return;
     }
     const userAuth = await decryptUserAuth(encryptedUserAuth, password);
     if (userAuth) {
       dispatch(setUserAuth(userAuth));
+      storage.setBucket(userAuth.bucketId);
       onAuthComplete();
     } else {
       setLoginFailed(true);
