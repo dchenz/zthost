@@ -14,7 +14,6 @@ type DatabaseContext = {
     file: FileEntity,
     onProgress: (progress: number) => void
   ) => Promise<void>;
-  getUserAuth: (userId: string) => Promise<UserAuthDocument | null>;
   moveFile: (fileId: string, targetFolderId: string | null) => Promise<void>;
   moveFolder: (
     folderId: string,
@@ -62,7 +61,6 @@ export const DatabaseProvider: React.FC<DatabaseProviderProps> = ({
         deleteFolder: async () => undefined,
         downloadFileInMemory: async () => null,
         downloadFileToDisk: async () => undefined,
-        getUserAuth: async () => null,
         moveFile: async () => undefined,
         moveFolder: async () => undefined,
         updateUserAuth,

@@ -288,7 +288,11 @@ export const databaseApi = createApi({
   }),
 });
 
-export const { useCreateFolderMutation, useGetThumbnailQuery } = databaseApi;
+export const {
+  useCreateFolderMutation,
+  useGetThumbnailQuery,
+  useGetUserAuthQuery,
+} = databaseApi;
 
 export const useFolderContents = (folderId: string | null) => {
   const { user } = useSelector(getSignedInUser);
