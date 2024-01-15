@@ -2,23 +2,18 @@ import { Box, HStack } from "@chakra-ui/react";
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { auth } from "../firebase";
-import { getCurrentUser, setUser } from "../redux/userSlice";
+import { getCurrentUser, setUserOnAuthStateChange } from "../redux/userSlice";
 import UserMenu from "./UserMenu";
+import type { AppDispatch } from "../store";
 
 const Navbar: React.FC = () => {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const { user } = useSelector(getCurrentUser);
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((user) => {
-      dispatch(
-        setUser({
-          uid: user?.uid ?? "",
-          photoURL: user?.photoURL ?? "",
-        })
-      );
+    return auth.onAuthStateChanged((firebaseUser) => {
+      dispatch(setUserOnAuthStateChange(firebaseUser));
     });
-    return unsubscribe;
   }, []);
 
   return (

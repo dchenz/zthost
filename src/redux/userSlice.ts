@@ -8,8 +8,9 @@ import { GoogleDriveStorage } from "../database/googledrive";
 import { auth } from "../firebase";
 import { useChakraToast } from "../utils";
 import type { AuthProperties, BlobStorage, User } from "../database/model";
-import type { RootState } from "../store";
+import type { AppDispatch, RootState } from "../store";
 import type { PayloadAction } from "@reduxjs/toolkit";
+import type { User as FirebaseUser } from "firebase/auth";
 
 type UserState = {
   accessToken: string | null;
@@ -96,6 +97,21 @@ export const useLogin = () => {
       });
     }
   }, []);
+};
+
+export const setUserOnAuthStateChange = (firebaseUser: FirebaseUser | null) => {
+  return (dispatch: AppDispatch) => {
+    if (firebaseUser) {
+      dispatch(
+        setUser({
+          uid: firebaseUser.uid,
+          photoURL: firebaseUser.photoURL ?? undefined,
+        })
+      );
+    } else {
+      dispatch(setUser(null));
+    }
+  };
 };
 
 export const getSignedInUser = (s: RootState) => ({
