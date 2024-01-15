@@ -7,7 +7,6 @@ import {
 import type { AppCollections } from "../database/model";
 
 type DatabaseContext = {
-  createUserAuth: (userAuth: UserAuthDocument) => Promise<void>;
   deleteFile: (fileId: string) => Promise<void>;
   deleteFolder: (folderId: string) => Promise<void>;
   downloadFileInMemory: (fileId: string) => Promise<ArrayBuffer | null>;
@@ -46,13 +45,6 @@ export const DatabaseProvider: React.FC<DatabaseProviderProps> = ({
   children,
   database,
 }) => {
-  const createUserAuth = useCallback(
-    async (userAuth: UserAuthDocument): Promise<void> => {
-      await database.createDocument("userAuth", userAuth);
-    },
-    [database]
-  );
-
   const updateUserAuth = useCallback(
     async (
       userId: string,
@@ -66,7 +58,6 @@ export const DatabaseProvider: React.FC<DatabaseProviderProps> = ({
   return (
     <Context.Provider
       value={{
-        createUserAuth,
         deleteFile: async () => undefined,
         deleteFolder: async () => undefined,
         downloadFileInMemory: async () => null,
