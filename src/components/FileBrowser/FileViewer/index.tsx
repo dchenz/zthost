@@ -37,7 +37,7 @@ const FileViewer: React.FC = () => {
         if (a.type === "folder" && b.type === "file") {
           return -1;
         }
-        return b.creationTime.getTime() - a.creationTime.getTime();
+        return b.creationTime - a.creationTime;
       }),
     [items]
   );

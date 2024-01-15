@@ -183,7 +183,7 @@ export const DatabaseProvider: React.FC<DatabaseProviderProps> = ({
         );
         results.push({
           id: file.id,
-          creationTime: new Date(file.creationTime),
+          creationTime: file.creationTime,
           folderId: file.folderId,
           hasThumbnail: file.hasThumbnail,
           ownerId: file.ownerId,
@@ -219,7 +219,7 @@ export const DatabaseProvider: React.FC<DatabaseProviderProps> = ({
         );
         results.push({
           id: folder.id,
-          creationTime: new Date(folder.creationTime),
+          creationTime: folder.creationTime,
           folderId: folder.folderId,
           ownerId: folder.ownerId,
           metadata,

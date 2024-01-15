@@ -55,8 +55,8 @@ export function formatBinarySize(n: number): string {
   return `${n.toFixed(2)} GB`;
 }
 
-export function formatRelativeTime(date: Date): string {
-  let n = (Date.now() - date.getTime()) / 1000;
+export function formatRelativeTime(timestamp: number): string {
+  let n = (Date.now() - timestamp) / 1000;
   if (n < 60) {
     return "Just now";
   }
@@ -68,7 +68,7 @@ export function formatRelativeTime(date: Date): string {
   if (n < 24) {
     return `${Math.floor(n)}hr ago`;
   }
-  return date.toLocaleString();
+  return new Date(timestamp).toLocaleString();
 }
 
 export const createImageThumbnail = (file: File): Promise<Blob> => {

@@ -22,7 +22,7 @@ export type FolderMetadata = {
 };
 
 export type Folder = {
-  creationTime: Date;
+  creationTime: number;
   folderId: string | null;
   id: string;
   metadata: FolderMetadata;
@@ -37,7 +37,7 @@ export type FileMetadata = {
 };
 
 export type FileEntity = {
-  creationTime: Date;
+  creationTime: number;
   folderId: string | null;
   hasThumbnail: boolean;
   id: string;

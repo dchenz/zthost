@@ -42,7 +42,7 @@ const ListView: React.FC<ListViewProps> = ({
           result = a.metadata.name.localeCompare(b.metadata.name);
           break;
         case "Created":
-          result = a.creationTime.getTime() - b.creationTime.getTime();
+          result = a.creationTime - b.creationTime;
           break;
         case "Size":
           // Sort folders last because they don't display size.

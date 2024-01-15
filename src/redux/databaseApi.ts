@@ -67,7 +67,7 @@ export const databaseApi = createApi({
           );
           results.push({
             id: file.id,
-            creationTime: new Date(file.creationTime),
+            creationTime: file.creationTime,
             folderId: file.folderId,
             hasThumbnail: file.hasThumbnail,
             ownerId: file.ownerId,
@@ -103,7 +103,7 @@ export const databaseApi = createApi({
           );
           results.push({
             id: folder.id,
-            creationTime: new Date(folder.creationTime),
+            creationTime: folder.creationTime,
             folderId: folder.folderId,
             ownerId: folder.ownerId,
             metadata,
@@ -126,7 +126,6 @@ export const databaseApi = createApi({
         );
         await database.createDocument("files", {
           ...file,
-          creationTime: file.creationTime.getTime(),
           metadata: Buffer.from(encryptedMetadata).toString("base64"),
         });
         return { data: undefined };
@@ -144,7 +143,7 @@ export const databaseApi = createApi({
       queryFn: async ({ name, parentFolderId }, api) => {
         const state = api.getState() as UserState;
         const id = uuid();
-        const creationTime = new Date();
+        const creationTime = Date.now();
         const metadata: FolderMetadata = {
           name,
         };
@@ -154,7 +153,7 @@ export const databaseApi = createApi({
         );
         await database.createDocument("folders", {
           id,
-          creationTime: creationTime.getTime(),
+          creationTime,
           metadata: Buffer.from(encryptedMetadata).toString("base64"),
           ownerId: state.user.user!.uid,
           folderId: parentFolderId,
@@ -319,7 +318,7 @@ export const uploadFile = (
     await dispatch(
       databaseApi.endpoints.createFile.initiate({
         id: fileId,
-        creationTime: new Date(),
+        creationTime: Date.now(),
         hasThumbnail: thumbnail !== null,
         folderId: parentFolderId,
         metadata: {
