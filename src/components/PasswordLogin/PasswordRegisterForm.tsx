@@ -3,7 +3,7 @@ import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Buffer } from "buffer";
 import { useDatabase } from "../../context/database";
-import { getSignedInUser, setUserAuth } from "../../redux/userSlice";
+import { getCurrentUser, setUserAuth } from "../../redux/userSlice";
 import { deriveKey, generateWrappedKey, randomBytes } from "../../utils/crypto";
 import CreatePasswordForm from "./CreatePasswordForm";
 
@@ -15,14 +15,13 @@ const PasswordRegisterForm: React.FC<PasswordRegisterFormProps> = ({
   onAuthComplete,
 }) => {
   const dispatch = useDispatch();
-  const { user, storage } = useSelector(getSignedInUser);
+  const { user, storage } = useSelector(getCurrentUser);
   const { createUserAuth } = useDatabase();
 
-  if (!user || !storage) {
-    return null;
-  }
-
   const onSubmit = async (password: string) => {
+    if (!user || !storage) {
+      return;
+    }
     const bucketId = await storage.initialize();
     const salt = randomBytes(16);
     const passwordKey = deriveKey(Buffer.from(password, "utf-8"), salt);

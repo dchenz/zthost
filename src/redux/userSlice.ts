@@ -13,14 +13,12 @@ import type { PayloadAction } from "@reduxjs/toolkit";
 import type { User as FirebaseUser } from "firebase/auth";
 
 type UserState = {
-  accessToken: string | null;
   storage: BlobStorage | null;
   user: User | null;
   userAuth: AuthProperties | null;
 };
 
 const initialState: UserState = {
-  accessToken: null,
   storage: null,
   user: null,
   userAuth: null,
@@ -30,38 +28,27 @@ export const userSlice = createSlice({
   name: "user",
   initialState,
   reducers: {
-    setAccessToken: (state, action: PayloadAction<string | null>) => {
-      state.accessToken = action.payload;
-    },
     setUser: (state, action: PayloadAction<User | null>) => {
       state.user = action.payload;
     },
     setUserAuth: (state, action: PayloadAction<AuthProperties | null>) => {
       state.userAuth = action.payload;
     },
-    initializeStorage: (state) => {
-      if (state.accessToken && state.userAuth) {
-        state.storage = new GoogleDriveStorage(
-          state.accessToken,
-          state.userAuth.bucketId
-        );
-      } else {
-        state.storage = null;
-      }
+    setStorage: (state, action: PayloadAction<BlobStorage | null>) => {
+      state.storage = action.payload;
     },
   },
 });
 
-export const { setUser, setUserAuth, initializeStorage } = userSlice.actions;
+export const { setUser, setUserAuth, setStorage } = userSlice.actions;
 
 export const useLogout = () => {
   const dispatch = useDispatch();
 
   return useCallback(async () => {
     await auth.signOut();
-    dispatch(userSlice.actions.setAccessToken(null));
     dispatch(setUserAuth(null));
-    dispatch(initializeStorage());
+    dispatch(setStorage(null));
     dispatch(userSlice.actions.setUser(null));
   }, []);
 };
@@ -87,7 +74,7 @@ export const useLogin = () => {
       }
       const credentials = GoogleAuthProvider.credentialFromResult(response);
       if (credentials?.accessToken) {
-        dispatch(userSlice.actions.setAccessToken(credentials.accessToken));
+        dispatch(setStorage(new GoogleDriveStorage(credentials.accessToken)));
       }
     } catch (e) {
       updateToast({
@@ -114,10 +101,18 @@ export const setUserOnAuthStateChange = (firebaseUser: FirebaseUser | null) => {
   };
 };
 
-export const getSignedInUser = (s: RootState) => ({
-  ...s.user,
-  user: s.user.user!,
-  userAuth: s.user.userAuth!,
-});
+export const getSignedInUser = (
+  s: RootState
+): {
+  storage: BlobStorage;
+  user: User;
+  userAuth: AuthProperties;
+} => {
+  if (!s.user.storage || !s.user.user || !s.user.userAuth) {
+    throw new Error("Expected user to be signed in");
+  }
+  // @ts-expect-error TODO: Create a more robust type.
+  return s.user;
+};
 
-export const getCurrentUser = (s: RootState) => s.user;
+export const getCurrentUser = (s: RootState): UserState => s.user;

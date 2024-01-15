@@ -12,7 +12,7 @@ import React from "react";
 import { useSelector } from "react-redux";
 import { Buffer } from "buffer";
 import { useDatabase } from "../context/database";
-import { getSignedInUser } from "../redux/userSlice";
+import { getCurrentUser } from "../redux/userSlice";
 import { deriveKey, wrapKey } from "../utils/crypto";
 import CreatePasswordForm from "./PasswordLogin/CreatePasswordForm";
 
@@ -25,10 +25,13 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
   onClose,
   open,
 }) => {
-  const { user, userAuth } = useSelector(getSignedInUser);
+  const { user, userAuth } = useSelector(getCurrentUser);
   const { updateUserAuth } = useDatabase();
 
   const onSubmit = async (newPassword: string) => {
+    if (!user || !userAuth) {
+      return;
+    }
     const newPasswordKey = deriveKey(
       Buffer.from(newPassword, "utf-8"),
       userAuth.salt
