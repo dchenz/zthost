@@ -3,6 +3,7 @@ import { useSelector } from "react-redux";
 import { v4 as uuid } from "uuid";
 import { Buffer } from "buffer";
 import { CHUNK_SIZE } from "../config";
+import { BlobStorageDispatcher } from "../database/blobstorage";
 import { Firestore } from "../database/firestore";
 import {
   type FileDocument,
@@ -34,6 +35,7 @@ type UserState = {
 };
 
 const database = new Firestore();
+const storage = new BlobStorageDispatcher();
 
 const TAGS = {
   contentsFiles: "contents/files",
@@ -310,7 +312,11 @@ const createChunk = async (
     state.user.userAuth!.fileKey
   );
   const encryptedChunk = await encrypt(await blob.arrayBuffer(), plainTextKey);
-  const blobId = await state.user.storage!.putBlob(encryptedChunk, onProgress);
+  const blobId = await storage.putBlob(
+    state.user.storageStrategy!,
+    encryptedChunk,
+    onProgress
+  );
   return {
     id: blobId,
     key: Buffer.from(wrappedKey).toString("base64"),
@@ -400,4 +406,11 @@ export const uploadFile = (
       })
     );
   };
+};
+
+export const initializeStorageForNewAccount = (
+  dispatch: AppDispatch,
+  getState: () => RootState
+) => {
+  return storage.createBucket(getState().user.storageStrategy!);
 };

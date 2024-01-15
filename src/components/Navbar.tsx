@@ -1,21 +1,11 @@
 import { Box, HStack } from "@chakra-ui/react";
-import React, { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { auth } from "../firebase";
-import { getCurrentUser, setUserOnAuthStateChange } from "../redux/userSlice";
+import React from "react";
+import { useSelector } from "react-redux";
+import { getCurrentUser } from "../redux/userSlice";
 import UserMenu from "./UserMenu";
-import type { AppDispatch } from "../store";
 
 const Navbar: React.FC = () => {
-  const dispatch = useDispatch<AppDispatch>();
   const { user } = useSelector(getCurrentUser);
-
-  useEffect(() => {
-    return auth.onAuthStateChanged((firebaseUser) => {
-      dispatch(setUserOnAuthStateChange(firebaseUser));
-    });
-  }, []);
-
   return (
     <HStack
       alignItems="center"

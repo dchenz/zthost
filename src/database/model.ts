@@ -122,17 +122,3 @@ export type ThumbnailsDocument = {
   data: string;
   id: string;
 };
-
-export interface BlobStorage {
-  createBucket: () => Promise<string>;
-  deleteBlob: (id: string) => Promise<void>;
-  getBlob: (
-    id: string,
-    onProgress: (loaded: number) => void
-  ) => Promise<ArrayBuffer>;
-  putBlob: (
-    blob: ArrayBuffer,
-    onProgress: (loaded: number) => void
-  ) => Promise<string>;
-  setBucket: (id: string) => void;
-}

@@ -3,9 +3,15 @@ import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Buffer } from "buffer";
 import { useDatabase } from "../../context/database";
-import { getCurrentUser, setUserAuth } from "../../redux/userSlice";
+import { initializeStorageForNewAccount } from "../../redux/databaseApi";
+import {
+  getCurrentUser,
+  setStorageStrategy,
+  setUserAuth,
+} from "../../redux/userSlice";
 import { deriveKey, generateWrappedKey, randomBytes } from "../../utils/crypto";
 import CreatePasswordForm from "./CreatePasswordForm";
+import type { AppDispatch } from "../../store";
 
 type PasswordRegisterFormProps = {
   onAuthComplete: () => void;
@@ -14,16 +20,18 @@ type PasswordRegisterFormProps = {
 const PasswordRegisterForm: React.FC<PasswordRegisterFormProps> = ({
   onAuthComplete,
 }) => {
-  const dispatch = useDispatch();
-  const { user, storage } = useSelector(getCurrentUser);
+  const dispatch = useDispatch<AppDispatch>();
+  const { user, storageStrategy } = useSelector(getCurrentUser);
   const { createUserAuth } = useDatabase();
 
   const onSubmit = async (password: string) => {
-    if (!user || !storage) {
+    if (!user || !storageStrategy) {
       return;
     }
-    const bucketId = await storage.createBucket();
-    storage.setBucket(bucketId);
+    const bucketId = await dispatch(initializeStorageForNewAccount);
+    dispatch(
+      setStorageStrategy({ ...storageStrategy, rootFolderId: bucketId })
+    );
     const salt = randomBytes(16);
     const passwordKey = deriveKey(Buffer.from(password, "utf-8"), salt);
     const fileKey = await generateWrappedKey(passwordKey);
