@@ -11,8 +11,7 @@ import {
   type UserAuthDocument,
 } from "../database/model";
 import { blobToDataUri, generateThumbnail } from "../utils";
-import { decrypt, encrypt } from "../utils/crypto";
-import { blobApi } from "./blobApi";
+import { decrypt, encrypt, generateWrappedKey } from "../utils/crypto";
 import {
   addFileToCache,
   addFolderToCache,
@@ -302,6 +301,22 @@ export const useFolderContents = (folderId: string | null) => {
   };
 };
 
+const createChunk = async (
+  state: RootState,
+  blob: Blob,
+  onProgress: (n: number) => void
+) => {
+  const { plainTextKey, wrappedKey } = await generateWrappedKey(
+    state.user.userAuth!.fileKey
+  );
+  const encryptedChunk = await encrypt(await blob.arrayBuffer(), plainTextKey);
+  const blobId = await state.user.storage!.putBlob(encryptedChunk, onProgress);
+  return {
+    id: blobId,
+    key: Buffer.from(wrappedKey).toString("base64"),
+  };
+};
+
 export const uploadFile = (
   fileToUpload: File,
   parentFolderId: string | null
@@ -362,11 +377,7 @@ export const uploadFile = (
     const uploads: Promise<FileChunkKey>[] = [];
     for (let i = 0; i < nChunks; i++) {
       const blob = fileToUpload.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE);
-      uploads.push(
-        dispatch(
-          blobApi.endpoints.createChunk.initiate({ blob, onProgress })
-        ).unwrap()
-      );
+      uploads.push(createChunk(state, blob, onProgress));
     }
 
     // After the chunks have been uploaded, store the encryption keys in the database
