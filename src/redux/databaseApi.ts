@@ -223,6 +223,13 @@ export const databaseApi = createApi({
       },
     }),
 
+    deleteThumbnail: builder.mutation<void, { fileId: string }>({
+      queryFn: async ({ fileId }) => {
+        await database.deleteDocument("thumbnails", fileId);
+        return { data: undefined };
+      },
+    }),
+
     getUserAuth: builder.query<UserAuthDocument | null, { userId: string }>({
       queryFn: async ({ userId }) => {
         return { data: await database.getDocument("userAuth", userId) };
@@ -294,6 +301,13 @@ export const databaseApi = createApi({
         },
       }
     ),
+
+    deleteFileChunks: builder.mutation<void, { fileId: string }>({
+      queryFn: async ({ fileId }) => {
+        await database.deleteDocument("fileChunks", fileId);
+        return { data: undefined };
+      },
+    }),
   }),
 });
 
@@ -445,9 +459,13 @@ const deleteFile = (fileId: string) => {
     }
     // Delete the documents in the database.
     operations.push(
-      database.deleteDocument("fileChunks", fileId),
-      database.deleteDocument("thumbnails", fileId),
-      database.deleteDocument("files", fileId)
+      dispatch(
+        databaseApi.endpoints.deleteFileChunks.initiate({ fileId })
+      ).unwrap(),
+      dispatch(
+        databaseApi.endpoints.deleteThumbnail.initiate({ fileId })
+      ).unwrap(),
+      dispatch(databaseApi.endpoints.deleteFile.initiate({ fileId })).unwrap()
     );
     await Promise.all(operations);
   };
@@ -461,15 +479,21 @@ const deleteFolder = (folderId: string) => {
       ownerId: state.user.user!.uid,
     };
     // Recursively delete contents of the folder before deleting it.
-    await Promise.all([
-      ...(await database.getDocuments("files", filterSubItems)).map((subFile) =>
-        dispatch(deleteFile(subFile.id))
-      ),
-      ...(await database.getDocuments("folders", filterSubItems)).map(
-        (subFolder) => dispatch(deleteFolder(subFolder.id))
-      ),
-    ]);
-    await database.deleteDocument("folders", folderId);
+    const operations: Promise<void>[] = [];
+    const filesToDelete = await dispatch(
+      databaseApi.endpoints.getFiles.initiate(filterSubItems)
+    ).unwrap();
+    for (const subFile of filesToDelete) {
+      operations.push(dispatch(deleteFile(subFile.id)));
+    }
+    const foldersToDelete = await dispatch(
+      databaseApi.endpoints.getFolders.initiate(filterSubItems)
+    ).unwrap();
+    for (const subFolder of foldersToDelete) {
+      operations.push(dispatch(deleteFolder(subFolder.id)));
+    }
+    await Promise.all(operations);
+    await dispatch(databaseApi.endpoints.deleteFolder.initiate({ folderId }));
   };
 };
 
