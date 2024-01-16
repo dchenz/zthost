@@ -25,6 +25,7 @@ import type {
   FileChunkKey,
   FileChunksDocument,
   Folder,
+  FolderEntry,
   FolderMetadata,
   User,
 } from "../database/model";
@@ -285,6 +286,14 @@ export const databaseApi = createApi({
         return { data: undefined };
       },
     }),
+
+    getFileChunks: builder.query<FileChunksDocument | null, { fileId: string }>(
+      {
+        queryFn: async ({ fileId }) => {
+          return { data: await database.getDocument("fileChunks", fileId) };
+        },
+      }
+    ),
   }),
 });
 
@@ -417,4 +426,61 @@ export const initializeStorageForNewAccount = (
   getState: () => RootState
 ) => {
   return storage.createBucket(getState().user.storageStrategy!);
+};
+
+const deleteFile = (fileId: string) => {
+  return async (dispatch: AppDispatch, getState: () => RootState) => {
+    const state = getState();
+    // Get file chunks and use the IDs to delete the blobs in storage.
+    const { data: chunks } = await dispatch(
+      databaseApi.endpoints.getFileChunks.initiate({ fileId })
+    );
+    const operations: Promise<void>[] = [];
+    if (chunks) {
+      for (const chunk of chunks.chunks) {
+        operations.push(
+          storage.deleteBlob(state.user.storageStrategy!, chunk.id)
+        );
+      }
+    }
+    // Delete the documents in the database.
+    operations.push(
+      database.deleteDocument("fileChunks", fileId),
+      database.deleteDocument("thumbnails", fileId),
+      database.deleteDocument("files", fileId)
+    );
+    await Promise.all(operations);
+  };
+};
+
+const deleteFolder = (folderId: string) => {
+  return async (dispatch: AppDispatch, getState: () => RootState) => {
+    const state = getState();
+    const filterSubItems = {
+      folderId,
+      ownerId: state.user.user!.uid,
+    };
+    // Recursively delete contents of the folder before deleting it.
+    await Promise.all([
+      ...(await database.getDocuments("files", filterSubItems)).map((subFile) =>
+        dispatch(deleteFile(subFile.id))
+      ),
+      ...(await database.getDocuments("folders", filterSubItems)).map(
+        (subFolder) => dispatch(deleteFolder(subFolder.id))
+      ),
+    ]);
+    await database.deleteDocument("folders", folderId);
+  };
+};
+
+export const deleteFIlesAndFolders = (items: FolderEntry[]) => {
+  return async (dispatch: AppDispatch) => {
+    await Promise.all(
+      items.map((item) =>
+        dispatch(
+          item.type === "file" ? deleteFile(item.id) : deleteFolder(item.id)
+        )
+      )
+    );
+  };
 };

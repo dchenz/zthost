@@ -1,9 +1,10 @@
 import { Box, HStack } from "@chakra-ui/react";
 import React, { useState } from "react";
 import { ArrowsMove, Folder2, Sticky, Trash } from "react-bootstrap-icons";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useFiles } from "../../context/files";
 import { getSelectedItems } from "../../redux/browserSlice";
+import { deleteFIlesAndFolders } from "../../redux/databaseApi";
 import ConfirmPopup from "../ConfirmPopup";
 import MoveItemsModal from "./MoveItemsModal";
 import NewFolderModal from "./NewFolderModal";
@@ -11,10 +12,12 @@ import NewNoteModal from "./NewNoteModal";
 import ResponsiveIconButton from "./ResponsiveIconButton";
 import UploadButton from "./UploadButton";
 import ViewModeSelector from "./ViewModeSelector";
+import type { AppDispatch } from "../../store";
 
 const Header: React.FC = () => {
+  const dispatch = useDispatch<AppDispatch>();
   const selectedItems = useSelector(getSelectedItems);
-  const { deleteItems, moveItems } = useFiles();
+  const { moveItems } = useFiles();
   const [isCreatingFolder, setCreatingFolder] = useState(false);
   const [isMoving, setMoving] = useState(false);
   const [isCreatingNote, setCreatingNote] = useState(false);
@@ -29,7 +32,7 @@ const Header: React.FC = () => {
         {selectedItems.length ? (
           <React.Fragment>
             <ConfirmPopup
-              onConfirm={() => deleteItems(selectedItems)}
+              onConfirm={() => dispatch(deleteFIlesAndFolders(selectedItems))}
               prompt={deleteConfirmationPrompt}
             >
               <ResponsiveIconButton

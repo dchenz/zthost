@@ -18,7 +18,6 @@ export type PendingTask = {
 
 type FilesContext = {
   addDownloadTask: (file: FileEntity) => string;
-  deleteItems: (items: FolderEntry[]) => Promise<void>;
   moveItems: (
     items: FolderEntry[],
     targetFolderId: string | null
@@ -88,25 +87,6 @@ export const FilesProvider: React.FC<FilesProviderProps> = ({ children }) => {
     return file.id;
   }, []);
 
-  const deleteItems = useCallback(
-    async (items: FolderEntry[]) => {
-      const operations = [];
-      for (const item of items) {
-        if (item.type === "file") {
-          operations.push(database.deleteFile(item.id));
-        } else {
-          operations.push(database.deleteFolder(item.id));
-        }
-      }
-      await Promise.all(operations);
-      for (const item of items) {
-        removeItem(item.id);
-      }
-      dispatch(setSelectedItems([]));
-    },
-    [removeItem]
-  );
-
   const moveItems = useCallback(
     async (items: FolderEntry[], targetFolderId: string | null) => {
       for (const item of items) {
@@ -126,7 +106,6 @@ export const FilesProvider: React.FC<FilesProviderProps> = ({ children }) => {
     <Context.Provider
       value={{
         addDownloadTask,
-        deleteItems,
         moveItems,
       }}
     >
