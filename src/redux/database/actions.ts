@@ -1,13 +1,29 @@
-import { useSelector } from "react-redux";
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { v4 as uuid } from "uuid";
+import { Buffer } from "buffer";
 import { CHUNK_SIZE } from "../../config";
 import { BlobStorageDispatcher } from "../../database/blobstorage";
-import { blobToDataUri, generateThumbnail } from "../../utils";
-import { encrypt, generateWrappedKey } from "../../utils/crypto";
+import {
+  blobToDataUri,
+  generateThumbnail,
+  isImage,
+  isVideo,
+} from "../../utils";
+import {
+  decrypt,
+  encrypt,
+  generateWrappedKey,
+  unWrapKey,
+} from "../../utils/crypto";
 import { addUploadTask, updateTask } from "../taskSlice";
 import { getSignedInUser } from "../userSlice";
 import { databaseApi } from "./api";
-import type { FileChunkKey, FolderEntry } from "../../database/model";
+import type {
+  FileChunkKey,
+  FileEntity,
+  FolderEntry,
+} from "../../database/model";
 import type { AppDispatch, RootState } from "../../store";
 
 const storage = new BlobStorageDispatcher();
@@ -208,4 +224,66 @@ export const deleteFIlesAndFolders = (items: FolderEntry[]) => {
       )
     );
   };
+};
+
+const getChunk = async (
+  state: RootState,
+  chunk: FileChunkKey,
+  onProgress: (n: number) => void
+) => {
+  const key = await unWrapKey(
+    Buffer.from(chunk.key, "base64"),
+    state.user.userAuth!.fileKey
+  );
+  if (!key) {
+    throw new Error("Unable to un-wrap file chunk key");
+  }
+  const encryptedChunkData = await storage.getBlob(
+    state.user.storageStrategy!,
+    chunk.id,
+    onProgress
+  );
+  const chunkData = await decrypt(encryptedChunkData, key);
+  if (!chunkData) {
+    throw new Error("Unable to decrypt file chunk");
+  }
+  return chunkData;
+};
+
+const downloadAsBlob = (file: FileEntity) => {
+  return async (
+    dispatch: AppDispatch,
+    getState: () => RootState
+  ): Promise<ArrayBuffer | null> => {
+    if (!isImage(file.metadata.type) && !isVideo(file.metadata.type)) {
+      throw new Error("No preview available for this file type.");
+    }
+    const { data: chunks } = await dispatch(
+      databaseApi.endpoints.getFileChunks.initiate({ fileId: file.id })
+    );
+    if (!chunks?.chunks) {
+      throw new Error("Unable to find file chunks");
+    }
+    if (chunks.chunks.length > 1) {
+      throw new Error("File is too large to preview.");
+    }
+    return await getChunk(getState(), chunks.chunks[0], () => undefined);
+  };
+};
+
+export const useFileAsBlob = (file: FileEntity) => {
+  const dispatch = useDispatch<AppDispatch>();
+  const [data, setData] = useState<ArrayBuffer | null>(null);
+  const [error, setError] = useState<unknown | null>(null);
+  const [isLoading, setLoading] = useState(false);
+
+  useEffect(() => {
+    setLoading(true);
+    dispatch(downloadAsBlob(file))
+      .then(setData)
+      .catch(setError)
+      .finally(() => setLoading(false));
+  }, [file]);
+
+  return { data, error, isLoading };
 };

@@ -1,6 +1,6 @@
 import { Box, Spinner, Text } from "@chakra-ui/react";
-import React, { useEffect, useMemo, useState } from "react";
-import { useDatabase } from "../../../context/database";
+import React, { useMemo } from "react";
+import { useFileAsBlob } from "../../../redux/database/actions";
 import { isImage, isVideo } from "../../../utils";
 import ImagePreview from "./ImagePreview";
 import VideoPreview from "./VideoPreview";
@@ -10,33 +10,8 @@ type FilePreviewProps = {
   file: FileEntity;
 };
 
-const NOT_SUPPORTED = "No preview available for this file type.";
-const TOO_LARGE = "File is too large to preview.";
-
 const FilePreview: React.FC<FilePreviewProps> = ({ file }) => {
-  const database = useDatabase();
-  const [fileBytes, setFileBytes] = useState<ArrayBuffer | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
-  const [isLoading, setLoading] = useState(false);
-
-  useEffect(() => {
-    const supportsPreview =
-      isImage(file.metadata.type) || isVideo(file.metadata.type);
-    if (supportsPreview) {
-      setLoading(true);
-      database
-        .downloadFileInMemory(file.id)
-        .then((data) => {
-          if (!data) {
-            setMessage(TOO_LARGE);
-          }
-          setFileBytes(data);
-        })
-        .finally(() => setLoading(false));
-    } else {
-      setMessage(NOT_SUPPORTED);
-    }
-  }, [file]);
+  const { data: fileBytes, error, isLoading } = useFileAsBlob(file);
 
   const filePreviewContent = useMemo(() => {
     if (!fileBytes) {
@@ -59,7 +34,7 @@ const FilePreview: React.FC<FilePreviewProps> = ({ file }) => {
       justifyContent="center"
     >
       {isLoading ? <Spinner /> : null}
-      {message ? <Text color="#777777">{message}</Text> : null}
+      {error ? <Text color="#777777">{`${error}`}</Text> : null}
       {filePreviewContent}
     </Box>
   );

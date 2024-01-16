@@ -7,7 +7,6 @@ import {
 import type { AppCollections } from "../database/model";
 
 type DatabaseContext = {
-  downloadFileInMemory: (fileId: string) => Promise<ArrayBuffer | null>;
   downloadFileToDisk: (
     file: FileEntity,
     onProgress: (progress: number) => void
@@ -55,7 +54,6 @@ export const DatabaseProvider: React.FC<DatabaseProviderProps> = ({
   return (
     <Context.Provider
       value={{
-        downloadFileInMemory: async () => null,
         downloadFileToDisk: async () => undefined,
         moveFile: async () => undefined,
         moveFolder: async () => undefined,
