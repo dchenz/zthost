@@ -4,7 +4,7 @@ import { ArrowsMove, Folder2, Sticky, Trash } from "react-bootstrap-icons";
 import { useDispatch, useSelector } from "react-redux";
 import { useFiles } from "../../context/files";
 import { getSelectedItems } from "../../redux/browserSlice";
-import { deleteFIlesAndFolders } from "../../redux/database/api";
+import { deleteFIlesAndFolders } from "../../redux/database/actions";
 import ConfirmPopup from "../ConfirmPopup";
 import MoveItemsModal from "./MoveItemsModal";
 import NewFolderModal from "./NewFolderModal";

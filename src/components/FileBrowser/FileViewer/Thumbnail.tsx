@@ -1,6 +1,6 @@
 import { Image } from "@chakra-ui/react";
 import React from "react";
-import { useGetThumbnailQuery } from "../../../redux/database/api";
+import { useGetThumbnailQuery } from "../../../redux/database/actions";
 import type { FolderEntry } from "../../../database/model";
 import type { ImageProps } from "@chakra-ui/react";
 
