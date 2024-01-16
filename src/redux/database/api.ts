@@ -2,24 +2,24 @@ import { createApi, fakeBaseQuery } from "@reduxjs/toolkit/query/react";
 import { useSelector } from "react-redux";
 import { v4 as uuid } from "uuid";
 import { Buffer } from "buffer";
-import { CHUNK_SIZE } from "../config";
-import { BlobStorageDispatcher } from "../database/blobstorage";
-import { Firestore } from "../database/firestore";
+import { CHUNK_SIZE } from "../../config";
+import { BlobStorageDispatcher } from "../../database/blobstorage";
+import { Firestore } from "../../database/firestore";
 import {
   type FileDocument,
   type FileEntity,
   type FolderDocument,
   type UserAuthDocument,
-} from "../database/model";
-import { blobToDataUri, generateThumbnail } from "../utils";
-import { decrypt, encrypt, generateWrappedKey } from "../utils/crypto";
+} from "../../database/model";
+import { blobToDataUri, generateThumbnail } from "../../utils";
+import { decrypt, encrypt, generateWrappedKey } from "../../utils/crypto";
 import {
   addFileToCache,
   addFolderToCache,
   addThumbnailToCache,
-} from "./cacheUtils";
-import { addUploadTask, updateTask } from "./taskSlice";
-import { getSignedInUser } from "./userSlice";
+} from "../cacheUtils";
+import { addUploadTask, updateTask } from "../taskSlice";
+import { getSignedInUser } from "../userSlice";
 import type {
   AuthProperties,
   FileChunkKey,
@@ -28,8 +28,8 @@ import type {
   FolderEntry,
   FolderMetadata,
   User,
-} from "../database/model";
-import type { AppDispatch, RootState } from "../store";
+} from "../../database/model";
+import type { AppDispatch, RootState } from "../../store";
 
 type UserState = {
   user: { user: User | null; userAuth: AuthProperties | null };

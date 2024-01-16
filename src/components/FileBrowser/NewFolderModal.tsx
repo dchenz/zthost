@@ -11,7 +11,7 @@ import {
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { getPath } from "../../redux/browserSlice";
-import { useCreateFolderMutation } from "../../redux/databaseApi";
+import { useCreateFolderMutation } from "../../redux/database/api";
 
 type NewFolderModalProps = {
   onClose: () => void;

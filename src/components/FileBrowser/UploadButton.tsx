@@ -3,7 +3,7 @@ import React from "react";
 import { ChevronDown } from "react-bootstrap-icons";
 import { useDispatch, useSelector } from "react-redux";
 import { getPath } from "../../redux/browserSlice";
-import { uploadFile } from "../../redux/databaseApi";
+import { uploadFile } from "../../redux/database/api";
 import type { AppDispatch } from "../../store";
 
 const UploadButton: React.FC = () => {

@@ -1,6 +1,6 @@
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import { browserSlice } from "./redux/browserSlice";
-import { databaseApi } from "./redux/databaseApi";
+import { databaseApi } from "./redux/database/api";
 import { taskSlice } from "./redux/taskSlice";
 import { userSlice } from "./redux/userSlice";
 

@@ -1,4 +1,4 @@
-import { databaseApi } from "./databaseApi";
+import { databaseApi } from "./database/api";
 import type { FileEntity, Folder } from "../database/model";
 
 export const addFolderToCache = (folder: Folder) => {

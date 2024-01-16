@@ -8,7 +8,7 @@ import { ROUTES } from "../config";
 import { auth } from "../firebase";
 import { useChakraToast } from "../utils";
 import { deriveKey, generateWrappedKey, randomBytes } from "../utils/crypto";
-import { databaseApi, initializeStorageForNewAccount } from "./databaseApi";
+import { databaseApi, initializeStorageForNewAccount } from "./database/api";
 import type { StorageProvider } from "../database/blobstorage";
 import type { GoogleDriveInfo } from "../database/googledrive";
 import type { AuthProperties, User } from "../database/model";

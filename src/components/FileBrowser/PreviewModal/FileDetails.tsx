@@ -13,7 +13,7 @@ import { Download, Trash } from "react-bootstrap-icons";
 import { useDispatch } from "react-redux";
 import { useFiles } from "../../../context/files";
 import { setPreviewFile } from "../../../redux/browserSlice";
-import { deleteFIlesAndFolders } from "../../../redux/databaseApi";
+import { deleteFIlesAndFolders } from "../../../redux/database/api";
 import { formatBinarySize } from "../../../utils";
 import ConfirmPopup from "../../ConfirmPopup";
 import type { FileEntity } from "../../../database/model";

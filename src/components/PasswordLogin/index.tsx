@@ -3,7 +3,7 @@ import React from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "../../config";
-import { useGetUserAuthQuery } from "../../redux/databaseApi";
+import { useGetUserAuthQuery } from "../../redux/database/api";
 import { getCurrentUser } from "../../redux/userSlice";
 import PasswordLoginForm from "./PasswordLoginForm";
 import PasswordRegisterForm from "./PasswordRegisterForm";

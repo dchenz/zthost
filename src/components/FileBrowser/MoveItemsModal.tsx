@@ -11,7 +11,7 @@ import React, { useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { FilesProvider } from "../../context/files";
 import { getPath, getSelectedItems, setPath } from "../../redux/browserSlice";
-import { useFolderContents } from "../../redux/databaseApi";
+import { useFolderContents } from "../../redux/database/api";
 import { folderContains } from "../../utils";
 import ListView from "./FileViewer/ListView";
 import PathViewer from "./PathViewer";

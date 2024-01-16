@@ -8,7 +8,7 @@ import {
   setSelectedItems,
   toggleSelectedItem,
 } from "../../../redux/browserSlice";
-import { useFolderContents } from "../../../redux/databaseApi";
+import { useFolderContents } from "../../../redux/database/api";
 import type { FolderEntry } from "../../../database/model";
 import type { AppDispatch } from "../../../store";
 

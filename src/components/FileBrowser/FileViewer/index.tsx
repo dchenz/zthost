@@ -9,7 +9,7 @@ import {
   setPreviewFile,
   toggleSelectedItem,
 } from "../../../redux/browserSlice";
-import { useFolderContents } from "../../../redux/databaseApi";
+import { useFolderContents } from "../../../redux/database/api";
 import GridView from "./GridView";
 import ListView from "./ListView";
 import type { FolderEntry } from "../../../database/model";
