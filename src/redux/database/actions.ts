@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import streamSaver from "streamsaver";
 import { v4 as uuid } from "uuid";
 import { Buffer } from "buffer";
 import { CHUNK_SIZE } from "../../config";
@@ -18,7 +19,7 @@ import {
   unWrapKey,
   wrapKey,
 } from "../../utils/crypto";
-import { addUploadTask, updateTask } from "../taskSlice";
+import { addDownloadTask, addUploadTask, updateTask } from "../taskSlice";
 import { getSignedInUser } from "../userSlice";
 import { databaseApi } from "./api";
 import type {
@@ -313,6 +314,69 @@ export const changePassword = (newPassword: string) => {
           fileKey: Buffer.from(fileKey).toString("base64"),
           metadataKey: Buffer.from(metadataKey).toString("base64"),
           thumbnailKey: Buffer.from(thumbnailKey).toString("base64"),
+        },
+      })
+    );
+  };
+};
+
+export const downloadAsFile = (fileToDownload: FileEntity) => {
+  return async (dispatch: AppDispatch, getState: () => RootState) => {
+    const state = getState();
+    await dispatch(addDownloadTask(fileToDownload));
+
+    const { data: chunks } = await dispatch(
+      databaseApi.endpoints.getFileChunks.initiate({
+        fileId: fileToDownload.id,
+      })
+    );
+    if (!chunks?.chunks) {
+      throw new Error("Unable to find file chunks");
+    }
+    const fileStream = streamSaver.createWriteStream(
+      fileToDownload.metadata.name,
+      {
+        size: fileToDownload.metadata.size,
+      }
+    );
+    const writer = fileStream.getWriter();
+    try {
+      const downloadProgress: Record<number, number> = {};
+      const onChunkProgress = (i: number) => (loaded: number) => {
+        downloadProgress[i] = loaded;
+        let loadedAllChunks = 0;
+        for (const progress of Object.values(downloadProgress)) {
+          loadedAllChunks += progress;
+        }
+        dispatch(
+          updateTask({
+            id: fileToDownload.id,
+            updates: {
+              progress: loadedAllChunks / fileToDownload.metadata.size,
+              title: `Downloading '${fileToDownload.metadata.name}'`,
+            },
+          })
+        );
+      };
+      for (let i = 0; i < chunks.chunks.length; i++) {
+        const chunkData = await getChunk(
+          state,
+          chunks.chunks[i],
+          onChunkProgress(i)
+        );
+        await writer.write(new Uint8Array(chunkData));
+      }
+    } catch (e) {
+      await writer.abort();
+      throw e;
+    }
+    dispatch(
+      updateTask({
+        id: fileToDownload.id,
+        updates: {
+          progress: 1,
+          ok: true,
+          title: fileToDownload.metadata.name,
         },
       })
     );

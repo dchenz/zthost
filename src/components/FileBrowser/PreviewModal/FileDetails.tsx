@@ -11,9 +11,11 @@ import {
 import React from "react";
 import { Download, Trash } from "react-bootstrap-icons";
 import { useDispatch } from "react-redux";
-import { useFiles } from "../../../context/files";
 import { setPreviewFile } from "../../../redux/browserSlice";
-import { deleteFIlesAndFolders } from "../../../redux/database/actions";
+import {
+  deleteFIlesAndFolders,
+  downloadAsFile,
+} from "../../../redux/database/actions";
 import { formatBinarySize } from "../../../utils";
 import ConfirmPopup from "../../ConfirmPopup";
 import type { FileEntity } from "../../../database/model";
@@ -25,11 +27,10 @@ type FileDetailsProps = {
 
 const FileDetails: React.FC<FileDetailsProps> = ({ file }) => {
   const dispatch = useDispatch<AppDispatch>();
-  const { addDownloadTask } = useFiles();
 
-  const handleDownload = async () => {
+  const handleDownload = () => {
     dispatch(setPreviewFile(null));
-    addDownloadTask(file);
+    dispatch(downloadAsFile(file));
   };
 
   const handleDelete = async () => {

@@ -1,12 +1,8 @@
 import React, { createContext, useContext } from "react";
-import { type Database, type FileEntity } from "../database/model";
+import { type Database } from "../database/model";
 import type { AppCollections } from "../database/model";
 
 type DatabaseContext = {
-  downloadFileToDisk: (
-    file: FileEntity,
-    onProgress: (progress: number) => void
-  ) => Promise<void>;
   moveFile: (fileId: string, targetFolderId: string | null) => Promise<void>;
   moveFolder: (
     folderId: string,
@@ -35,7 +31,6 @@ export const DatabaseProvider: React.FC<DatabaseProviderProps> = ({
   return (
     <Context.Provider
       value={{
-        downloadFileToDisk: async () => undefined,
         moveFile: async () => undefined,
         moveFolder: async () => undefined,
       }}

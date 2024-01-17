@@ -2,22 +2,9 @@ import React, { createContext, useCallback, useContext, useState } from "react";
 import { useDispatch } from "react-redux";
 import { setSelectedItems } from "../redux/browserSlice";
 import { useDatabase } from "./database";
-import type { FileEntity, FolderEntry } from "../database/model";
-
-type TaskType = "download" | "upload";
-
-export type PendingTask = {
-  id: string;
-  // Need to mark an upload/download as ok because it
-  // may still be pending when XHR reports 100% progress.
-  ok?: boolean;
-  progress: number;
-  title: string;
-  type: TaskType;
-};
+import type { FolderEntry } from "../database/model";
 
 type FilesContext = {
-  addDownloadTask: (file: FileEntity) => string;
   moveItems: (
     items: FolderEntry[],
     targetFolderId: string | null
@@ -43,48 +30,9 @@ export const FilesProvider: React.FC<FilesProviderProps> = ({ children }) => {
 
   const database = useDatabase();
   const [, setItems] = useState<FolderEntry[]>([]);
-  const [, setTasks] = useState<PendingTask[]>([]);
 
   const removeItem = useCallback((id: string) => {
     setItems((currentItems) => currentItems.filter((item) => item.id !== id));
-  }, []);
-
-  const updateTask = useCallback(
-    (id: string, updates: Partial<PendingTask>) => {
-      setTasks((currentTasks) =>
-        currentTasks.map((task) =>
-          task.id === id ? { ...task, ...updates } : task
-        )
-      );
-    },
-    []
-  );
-
-  const addDownloadTask = useCallback((file: FileEntity) => {
-    setTasks((currentTasks) => [
-      ...currentTasks,
-      {
-        id: file.id,
-        title: `Preparing to download '${file.metadata.name}'`,
-        progress: 0,
-        type: "download",
-      },
-    ]);
-    database
-      .downloadFileToDisk(file, (progress) => {
-        updateTask(file.id, {
-          progress,
-          title: `Downloading '${file.metadata.name}'`,
-        });
-      })
-      .then(() => {
-        updateTask(file.id, {
-          progress: 1,
-          ok: true,
-          title: file.metadata.name,
-        });
-      });
-    return file.id;
   }, []);
 
   const moveItems = useCallback(
@@ -105,7 +53,6 @@ export const FilesProvider: React.FC<FilesProviderProps> = ({ children }) => {
   return (
     <Context.Provider
       value={{
-        addDownloadTask,
         moveItems,
       }}
     >
