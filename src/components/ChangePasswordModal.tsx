@@ -9,12 +9,10 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import React from "react";
-import { useSelector } from "react-redux";
-import { Buffer } from "buffer";
-import { useDatabase } from "../context/database";
-import { getCurrentUser } from "../redux/userSlice";
-import { deriveKey, wrapKey } from "../utils/crypto";
+import { useDispatch } from "react-redux";
+import { changePassword } from "../redux/database/actions";
 import CreatePasswordForm from "./PasswordLogin/CreatePasswordForm";
+import type { AppDispatch } from "../store";
 
 type ChangePasswordModalProps = {
   onClose: () => void;
@@ -25,26 +23,10 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
   onClose,
   open,
 }) => {
-  const { user, userAuth } = useSelector(getCurrentUser);
-  const { updateUserAuth } = useDatabase();
+  const dispatch = useDispatch<AppDispatch>();
 
   const onSubmit = async (newPassword: string) => {
-    if (!user || !userAuth) {
-      return;
-    }
-    const newPasswordKey = deriveKey(
-      Buffer.from(newPassword, "utf-8"),
-      userAuth.salt
-    );
-    const fileKey = await wrapKey(userAuth.fileKey, newPasswordKey);
-    const metadataKey = await wrapKey(userAuth.metadataKey, newPasswordKey);
-    const thumbnailKey = await wrapKey(userAuth.thumbnailKey, newPasswordKey);
-    await updateUserAuth(user.uid, {
-      fileKey: Buffer.from(fileKey).toString("base64"),
-      metadataKey: Buffer.from(metadataKey).toString("base64"),
-      thumbnailKey: Buffer.from(thumbnailKey).toString("base64"),
-    });
-
+    await dispatch(changePassword(newPassword));
     onClose();
   };
 

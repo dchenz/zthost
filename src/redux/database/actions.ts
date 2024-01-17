@@ -12,9 +12,11 @@ import {
 } from "../../utils";
 import {
   decrypt,
+  deriveKey,
   encrypt,
   generateWrappedKey,
   unWrapKey,
+  wrapKey,
 } from "../../utils/crypto";
 import { addUploadTask, updateTask } from "../taskSlice";
 import { getSignedInUser } from "../userSlice";
@@ -286,4 +288,33 @@ export const useFileAsBlob = (file: FileEntity) => {
   }, [file]);
 
   return { data, error, isLoading };
+};
+
+export const changePassword = (newPassword: string) => {
+  return async (dispatch: AppDispatch, getState: () => RootState) => {
+    const state = getState();
+    const newPasswordKey = deriveKey(
+      Buffer.from(newPassword, "utf-8"),
+      state.user.userAuth!.salt
+    );
+    const fileKey = await wrapKey(state.user.userAuth!.fileKey, newPasswordKey);
+    const metadataKey = await wrapKey(
+      state.user.userAuth!.metadataKey,
+      newPasswordKey
+    );
+    const thumbnailKey = await wrapKey(
+      state.user.userAuth!.thumbnailKey,
+      newPasswordKey
+    );
+    await dispatch(
+      databaseApi.endpoints.updateUserAuth.initiate({
+        userId: state.user.user!.uid,
+        updates: {
+          fileKey: Buffer.from(fileKey).toString("base64"),
+          metadataKey: Buffer.from(metadataKey).toString("base64"),
+          thumbnailKey: Buffer.from(thumbnailKey).toString("base64"),
+        },
+      })
+    );
+  };
 };

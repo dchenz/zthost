@@ -1,9 +1,5 @@
-import React, { createContext, useCallback, useContext } from "react";
-import {
-  type Database,
-  type FileEntity,
-  type UserAuthDocument,
-} from "../database/model";
+import React, { createContext, useContext } from "react";
+import { type Database, type FileEntity } from "../database/model";
 import type { AppCollections } from "../database/model";
 
 type DatabaseContext = {
@@ -15,10 +11,6 @@ type DatabaseContext = {
   moveFolder: (
     folderId: string,
     targetFolderId: string | null
-  ) => Promise<void>;
-  updateUserAuth: (
-    userId: string,
-    userAuth: Partial<UserAuthDocument>
   ) => Promise<void>;
 };
 
@@ -39,25 +31,13 @@ type DatabaseProviderProps = {
 
 export const DatabaseProvider: React.FC<DatabaseProviderProps> = ({
   children,
-  database,
 }) => {
-  const updateUserAuth = useCallback(
-    async (
-      userId: string,
-      userAuth: Partial<UserAuthDocument>
-    ): Promise<void> => {
-      await database.updateDocument("userAuth", userId, userAuth);
-    },
-    [database]
-  );
-
   return (
     <Context.Provider
       value={{
         downloadFileToDisk: async () => undefined,
         moveFile: async () => undefined,
         moveFolder: async () => undefined,
-        updateUserAuth,
       }}
     >
       {children}
